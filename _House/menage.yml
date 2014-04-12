@@ -1,0 +1,88 @@
+entities:
+    menage:
+        fields:
+            # period and id are implicit
+            - nb_persons:  {type: int, initialdata: false}
+            - nb_children: {type: int, initialdata: false}
+            - nb_children_af: {type: int, initialdata: false}
+            - nb_adultes: {type: int, initialdata: false}
+            - region_id:   {type: int, initialdata: false}
+            - rent:        {type: float, initialdata: false}
+            - value:        {type: float, initialdata: false}
+            - conso:        {type: float, initialdata: false}
+            - wealth:       {type: float, initialdata: false}
+            - liv_std:       {type: float, initialdata: false}
+            - owner:       {type: int, initialdata: false}
+            - wprm:       {type: int, initialdata: false}
+            - pref: int
+            
+            # legislation
+            - decile: {type: int, initialdata: false}
+            - decile_net: {type: int, initialdata: false}
+            - pauvre60: {type: bool, initialdata: false}            
+            - revdisp: {type: float, initialdata: false}
+            - revnet: {type: float, initialdata: false}
+            - revini: {type: float, initialdata: false}    
+            - typ_men: {type: float, initialdata: false}
+            - uc:       {type: float, initialdata: false}
+            
+            # legislation menage
+            - aah: {type: int, initialdata: false} 
+            - caah: {type: int, initialdata: false}
+            - aeeh: {type: int, initialdata: false} 
+            - aefa: {type: int, initialdata: false} 
+            - af: {type: int, initialdata: false} 
+            - cf: {type: int, initialdata: false} 
+            - paje: {type: int, initialdata: false} 
+            - al: {type: int, initialdata: false} 
+            - alf: {type: int, initialdata: false} 
+            - als: {type: int, initialdata: false} 
+            - apl: {type: int, initialdata: false} 
+            - ars: {type: int, initialdata: false} 
+            - asf: {type: int, initialdata: false} 
+            - api: {type: int, initialdata: false} 
+            - apje: {type: int, initialdata: false} 
+            - asi: {type: int, initialdata: false} 
+            - aspa: {type: int, initialdata: false} 
+            - rmi: {type: int, initialdata: false} 
+            - rsa: {type: int, initialdata: false} 
+
+ 
+        links:
+            persons:  {type: one2many, target: person, field: men}
+            l_pref:    {type: many2one, target: person, field: pref}
+            landlord: {type: many2one, target: person, field: owner}
+            
+        processes:
+            init_region_id:
+                - region_id: choice([0, 1, 2, 3], [0.1, 0.2, 0.3, 0.4])
+            init_rent:
+                - rent: 1000 *( persons.count() - persons.count(age < 18)*1.5 + persons.count(age < 18)*0.6)
+            init_value:
+                - value: 100000
+            init_owner: 
+                - owner: id + choice([0, 1, 2, 3], [0.1, 0.2, 0.3, 0.4])
+                # It's clear it's not serious for now
+            init_weight_men:
+                - wprm: 1
+
+            men_composition:
+                - nb_persons: persons.count()
+                - nb_children: persons.count( age < 18  and quimen>1)
+                - nb_children_af: persons.count( age < 20 and quimen>1)
+                - nb_adultes: persons.count( quimen <2)
+                - empty: (nb_persons==0)
+               
+                - test_pref: persons.count(quimen==0)
+                - show('nombre de quimen', groupby(test_pref,nb_persons))
+                - separ: l_pref.men != id
+                - show('nombre probleme de pref', count(l_pref.men != 0))
+                - show('nombre separ', count(separ))
+                - candidat: persons.min(id,quimen==0)
+                - pref: if(separ and persons.count(quimen==0)==1,
+                            persons.min(id,quimen==0),
+                            pref)
+                - remove(empty)                                        
+                - uc: 0.5 + 0.5 * persons.count( age >= 14) +  0.3 * persons.count( age < 14)
+                - liv_std:  persons.sum(sali+rsti+choi)/uc
+                

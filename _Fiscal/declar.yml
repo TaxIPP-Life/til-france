@@ -1,0 +1,52 @@
+entities:
+    declar:
+        fields:
+            # period and id are implicit
+            - nb_persons:  {type: int, initialdata: false}
+            - nb_pac:  {type: int, initialdata: false}
+            - nb_adultes:  {type: int, initialdata: false}
+            - nbF:  {type: int, initialdata: false}
+            - nbJ:  {type: int, initialdata: false}
+            - caseT : {type: int, initialdata: false}
+            - pond:  float
+            - vous: int 
+            
+            # legislation
+            - decote: {type: float, initialdata: false}
+            - irpp: {type: float, initialdata: false}
+            - isf_tot: {type: float, initialdata: false}
+            - avantage_qf: {type: float, initialdata: false}
+             
+        links:
+            on_declar: {type: one2many, target: person, field: foy}
+            l_vous: {type: many2one, target: person, field: vous}
+            
+        processes:
+            rien: 0
+                
+            cases:
+                - nb_persons: on_declar.count()
+                - nb_pac: on_declar.count(quifoy>1)
+                - nbF: on_declar.count((age<=18) and (quifoy>1))
+                - nbJ: on_declar.count((age>18) and (quifoy>1))
+                # etre seul sur la declar + avoir de personnes a charge + ne pas etre en couple => case_l
+                - caseT: ((on_declar.count(quifoy<2)==1) and (nbF+nbJ>0) and (not l_vous.conj>0) )
+                
+            empty_declar:
+                - nb_persons: on_declar.count()
+                - nb_adultes: on_declar.count(quifoy<2)
+                - nb_pac: on_declar.count(quifoy>1)
+                - empty: (nb_persons==0)
+                
+                - test_vous: on_declar.count(quifoy==0)
+                - show('nombre de quifoy', groupby(test_vous,nb_persons))
+                - separ: l_vous.foy != id
+                - show('nombre probleme de vous', count(l_vous.quifoy != 0))
+                - show('nombre separ', count(separ))
+                - candidat: on_declar.min(id,quifoy==0)
+                - vous: if(separ and on_declar.count(quifoy==0)==1,
+                            on_declar.min(id,quifoy==0),
+                            vous)
+                - remove(empty)                           
+                - test_vous: on_declar.count(quifoy==0)               
+                - show('nombre probleme de vous apres', count(l_vous.quifoy != 0))       

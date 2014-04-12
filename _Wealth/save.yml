@@ -1,0 +1,7 @@
+entities:
+    menage:          
+        processes:    
+            init_wealth: 
+                - wealth: 0
+            saving:
+                - wealth:  wealth + persons.sum(sali+rsti+choi) - (rent + conso)

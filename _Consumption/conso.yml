@@ -1,0 +1,10 @@
+entities:
+    # yes, household level seems better
+    menage:     
+        processes:    
+            consumption :
+                - rien: 0
+                - house_inc: persons.sum(sali+rsti+choi) - rent 
+                # ajouter les autres revenus quand on les auras tous
+                # retirer rent pour les proprietaires
+                - conso: 0.7*house_inc

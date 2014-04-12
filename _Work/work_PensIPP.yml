@@ -1,0 +1,26 @@
+entities:
+    person:          
+        processes:      
+            # le programme est pense pour faire tourner d'abord entree chomage et ensuite entree_emploi
+            outwork: 
+                - xpr: xpr + 1
+                - anc: anc + 1
+                ## proba_entree_chomage <- 0.025
+                - unemp: align(0.5, filter = ISINWORK, proportions=0.025) 
+                - workstate: if(unemp, UNEMPLOYED, workstate)
+                - xpr: if(unemp, 1, xpr)
+                - anc: if(unemp, 1, anc)
+                
+            inwork: 
+                - to_work: align(0.0,filter = ISUNEMPLOYED,proportions=0.025)
+                # choix entrepreneur, public, prive
+                - type_act: if(to_work,
+                                choice([ NON_CADRE, CADRE, FONCT_A, FONCT_S, INDEP], [0.3, 0.1, 0.1, 0.2, 0.3])
+                                ,0)
+                - workstate: if(to_work, type_act, workstate)
+                - xpr: if(to_work, 1, xpr)
+                - anc: if(to_work, 1, anc)
+                - dur_rest_ARE: if(ISINWORK, 0, dur_rest_ARE)
+                
+            retire: 
+                - workstate: if(age>65, RETIRED, workstate)           

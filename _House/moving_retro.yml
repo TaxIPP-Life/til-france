@@ -1,0 +1,35 @@
+entities:
+    person:          
+        processes:    
+            independance:
+                - alone: (jequit == year(period) or forseul == year(period))
+                - alone: alone or (jequit == 0 and forseul == 0 and age < 24 )
+                - alone: alone and (pere>0 or mere>0)
+                - men:  if(alone,
+                            if(mere>0,
+                                l_mere.men,
+                                if(pere>0, 
+                                    l_pere.men,
+                                    men)),
+                           men)
+                
+                - quimen: if(alone, 2, quimen)
+                            
+            #il faudrait des chiffres plus précis, on peut pas faire partir les personnes indépendemment de leur famille. Il faut aussi 
+            # faire partir des gens systèmatiquement et pas seulement en fonction du solde -> trouver les chiffres
+            #emigration:
+            #immigration:
+            
+                - decl_seul: not(ISMARRIED) and (quimen==0) and (age<24 or (age<21 and not ISSTUDENT))
+                - decl_seul: decl_seul and (pere>0 or mere>0)
+                - foy: if(decl_seul,
+                            if(pere>0,
+                                l_mere.foy,
+                                if(mere>0, 
+                                    l_mere.foy,
+                                    foy)),
+                           foy)
+                           
+                - quifoy: if(decl_seul, 2, quifoy)         
+
+ 

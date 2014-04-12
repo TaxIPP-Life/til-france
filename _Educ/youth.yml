@@ -1,0 +1,49 @@
+entities:
+    person:          
+        processes:    
+ 
+            init_education_level:
+                - workstate: if( workstate==0 and age < 30, STUDENT, workstate)
+                - temp_pere: if( pere>0,  
+                                l_pere.findet + (l_pere.age>35) + (l_pere.age>45) + (l_pere.age>55) ,
+                                0)
+                - temp_mere: if( mere>0,  
+                                l_mere.findet + (l_mere.age>35) + (l_mere.age>45) + (l_mere.age>55) ,
+                                0)                                
+                                
+                                
+                - findet: if(findet < 1 and pere>0,
+                                if(mere>0, trunc((temp_pere+temp_mere)/2) , temp_pere),
+                                findet)
+                - findet: if(findet < 1 and pere < 1,
+                                if(mere>0, temp_mere , 21),
+                                findet)
+                                
+                - education_level:  if(age< findet and age >5, 
+                                        if(age<11, 1 ,
+                                            if(age<15,2, 
+                                                if(age<18,3,
+                                                    if(age<20,4,
+                                                        if(age<24,5,6)
+                                                    )
+                                                )
+                                            )
+                                        ),
+                                    0)
+            ineducation:
+                # unemployed if left education
+                - workstate: if(age>findet and ISSTUDENT,
+                                UNEMPLOYED,
+                                workstate)
+                - education_level:  if(age< findet and age >5, 
+                                        if(age<11, 1 ,
+                                            if(age<15,2, 
+                                                if(age<18,3,
+                                                    if(age<20,4,
+                                                        if(age<24,5,6)
+                                                    )
+                                                )
+                                            )
+                                        ),
+                                    0)
+                - show('num students', sum(ISSTUDENT))

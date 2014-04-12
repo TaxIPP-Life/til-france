@@ -1,0 +1,28 @@
+entities:
+    person:          
+        processes:          
+            birth: 
+                - birth: agem < 0
+                - remove(birth) 
+                - show('Number of born this period is', count(birth))
+
+              
+            death:
+                - dead: forruptv == trunc(period/100)
+                - show('Number of re-birth', count(dead)) 
+                - new('person', filter=dead,
+                      mere = 0,
+                      pere = 0,
+                      men = men,
+                      age = age,
+                      agem = agem,
+                      conj = id,
+                      civilstate =  MARRIED,
+                      sexe = if(ISMALE,FEMALE,MALE),
+                      foy = foy,
+                      quifoy = 1,
+                      quimen = 1
+                      )   
+                # on aimerait evidemment avoir plus d'info
+                - civilstate: if( dead, MARRIED, civilstate)
+        

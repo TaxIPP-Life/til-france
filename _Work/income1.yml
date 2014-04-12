@@ -1,0 +1,115 @@
+entities:
+    person:          
+        processes:   
+        
+            init_productivity:       
+                - productivity: 1
+                # destinie (1991)
+                - mincer : if(ISMALE, 
+                                9.772+0.094*findet
+                                +0.046*xpr-0.00063*xpr*xpr,
+                                8.273+0.098*findet
+                                +0.053*xpr-0.00068*xpr*xpr)           
+                # 1/1.7 pour passer au net et  1.04 pour passer a 2009
+                - mincer : 1.04/1.7*exp(mincer) 
+                
+                
+                - productivity: if( sali>0,
+                            sali/mincer, 
+                            productivity)
+                - productivity: if( sali>0,
+                            productivity, 
+                            avg(productivity,sali>0))
+                         
+                            
+            #source: vos droits services public.fr         
+            chomage:
+                ####### duree de versement 
+                # on la marque en annee mais le calcul est normalement en mois
+                - entree_chom : ISUNEMPLOYED and not lag(ISUNEMPLOYED)
+                #TODO: avoir une meilleure fonction que duration pour avoir toutes les 
+                #preriode d'emploi, la on a que la derniere, on mettra la periode d'evaluation plus tard
+                - show('nombre d entree au chom', count(entree_chom)) 
+                - test: workstate
+                - workstate: if(entree_chom,CADRE,workstate)
+                - dur_ver: if(entree_chom, 
+                                if(age <50 ,
+                                        duration(ISINWORK and not WORK_INDEP),  
+                                         duration(ISINWORK and not WORK_INDEP)), 
+                                0)
+                - dur_ver: dur_ver -1                
+                - workstate: if(entree_chom,UNEMPLOYED,workstate)
+                - show('nombre dannees de d act', groupby(ISUNEMPLOYED,dur_ver))                 
+                               
+                # maximum: c'est bien en vrai c'est 730 jours(=2 ans) + 365 jours(=1 ans)
+                # ser supprime quand on aura une bonne fonction duration
+                - dur_ver: min(dur_ver , 2 + 1*(age>=50))
+                # minimum (ne sert a rien tant qu'on est en annee)
+                # c'est en fait un condition d'eligibilite
+                #122 jours = 4mois
+                - dur_ver: if(dur_ver > 0.25, 
+                               dur_ver, 
+                               0)
+             
+                # chomage partiel : 182 jours, pas dans le modele pour l'instant
+                # convention chomage du 18 janvier 2006 au 31 mars 2009
+                - dur_rest_ARE: if(entree_chom, 
+                                    dur_ver,
+                                    dur_rest_ARE)
+                # avant de baisser la duree par un on regarde des cas de prolongation
+                # prolongation
+                - prolong: (age>61) and (duration(choi>0)>=1 ) # and d'atres truc
+                #TODO: a completer quand on aura la fonction qui va bien (voir google group liam)
+                - dur_rest_ARE: if(prolong and (dur_rest_ARE==1), 
+                                    2,
+                                    dur_rest_ARE)    
+                - dur_rest_ARE: if((dur_rest_ARE>0), 
+                                    dur_rest_ARE-1,
+                                    0)   
+                                    
+                ####### Montant de l'ARE         
+                # TODO: ajoute quotite quand dans le modele
+                # TODO: parametres et bonne valeur
+                #salaire journalier de reference -> faire tourner avant salaire toujours
+                #34308 plafond de securite sociale en 2009
+                - SJR: if(entree_chom,  
+                            min(4*34308,sali)/365, 
+                            0)
+                - AJ_ARE: 11.57 + 40.4*SJR/100 
+                # maximum et minimum
+                - AJ_ARE: min( max( AJ_ARE, 57.4*SJR/100), 75*SJR/100)                     
+
+                # passage au net
+                # financement retraite complementaire
+                - FRC: 3/100*SJR
+                # CSG et CRDS sont calcule dans la legislation openfisca
+                # mais ce serait plus simple ici non ?
+                # Pour l'instant on oublie meme si c'est mal
+                # régime local d'assurance-maladie d'Alsace-Moselle
+           
+                - choi: if(ISUNEMPLOYED and (dur_rest_ARE>0), 
+                             if(entree_chom, AJ_ARE*365, choi), 
+                          0)
+                          
+                          
+            retraite: 
+                - rsti: if(ISRETIRED, 
+                             if(BEGINER, 0.7*sali, rsti), 
+                          0)
+                          
+            salaire:
+                - mincer: 0
+                # destinie (1991)
+                # Destinie 1999
+                - mincer : if(ISMALE, 
+                                9.772+0.094*findet
+                                +0.046*xpr-0.00063*xpr*xpr,
+                                8.273+0.098*findet
+                                +0.053*xpr-0.00068*xpr*xpr)   
+                # 1/1.7 pour passer au net et  1.04 pour passer a 2009
+                - mincer : 1.04/1.7*exp(mincer)
+                
+                - sali:  if( ISINWORK, round(mincer * productivity),0)
+                
+            rev_cap:
+                - capital_inc: l_men.wealth*0.1 * (quimen==1)

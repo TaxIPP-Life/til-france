@@ -1,0 +1,121 @@
+entities:
+    person:          
+        processes:          
+            init_workstate:
+                - workstate: choice([ 1, 2, 3, 4, 5], [0.3, 0.1, 0.1, 0.2, 0.3])
+                
+            inwork:
+                # retire
+                - workstate: if(ISMALE,
+                                if((age >= 65), RETIRED, workstate),
+                                if((age >= WEMRA), RETIRED, workstate))
+                - work_score: -1
+                # men
+                - work_score: if(ISMALE and (age > 15) and (age < 65) and ISINWORK,
+                                 logit_score(-0.196599 * age + 0.0086552 * age **2 - 0.000988 * age **3
+                                             + 0.1892796 * ISMARRIED + 3.554612),
+                                 work_score)
+                - work_score: if(ISMALE and (age > 15) and (age < 65) and (ISUNEMPLOYED or ISOTHERINACTIVE),
+                                 logit_score(0.9780908 * age - 0.0261765 * age **2 + 0.000199 * age **3
+                                             - 12.39108),
+                                 work_score)
+                # women
+                - work_score: if(ISFEMALE and (age > 15) and (age < WEMRA) and ISINWORK,
+                                 logit_score(-0.2740483 * age + 0.0109883 * age **2 - 0.0001159 * age **3
+                                             - 0.0906834 * ISMARRIED + 3.648706),
+                                 work_score)
+                - work_score: if(ISFEMALE and (age > 15) and (age < WEMRA) and (ISUNEMPLOYED or ISOTHERINACTIVE),
+                                 logit_score(0.8217638 * age - 0.0219761 * age **2 + 0.000166 * age **3
+                                             - 0.5590975 * ISMARRIED - 10.48043),
+                                 work_score)
+
+                # this is equivalent, though less readable
+#                - work_score: if(age > 15,
+#                                 if((age < 65) and ISINWORK,
+#                                    if(ISMALE,
+#                                       logit_score(-0.196599 * age + 0.0086552 * age **2 - 0.000988 * age **3
+#                                                   + 0.1892796 * ISMARRIED + 3.554612),
+#                                       logit_score(-0.2740483 * age + 0.0109883 * age **2 - 0.0001159 * age **3
+#                                                   - 0.0906834 * ISMARRIED + 3.648706)),
+#                                    if((age < 50) and ISUNEMPLOYED,
+#                                       if(ISMALE,
+#                                          logit_score(0.9780908 * age - 0.0261765 * age **2 + 0.000199 * age **3
+#                                                      - 12.39108),
+#                                          logit_score(0.8217638 * age - 0.0219761 * age **2 + 0.000166 * age **3
+#                                                      - 0.5590975 * ISMARRIED - 10.48043)),
+#                                       -1)),
+#                                 -1)
+                
+                - agegroup_work: if(age < 70, 5 * trunc(age / 5), 70)
+                - work: if((age > 15) and (age < 65),
+                           if(ISMALE,
+                              align(work_score,
+                                    leave=ISSTUDENT or ISRETIRED,
+                                    fname='data\\al_p_inwork_m.csv'),
+                              align(work_score,
+                                    leave=ISSTUDENT or ISRETIRED,
+                                    fname='data\\al_p_inwork_f.csv')),
+                           False)
+                - workstate: if(work, NON_CADRE, workstate)
+                # if not selected to work and last period in work set workstate temporary to -1
+                - workstate: if(not work and lag(ISINWORK), -1, workstate)
+                - dur_rest_ARE: if(ISINWORK, 0, dur_rest_ARE)
+
+                - show(groupby(workstate, lag(workstate)))
+                - show('have job', sum(work), 
+                       '(kept:', sum(work and lag(ISINWORK)),
+                       '/ new:', sum(work and not lag(ISINWORK)), ')')
+
+
+            outwork:
+               - unemp_score: -1
+               # Male
+               - unemp_condition_m: ISMALE and (age > 15) and (age < 65) and not ISINWORK
+               # Probability of being unemployed from being unemployed previously
+               - unemp_score: if(unemp_condition_m and lag(ISUNEMPLOYED),
+                                  logit_score(- 0.1988979 * age + 0.0026222 * age **2
+                                              - 0.4595076 * ISMARRIED
+                                              + 5.096262),
+                                  unemp_score)
+               # Probability of being unemployed from being inwork previously
+               - unemp_score: if(unemp_condition_m and lag(ISINWORK),
+                                  logit_score(0.1396404 * age - 0.0024024 * age **2
+                                              - 0.3957583 * ISMARRIED
+                                              - 3.069904),
+                                  unemp_score)
+               # Female
+               - unemp_condition_f: ISFEMALE and (age > 15) and (age < 65) and not ISINWORK
+               # Probability of being unemployed from being unemployed previously
+               - unemp_score: if(unemp_condition_f and lag(ISUNEMPLOYED),
+                                  logit_score(- 0.1988979 * age + 0.0026222 * age **2
+                                              - 0.4595076 * ISMARRIED
+                                              + 5.096262),
+                                  unemp_score)
+               # Probability of being unemployed from being inwork previously
+               - unemp_score: if(unemp_condition_f and lag(ISINWORK),
+                                  logit_score(0.1122972 * age - 0.001672 * age **2
+                                              - 0.4429804 * ISMARRIED
+                                              - 2.585393),
+                                  unemp_score)
+               # Alignment of unemployment based on those not selected by inwork
+               # Alignment files are constructed as follows:
+               # [Number of unemployed / (Population - Number of Workers)] by age class 
+               # The here below condition must correspond to the here above denumerator
+               - agegroup_work: if(age < 70, 5 * trunc(age / 5), 70)
+               - unemp: if((age > 15) and (age < 65) and not ISINWORK,
+                            if(ISMALE,
+                               align(unemp_score,
+                                     take= ISUNEMPLOYED,
+                                     leave=ISSTUDENT or ISRETIRED,
+                                     fname='data\\al_p_unemployed_m.csv'),
+                               align(unemp_score,
+                                     take= ISUNEMPLOYED,
+                                     leave=ISSTUDENT or ISRETIRED,
+                                     fname='data\\al_p_unemployed_f.csv')),
+                            False)
+               - workstate: if(unemp, UNEMPLOYED, workstate)  
+               - workstate: if((workstate == -1) and not unemp, OTHERINACTIVE, workstate)   
+            dump_all: csv(dump())
+            
+            retire: 
+                - workstate: if(age>65, RETIRED, workstate)            
