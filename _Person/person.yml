@@ -59,6 +59,14 @@ entities:
             # - pfam: {type: int, initialdata: false} 
             # - logt: {type: int, initialdata: false}       
          
+        # legislation retraite
+            - nb_enf: {type: int, initialdata: false, default: 0}   
+            - nb_enf_RG: {type: int, initialdata: false, default: 0}   
+            - nb_enf_RSI: {type: int, initialdata: false, default: 0}   
+            - nb_enf_FP: {type: int, initialdata: false, default: 0} 
+            - tauxprime: float
+            - pension: {type: float, initialdata: false, default: 0.00} 
+            - start_retirement: {type: int, initialdata: false} 
          
         links:
             l_men:      {type: many2one, target: menage, field: men}
@@ -83,19 +91,19 @@ entities:
 
             UNSET: -1
 
-            MARRIED: 2 
-            SINGLE: 1
-            DIVORCED: 4
-            WIDOW: 3
+            MARRIED: 1 
+            SINGLE: 2
+            DIVORCED: 3
+            WIDOW: 4
             PACS : 5
             
-            ISMARRIED: civilstate == 2
-            ISSINGLE: civilstate == 1
-            ISDIVORCED: civilstate == 4
-            ISWIDOW: civilstate == 3
+            ISMARRIED: civilstate == 1
+            ISSINGLE: civilstate == 2
+            ISDIVORCED: civilstate == 3
+            ISWIDOW: civilstate == 4
             ISPACS: civilstate == 5
-            LEGAL_UNION: civilstate == 2 or civilstate == 5
-            LEGAL_CELIB: civilstate == 1 or civilstate == 3 or civilstate == 4
+            LEGAL_UNION: civilstate == 1 or civilstate == 5
+            LEGAL_CELIB: civilstate == 2 or civilstate == 3 or civilstate == 4
             INCOUPLE: conj > -1
             
             INACTIVE:  1
