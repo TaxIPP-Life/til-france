@@ -102,7 +102,7 @@ entities:
                 
                 - start_retirement: if(to_be_retired, period, start_retirement)
                 - workstate: if(to_be_retired, RETIRED, workstate) 
-                - pension: pension_func() # -> TODO: Add a filter with to_be_retired
+                - rsti: pension_func() # -> TODO: Add a filter with to_be_retired
                 - test: count(rsti>0)
                 
                           

@@ -35,6 +35,8 @@ entities:
             - sali:  {type: float, default: 0.0}
             - productivity: {type: float, initialdata: false}
             - rsti: float
+            - tauxprime: float
+            - start_retirement: {type: int, initialdata: false}
             - choi: float
             - xpr: int # name to avoid confusion with function exp
             - anc: int
