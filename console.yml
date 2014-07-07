@@ -58,12 +58,12 @@ simulation:
         - person: [divorce]
         - menage: [men_composition]
         - declar: [cases,empty_declar]
-        - person: [ineducation, outwork, inwork, retire, chomage, salaire #, retraite
+        - person: [ineducation, outwork, inwork, retire, chomage, salaire , retraite
 #            dump_all            
         ]
         - menage: [init_value,consumption,saving]
         - companies: [rien]
-        #- legislation: [2009] #[annee leg] = année de départ de la simulation
+        - legislation: [2009] #[annee leg] = année de départ de la simulation
         # - register: [alive]
         # - register: [sum_indiv]
         - person: [stat_period]

@@ -60,17 +60,17 @@ entities:
             
                 - to_move_together: (INCOUPLE and dur_in_couple > 1)
                 # on s'assure qu'on ne vit pas déjà ensemble
-                - to_move_together: if(quimen==1 or l_conj.quimen==1 ,False, to_move_together)
-                - to_move_together: if(quimen==2 and l_conj.quimen==2 and men==l_conj.men ,False, to_move_together)
+                - to_move_together: if(quimen==1 or l_conj.quimen==1, False, to_move_together)
+                - to_move_together: if(quimen==2 and l_conj.quimen==2 and men==l_conj.men, False, to_move_together)
                 # - csv(dump(id, to_move_together, sexe, l_conj.id, l_conj.age, dur_in_couple, quimen , l_conj.dur_in_couple, l_conj.quimen,  l_conj.to_move_together, l_conj.conj))
                 - assertEqual( count(to_move_together) , count(l_conj.to_move_together))
                 - assertTrue( count(to_move_together) % 2 == 0 )
                 # select who move into the other's house
                 # if only one is quimen==0 it's she or he, otherwise, we select the smallest ID.
-                - to_move_in: if(to_move_together,True,False) 
+                - to_move_in: if(to_move_together, True, False) 
                 # check liam2 bug was corrected and that to_move_together is copied                
                 - to_move_in: if(to_move_together and l_conj.quimen == 0, 
-                                        if(quimen >0, 
+                                        if(quimen > 0, 
                                             True,
                                             if(id < l_conj.id, True, False)),
                                         False)
@@ -106,8 +106,8 @@ entities:
                               if(l_tuteur.men==men, l_tuteur.new_men, new_men),
                             new_men) 
                 - men: new_men
-                - test : l_men.get(persons.count(quimen==0))
-                #- csv(dump(id, to_move_together, age, sexe, l_conj.id, l_conj.age, dur_in_couple, quimen , l_conj.dur_in_couple, l_conj.quimen,  l_conj.to_move_together, l_conj.conj, 
+                # - test : l_men.get(persons.count(quimen==0))
+                # - csv(dump(id, to_move_together, age, sexe, l_conj.id, l_conj.age, dur_in_couple, quimen , l_conj.dur_in_couple, l_conj.quimen,  l_conj.to_move_together, l_conj.conj, 
                 #      test, pere, mere, men, filter=(test!=1)), fname='perso2_{period}.csv') 
                 - assertEqual(max(l_men.get(persons.count(quimen==0))),1)
                 - assertTrue(min(men)>=0)
