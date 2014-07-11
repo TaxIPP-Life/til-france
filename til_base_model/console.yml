@@ -3,22 +3,22 @@
 
 
 import:
-    - _person//person.yml
-    - _person//register.yml
-    - _house//menage.yml
-    - _fiscal//declar.yml
-    - _work//work_pensIPP.yml  # work0, work_pensIPP
-    - _work//income2.yml
-    - _demo//_birth//birth.yml
-    - _demo//_migration/migration.yml
-    - _demo//_death//death.yml
-    - _demo//_union//union.yml
-    - _demo//_divorce//divorce.yml
-    - _educ//youth.yml
-    - _house//moving.yml
-    - _consumption//conso.yml
-    - _wealth//save.yml
-    - _jobs//companies.yml
+    - _person/person.yml
+    - _person/register.yml
+    - _house/menage.yml
+    - _fiscal/declar.yml
+    - _work/work_pensIPP.yml  # work0, work_pensIPP
+    - _work/income2.yml
+    - _demo/_birth//birth.yml
+    - _demo/_migration/migration.yml
+    - _demo/_death//death.yml
+    - _demo/_union//union.yml
+    - _demo/_divorce//divorce.yml
+    - _educ/youth.yml
+    - _house/moving.yml
+    - _consumption/conso.yml
+    - _wealth/save.yml
+    - _jobs/companies.yml
 
 globals:
     periodic:
