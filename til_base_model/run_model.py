@@ -8,7 +8,7 @@ import sys
 sys.path.append(path_liam)
 from src.simulation import Simulation
 
-path_model = 'C:\\Til-BaseModel\\console.yml'
+path_model = 'console.yml'
 
 simulation = Simulation.from_yaml(path_model,
                     input_dir = None,
