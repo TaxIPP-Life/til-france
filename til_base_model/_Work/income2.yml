@@ -83,12 +83,8 @@ entities:
                 - choi: if(ISUNEMPLOYED and (dur_rest_ARE>0), 
                              if(entree_chom, AJ_ARE*365, choi), 
                           0)
-                          
-                          
+            
             retraite: 
-                - rsti: if(ISRETIRED, 
-                             if(BEGINER, 0.7*sali, rsti), 
-                          0)
                 # Actualisation du nombre d'enfants par régime
                 - new_born: invl_mere.count(agem==0) + invl_pere.count(agem==0) 
                 - nb_enf_RG: if(WORK_PRIVE, nb_enf + new_born, nb_enf)
@@ -97,15 +93,16 @@ entities:
                 
                 - nb_pac: invl_mere.count(age <= 18) + invl_pere.count(age <= 18)
                 
-                - date_depart: date_retired() 
+                - date_depart: date_retired(filter = (agem > 12*55)) 
                 - to_be_retired: date_depart <= period and date_depart != -1 and not ISRETIRED
                 
                 - start_retirement: if(to_be_retired, period, start_retirement)
                 - workstate: if(to_be_retired, RETIRED, workstate) 
-                - rsti: pension_func() # -> TODO: Add a filter with to_be_retired
+                - new_rsti: pension_func(filter=to_be_retired)
+                - revalo: 0
+                - rsti: if(to_be_retired, new_rsti, rsti*(1+revalo))
                 - test: count(rsti>0)
-                
-                          
+                                         
             salaire:
                 - mincer: 0
                 # destinie (1991)
