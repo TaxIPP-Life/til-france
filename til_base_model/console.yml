@@ -71,7 +71,7 @@ simulation:
     # final_stat: True
     
     input:
-        file: Patrimoine_400.h5
+        file: Destinie.h5
         
     output:
         file: simul.h5
