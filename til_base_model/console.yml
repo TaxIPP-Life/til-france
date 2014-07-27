@@ -22,9 +22,11 @@ import:
 
 globals:
     periodic:
-        - WEMRA: int  
-        - LIMIT: float
-        
+       path: param\globals.csv
+       fields:
+       - MINR: float
+       - WEMRA: int
+
 simulation:
     init: 
         - menage: [init_weight_men, init_region_id, init_rent, init_value, init_wealth, init_owner, men_composition]
