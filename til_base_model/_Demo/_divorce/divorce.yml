@@ -32,12 +32,14 @@ entities:
                 ### men 
                 # smallest id move out from house
                 # TODO: à améliorer en fonction de la propriété, de qui part et tout
-                - MOVE: (to_divorce and l_conj.men==men and id < l_conj.id)
                 # si on est chez ses parents et que c'est eux les chef, c'est à l'autre de bouger : on les retire
-                - MOVE1: MOVE and not ((l_pere.men == men or l_mere.men == men) and (quimen>1)) 
-                # on ajoute leur conjoint
-                - MOVE: MOVE1 or (l_conj.MOVE and not l_conj.MOVE1)
-                - assertEqual( count(MOVE) , count(to_divorce and l_conj.men==men)/2)
+                # TODO: retirer le quimen>1 ?
+                - MOVE: to_divorce and l_conj.men==men and not ((l_pere.men == men or l_mere.men == men) and (quimen>1))
+                # on séléctionne au plus 1
+                - MOVE: if(MOVE and l_conj.MOVE, id < l_conj.id, MOVE)
+                # - csv( dump(filter=to_divorce and l_conj.men == men), fname='prob.csv')
+                # - csv( dump(filter= conj > -1),fname='prob2.csv')
+                - assertEqual( count(MOVE) , count(to_divorce and l_conj.men == men)/2)
                 # pour les couples homosexuels, à ce niveau là, on peut avoir deux MOVE
                 - new_men: if(MOVE,
                             new('menage', filter=MOVE,
