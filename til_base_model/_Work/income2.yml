@@ -93,12 +93,15 @@ entities:
                 
                 - nb_pac: invl_mere.count(age <= 18) + invl_pere.count(age <= 18)
                 
-                - date_depart: date_retired(filter = (agem > 12*55)) 
+                - date_depart: pension(filter=(agem > 12*55), varname='date_depart',
+                                       regime='all') 
                 - to_be_retired: date_depart <= period and date_depart != -1 and not ISRETIRED
                 
                 - start_retirement: if(to_be_retired, period, start_retirement)
-                - workstate: if(to_be_retired, RETIRED, workstate) 
-                - new_rsti: pension_func(filter=to_be_retired)
+                - workstate: if(to_be_retired, RETIRED, workstate)
+                
+                - new_rsti: pension(filter=(agem > 12*55), varname='pension',
+                                       regime='all')
                 - revalo: 0
                 - rsti: if(to_be_retired, new_rsti, rsti*(1+revalo))
                 - test: count(rsti>0)
