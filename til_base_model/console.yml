@@ -3,32 +3,32 @@
 
 
 import:
-    - _person/person.yml
-    - _person/register.yml
-    - _house/menage.yml
-    - _fiscal/declar.yml
-    - _work/work_pensIPP.yml  # work0, work_pensIPP
-    - _work/income2.yml
-    - _demo/_birth//birth.yml
-    - _demo/_migration/migration.yml
-    - _demo/_death//death.yml
-    - _demo/_union//union.yml
-    - _demo/_divorce//divorce.yml
-    - _educ/youth.yml
-    - _house/moving.yml
-    - _consumption/conso.yml
-    - _wealth/save.yml
-    - _jobs/companies.yml
+    - _Person/person.yml
+    - _Person/register.yml
+    - _House/menage.yml
+    - _Fiscal/declar.yml
+    - _Work/work_PensIPP.yml  # work0, work_pensIPP
+    - _Work/income2.yml
+    - _Demo/_birth//birth.yml
+    - _Demo/_migration/migration.yml
+    - _Demo/_death//death.yml
+    - _Demo/_union//union.yml
+    - _Demo/_divorce//divorce.yml
+    - _Educ/youth.yml
+    - _House/moving.yml
+    - _Consumption/conso.yml
+    - _Wealth/save.yml
+    - _Jobs/companies.yml
 
 globals:
     periodic:
-       path: param\globals.csv
+       path: param/globals.csv
        fields:
        - MINR: float
        - WEMRA: int
 
 simulation:
-    init: 
+    init:
         - menage: [init_weight_men, init_region_id, init_rent, init_value, init_wealth, init_owner, men_composition]
         - person: [init_weight_ind, init_couple, init_education_level, init_productivity]
         - companies: [init_size]
@@ -37,7 +37,7 @@ simulation:
         # - legislation: [2009]
         - register: [sum_indiv]
         - person: [stat_period_ini, stat_period]
-        
+
     processes:
     # apres chaque étape qui modifie les ménages, on fait tourner une moulinette sur declar et menage, pour s'assurer qu'on a les bons
     # vous et pref, plus tard, quand le code le permettra, on changera ce vous directement dans l'étape au niveau person
@@ -56,12 +56,12 @@ simulation:
         # - register: [sum_indiv]
         - menage: [[men_composition,'year']]
         - declar: [[cases,'year']]
-        - declar: [[empty_declar,'year']]        
+        - declar: [[empty_declar,'year']]
         - person: [divorce]
         - menage: [men_composition]
         - declar: [cases,empty_declar]
         - person: [ineducation, outwork, inwork, retire, chomage, salaire , retraite
-#            dump_all            
+#            dump_all
         ]
         - menage: [init_value,consumption,saving]
         - companies: [rien]
@@ -69,18 +69,18 @@ simulation:
         # - register: [alive]
         # - register: [sum_indiv]
         - person: [stat_period]
-    
+
     # final_stat: True
-    
+
     input:
-        file: Destinie.h5
-        
+        file: Patrimoine_1500.h5
+
     output:
         file: simul.h5
-        
+
     skip_shows: True
     timings: False
-    time_scale: 'year' 
+    time_scale: 'year'
     # retro: True
 
 
