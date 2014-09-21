@@ -165,4 +165,13 @@ entities:
                        fname='workstate.csv', mode='a')
                 - csv( avg(period), count(ISMARRIED), count(ISSINGLE), count(ISDIVORCED), count(ISWIDOW),
                        count(ISPACS), count(INCOUPLE), fname='civilstate.csv', mode='a')
+                       
+            check:
+                - assertEqual(count((pere == l_partner.pere) and (pere > -1)), 0)
+                - assertEqual(count((mere == l_partner.mere) and (mere > -1)), 0)
+                - assertEqual(count((pere == partner) and (pere > -1)), 0)
+                - assertEqual(count((mere == partner) and (mere > -1)), 0)
+                - assertEqual(count(id != l_partner.partner and partner > -1), 0)
+                - assertEqual(count(civilstate != l_partner.civilstate and partner > -1), 0)
+                
   

@@ -114,8 +114,8 @@ entities:
                 # select who move into the other's house
                 # if only one is quifoy==0 it's she or he, otherwise, we select the smallest ID.
                 # - csv(dump(id, to_move_together, sexe, l_partner.id, l_partner.age, dur_in_couple, quifoy , l_partner.dur_in_couple, l_partner.quifoy,  l_partner.to_move_together, civilstate, l_partner.civilstate))
-                - assertEqual( count(to_move_together) , count(l_partner.to_move_together))
-                - assertTrue( count(to_move_together) % 2 == 0 )
+                - assertEqual(count(to_move_together), count(l_partner.to_move_together))
+                - assertTrue(count(to_move_together) % 2 == 0 )
       
                 - move_in: if(to_move_together,True,False)    
                 - move_in: if(to_move_together and l_partner.quifoy == 0, 
