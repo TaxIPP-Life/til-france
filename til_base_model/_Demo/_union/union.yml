@@ -48,6 +48,8 @@ entities:
                 # ca n'est pas bcp de cas, donc on considère que ça ne change pas les marges
                 # et puis entre les marges et un tabou universel, je sacrifie les marges
                 - partner: if((partner == pere or partner == mere), UNSET, partner)
+                - partner: if((l_partner.pere == pere and pere > -1), UNSET, partner)
+                - partner: if((l_partner.mere == mere and mere > -1), UNSET, partner)
                 - partner: if(l_partner.partner == UNSET, UNSET, partner)
                            
                 - dur_in_couple: if(INCOUPLE, dur_in_couple + 1, 0)
