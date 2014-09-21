@@ -1,19 +1,19 @@
 entities:
-    person:          
-        processes:          
-            migration:  
+    person:
+        processes:
+            migration:
             # note : There is only immigration in the Insee prevision
             #TODO: deal with emmigration and people leaving the country
             #TODO: create home and families.
             #TODO: associate a carrier (in longitudinal)
                 - select: 1
-                - select_men : align_abs(select, need='param\\demo\\hyp_soldemigH.csv',
+                - select_men : align_abs(select, need='param/demo/hyp_soldemigH.csv',
                          filter=ISMALE)
-                - select_women : align_abs(select, need='param\\demo\\hyp_soldemigF.csv',
+                - select_women : align_abs(select, need='param/demo/hyp_soldemigF.csv',
                          filter=ISFEMALE)
                 - select: select_men or select_women
-                
-                  
+
+
                 - new('person', filter=select,
                       mere = id,
                       pere = partner,
@@ -33,8 +33,6 @@ entities:
                       wprm_init = wprm_init,
                       quifoy = 1,
                       select = 2
-                      )   
+                      )
                 - new('register', filter=(select == 2) ,
                         id=id, sexe=sexe, pere=pere, mere=mere, vivant=True, naiss=period, findet=findet)
-
-              
