@@ -34,7 +34,7 @@ entities:
         # family
             - pere:   int
             - mere:   int
-            - conj: int
+            - partner: int
             - dur_in_couple: {type: float, initialdata: false}
             - dur_out_couple: {type: int, initialdata: false}
             - civilstate: {type: int, initialdata: false}
@@ -81,7 +81,7 @@ entities:
             l_foy:      {type: many2one, target: declar, field: foy}
             l_mere:     {type: many2one, target: person, field: mere}  # to know alive mother
             l_pere:     {type: many2one, target: person, field: pere}
-            l_conj:     {type: many2one, target: person, field: conj}
+            l_partner:     {type: many2one, target: person, field: partner}
             invl_mere:  {type: one2many, target: person, field: mere}  # to know alive children
             invl_pere:  {type: one2many, target: person, field: pere}
             pers2reg:   {type: many2one, target: register, field: id}

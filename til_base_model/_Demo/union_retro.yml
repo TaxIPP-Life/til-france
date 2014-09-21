@@ -3,11 +3,11 @@ entities:
         processes:      
             init_couple: 
                 - civilstate: SINGLE
-                - civilstate : if(conjoint>0,MARRIED,civilstate)
-                - civilstate : if(conjoint==-2,DIVORCED,civilstate)  
-                - civilstate : if(conjoint==-3,WIDOW,civilstate) 
-                - conjoint: if(conjoint <0, UNSET, conjoint)
-                - dur_in_couple : if(conj.id>0,max(((age+conj.age)/2 - 20 ),0),0)
+                - civilstate : if(partneroint>0,MARRIED,civilstate)
+                - civilstate : if(partneroint==-2,DIVORCED,civilstate)  
+                - civilstate : if(partneroint==-3,WIDOW,civilstate) 
+                - partneroint: if(partneroint <0, UNSET, partneroint)
+                - dur_in_couple : if(partner.id>0,max(((age+partner.age)/2 - 20 ),0),0)
                 - dur_out_couple : 0
                 - show('Avg age of couple duration', avg(dur_in_couple)) 
                 
@@ -18,7 +18,7 @@ entities:
                 - difficult_match: if((to_couple2==1) and ISFEMALE,
                                       abs(age - avg(age, filter=(to_couple2==1) and ISMALE)),
                                       nan)                
-                - conjoint: if(condition_single,
+                - partneroint: if(condition_single,
                                  matching(set1filter=ISFEMALE, set2filter=ISMALE,
                                           score= - (foran-other.foran)**2 
                                                 - 0.4893 * other.age
@@ -28,8 +28,8 @@ entities:
                                                 - 0.0189 * (other.age - age) ** 2
                                                 + 0.0003 * (other.age - age) ** 3 ,
                                           orderby=difficult_match),
-                                 conjoint)
-                - justcoupled: condition_single and (conjoint > 0)
+                                 partneroint)
+                - justcoupled: condition_single and (partneroint > 0)
                 # mais forrupt n'est que pour les personne de reference, on rate donc des matchs
                 # on les forces avec le passage suivant.
 
@@ -71,7 +71,7 @@ entities:
                 - difficult_match: if((to_couple2==1) and ISFEMALE,
                                       abs(age - avg(age, filter=(to_couple2==1) and ISMALE)),
                                       nan)
-                - conjoint: if(to_couple2,
+                - partneroint: if(to_couple2,
                                  matching(set1filter=ISFEMALE, set2filter=ISMALE,
                                           score=- 0.4893 * other.age
                                                 + 0.0131 * other.age ** 2
@@ -80,12 +80,12 @@ entities:
                                                 - 0.0189 * (other.age - age) ** 2
                                                 + 0.0003 * (other.age - age) ** 3,
                                           orderby=difficult_match),
-                                 conjoint)
-                - justcoupled: (to_couple2==1) and (conjoint > 0)
+                                 partneroint)
+                - justcoupled: (to_couple2==1) and (partneroint > 0)
                 - newhousehold: new('menage', filter=justcoupled and ISFEMALE,
                                      region_id=choice([0, 1, 2, 3], [0.1, 0.2, 0.3, 0.4]),
                                      rent=1500)
-                - newhousehold: if(justcoupled and ISMALE, conj.newhousehold, newhousehold) 
+                - newhousehold: if(justcoupled and ISMALE, partner.newhousehold, newhousehold) 
                 # same newhousehold for huseband, useful beyong
                 # dealing with men, foy, quimen and quifoy
                 # first with children living with their parent we can identify by pere.men == men or mere.men == men
@@ -97,7 +97,7 @@ entities:
                             men) 
                 - quimen:  if( (men==pater.newhousehold) or (men==mater.newhousehold), 3 , quimen) 
                 #TODO: avoir un sytem qui fait les bons pac numerote, ce sera pratique pour d autre chose, le id de menage par exemple.
-                - foy: if(justcoupled and ISFEMALE, conj.foy, foy)
+                - foy: if(justcoupled and ISFEMALE, partner.foy, foy)
                 - quifoy: if(justcoupled and ISFEMALE, 2, quifoy) 
                 # On ne change pas quifoy pour les enfants qui sont deja 2, on risque d'avoir plusieurs quifoy egaux (un enfant pour chaque 
                 # parent par exemple) mais comme plus pour quimen, il faudra gerer ca plus tard.
@@ -112,13 +112,13 @@ entities:
                 - dur_in_couple: if(justcoupled,
                                     0,
                                     if(ISMARRIED, dur_in_couple + 1, 0))
-                - csv(dump(id, age, sexe, conj.id, conj.age,
-                           conj.sexe, men, filter=justcoupled),
+                - csv(dump(id, age, sexe, partner.id, partner.age,
+                           partner.sexe, men, filter=justcoupled),
                       fname='output//person_{period}.csv')
                      
             divorce : 
-                - agediff: if(ISFEMALE and ISMARRIED, age - conj.age, 0)
-                - children_couple: children1.count(pere==mater.conjoint)
+                - agediff: if(ISFEMALE and ISMARRIED, age - partner.age, 0)
+                - children_couple: children1.count(pere==mater.partneroint)
                 - other_children : children1.count() - children_couple
                 # ca marche : - show(groupby(children_couple, other_children))
                 # select females to divorce
@@ -130,11 +130,11 @@ entities:
                                       filter = ISFEMALE and ISMARRIED and (dur_in_couple > 0),
                                       align = 0.3)
                 # break link to partner  
-                - to_divorce: divorce or conj.divorce
+                - to_divorce: divorce or partner.divorce
                 - show('maries divorce au hasard', count(to_divorce))
                 - to_divorce: (to_divorce and foran>period2) or (foran==period2)
                 - show('maries divorce prevus', count(to_divorce))
-                - conjoint: if(to_divorce, UNSET, conjoint)
+                - partneroint: if(to_divorce, UNSET, partneroint)
 
                 - civilstate: if(to_divorce, DIVORCED, civilstate)
                 - dur_in_couple: if(to_divorce, 0, dur_in_couple)
@@ -155,6 +155,6 @@ entities:
                 - foy: if(mater.to_divorce, mater.foy, foy )
 
             dump_info: csv(dump(id, age, sexe, men, household.nb_persons,
-                                mater.age, conj.age), suffix='info')
+                                mater.age, partner.age), suffix='info')
             
             # civilstate_changes: show(groupby(civilstate, lag(civilstate)))

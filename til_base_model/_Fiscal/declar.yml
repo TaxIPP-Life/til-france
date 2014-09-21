@@ -30,7 +30,7 @@ entities:
                 - nbF: on_declar.count((age<=18) and (quifoy>1))
                 - nbJ: on_declar.count((age>18) and (quifoy>1))
                 # etre seul sur la declar + avoir de personnes a charge + ne pas etre en couple => case_l
-                - caseT: ((on_declar.count(quifoy<2)==1) and (nbF+nbJ>0) and (not l_vous.conj>0) )
+                - caseT: ((on_declar.count(quifoy<2)==1) and (nbF+nbJ>0) and (not l_vous.partner>0) )
                 
             empty_declar:
                 - nb_persons: on_declar.count()

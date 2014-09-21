@@ -2,7 +2,7 @@ entities:
     person:          
         processes:     
             init_couple: 
-                - dur_in_couple : if(INCOUPLE,max(((age+l_conj.age)/2 - 20 ),0),0)
+                - dur_in_couple : if(INCOUPLE,max(((age+l_partner.age)/2 - 20 ),0),0)
                 - dur_out_couple : 0
                 
             into_couple:
@@ -32,7 +32,7 @@ entities:
                 - difficult_match: if((to_couple2==1) and ISFEMALE,
                                       abs(age - avg(age, filter=(to_couple2==1) and ISMALE)),
                                       nan)
-                - conj: if(to_couple2,
+                - partner: if(to_couple2,
                                  matching(set1filter=ISFEMALE, set2filter=ISMALE,
                                           score=- 0.4893 * other.age
                                                 + 0.0131 * other.age ** 2
@@ -42,13 +42,13 @@ entities:
                                                 + 0.0003 * (other.age - age) ** 3
                                                 + 0.05   * (other.findet-findet),
                                           orderby=difficult_match),
-                                 conj)
+                                 partner)
                                  
                 # on corrige les incestes qui n'ont pas ete interdit dans le matching
                 # ca n'est pas bcp de cas, donc on considère que ça ne change pas les marges
                 # et puis entre les marges et un tabou universel, je sacrifie les marges
-                - conj: if((conj == pere or conj == mere), UNSET, conj)
-                - conj: if(l_conj.conj == UNSET, UNSET, conj)
+                - partner: if((partner == pere or partner == mere), UNSET, partner)
+                - partner: if(l_partner.partner == UNSET, UNSET, partner)
                            
                 - dur_in_couple: if(INCOUPLE, dur_in_couple + 1, 0)
                 - dur_out_couple: if(INCOUPLE, 0, dur_out_couple)    
@@ -59,31 +59,31 @@ entities:
                 # si un des deux est pref et pas l'autre ou si on est un homme et que l'autre est pref
                 - to_move_together: (INCOUPLE and dur_in_couple > 1)
                 # on s'assure qu'on ne vit pas déjà ensemble
-                - to_move_together: if(quimen==1 or l_conj.quimen==1, False, to_move_together)
-                - to_move_together: if(quimen==2 and l_conj.quimen==2 and men==l_conj.men, False, to_move_together)
-                # - csv(dump(id, to_move_together, sexe, l_conj.id, l_conj.age, dur_in_couple, quimen , l_conj.dur_in_couple, l_conj.quimen,  l_conj.to_move_together, l_conj.conj))
-                - assertEqual( count(to_move_together) , count(l_conj.to_move_together))
+                - to_move_together: if(quimen==1 or l_partner.quimen==1, False, to_move_together)
+                - to_move_together: if(quimen==2 and l_partner.quimen==2 and men==l_partner.men, False, to_move_together)
+                # - csv(dump(id, to_move_together, sexe, l_partner.id, l_partner.age, dur_in_couple, quimen , l_partner.dur_in_couple, l_partner.quimen,  l_partner.to_move_together, l_partner.partner))
+                - assertEqual( count(to_move_together) , count(l_partner.to_move_together))
                 - assertTrue( count(to_move_together) % 2 == 0 )
                 # select who move into the other's house
                 # if only one is quimen==0 it's she or he, otherwise, we select the smallest ID.             
-                - move_in: if(to_move_together and l_conj.quimen == 0, 
+                - move_in: if(to_move_together and l_partner.quimen == 0, 
                                         if(quimen > 0, 
                                             True,
-                                            if(id < l_conj.id, True, False)),
+                                            if(id < l_partner.id, True, False)),
                                         False)
                 # to move_out_together (when there is no quimen=0)
-                - move_together: to_move_together and l_conj.quimen > 0 and quimen > 0                                      
+                - move_together: to_move_together and l_partner.quimen > 0 and quimen > 0                                      
                 # to move_in
-                - new_men: if(move_in, l_conj.men, men)
+                - new_men: if(move_in, l_partner.men, men)
                 - quimen: if(move_in, 1, quimen)
                 # to move_out
-                - who_pref: move_together and id < l_conj.id
+                - who_pref: move_together and id < l_partner.id
                 - new_men: if(move_together and who_pref,
                                      new('menage', filter=move_together and who_pref,
                                      region_id=choice([0, 1, 2, 3], [0.1, 0.2, 0.3, 0.4]),
                                      rent=1500, pref= id),
                                      new_men)
-                - new_men: if(move_together and not who_pref, l_conj.new_men, new_men)
+                - new_men: if(move_together and not who_pref, l_partner.new_men, new_men)
                 - quimen: if(move_together and who_pref, 0, quimen)
                 - quimen: if(move_together and not who_pref, 1, quimen)                            
                 # enfant et autres personnes (suivant le couple)
@@ -103,7 +103,7 @@ entities:
                                 new_men) 
                 - men: new_men
                 # - test : l_men.get(persons.count(quimen==0))
-                # - csv(dump(id, to_move_together, move_in, age, sexe, l_conj.id, l_conj.age, dur_in_couple, quimen , l_conj.dur_in_couple, l_conj.quimen,  l_conj.to_move_together, l_conj.conj, 
+                # - csv(dump(id, to_move_together, move_in, age, sexe, l_partner.id, l_partner.age, dur_in_couple, quimen , l_partner.dur_in_couple, l_partner.quimen,  l_partner.to_move_together, l_partner.partner, 
                 #      test, pere, mere, men, tuteur, filter=(test!=1)), fname='perso2_{period}.csv') 
                 - assertEqual(max(l_men.get(persons.count(quimen==0))),1)
                 - assertTrue(min(men)>=0)
@@ -113,27 +113,27 @@ entities:
                 - to_move_together: INCOUPLE and not LEGAL_UNION and (dur_in_couple > 2) 
                 # select who move into the other's house
                 # if only one is quifoy==0 it's she or he, otherwise, we select the smallest ID.
-                # - csv(dump(id, to_move_together, sexe, l_conj.id, l_conj.age, dur_in_couple, quifoy , l_conj.dur_in_couple, l_conj.quifoy,  l_conj.to_move_together, civilstate, l_conj.civilstate))
-                - assertEqual( count(to_move_together) , count(l_conj.to_move_together))
+                # - csv(dump(id, to_move_together, sexe, l_partner.id, l_partner.age, dur_in_couple, quifoy , l_partner.dur_in_couple, l_partner.quifoy,  l_partner.to_move_together, civilstate, l_partner.civilstate))
+                - assertEqual( count(to_move_together) , count(l_partner.to_move_together))
                 - assertTrue( count(to_move_together) % 2 == 0 )
       
                 - move_in: if(to_move_together,True,False)    
-                - move_in: if(to_move_together and l_conj.quifoy == 0, 
+                - move_in: if(to_move_together and l_partner.quifoy == 0, 
                                         if(quifoy >0, 
                                             True,
-                                            if(id < l_conj.id, True, False)),
+                                            if(id < l_partner.id, True, False)),
                                         False)
-                - to_move_out:  to_move_together and l_conj.quifoy > 0 and quifoy > 0 
+                - to_move_out:  to_move_together and l_partner.quifoy > 0 and quifoy > 0 
                 - assertEqual(count(move_in) + count(to_move_out)/2 , count(to_move_together)/2)
                 # to move_in
-                - new_foy: if(move_in, l_conj.foy , foy)
+                - new_foy: if(move_in, l_partner.foy , foy)
                 - quifoy: if(move_in, 1 , quifoy)
                 # to move_out_together
-                - who_vous: to_move_together and id < l_conj.id
+                - who_vous: to_move_together and id < l_partner.id
                 - new_foy: if(to_move_together and who_vous ,
                                     new('declar', filter=to_move_together and who_vous,pond=l_foy.pond, vous= id),                                
                                      new_foy)
-                - new_foy: if(to_move_together and not who_vous, l_conj.new_foy, new_foy)
+                - new_foy: if(to_move_together and not who_vous, l_partner.new_foy, new_foy)
                 - quifoy: if(to_move_together and who_vous, 0, quifoy)
                 - quifoy: if(to_move_together and not who_vous, 1, quifoy)               
                 # enfant
@@ -160,8 +160,8 @@ entities:
                 - assertEqual(max(l_foy.get(on_declar.count(quifoy==0))),1)
                 - assertTrue(min(foy)>=0)
                 
-                # - csv(dump(id, age, sexe, l_conj.id, l_conj.age,
-                           # l_conj.sexe, men, filter=justcoupled),
+                # - csv(dump(id, age, sexe, l_partner.id, l_partner.age,
+                           # l_partner.sexe, men, filter=justcoupled),
                       # fname='check_simul//person_{period}.csv')  
                 
                 # - l_men.pref: if(quimen==0,id, l_men.pref)

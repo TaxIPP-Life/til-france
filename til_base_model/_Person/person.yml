@@ -18,7 +18,7 @@ entities:
         # family
             - pere:   int
             - mere:   int
-            - conj: int
+            - partner: int
             - tuteur: int
             - dur_in_couple: {type: float, initialdata: false}
             - dur_out_couple: {type: int, initialdata: false}
@@ -72,7 +72,7 @@ entities:
             l_foy:      {type: many2one, target: declar, field: foy}
             l_mere:     {type: many2one, target: person, field: mere}  
             l_pere:     {type: many2one, target: person, field: pere}
-            l_conj:     {type: many2one, target: person, field: conj}
+            l_partner:     {type: many2one, target: person, field: partner}
             l_tuteur:   {type: many2one, target: person, field: tuteur}
             invl_mere:  {type: one2many, target: person, field: mere} 
             invl_pere:  {type: one2many, target: person, field: pere}
@@ -103,7 +103,7 @@ entities:
             ISPACS: civilstate == 5
             LEGAL_UNION: civilstate == 1 or civilstate == 5
             LEGAL_CELIB: civilstate == 2 or civilstate == 3 or civilstate == 4
-            INCOUPLE: conj > -1
+            INCOUPLE: (partner > -1)
             
             INACTIVE:  1
             UNEMPLOYED: 2

@@ -16,10 +16,10 @@ entities:
                   
                 - new('person', filter=select,
                       mere = id,
-                      pere = conj,
+                      pere = partner,
                       age = 0,
                       agem = 0,
-                      conj = UNSET,
+                      partner = UNSET,
                       civilstate = SINGLE,
                       workstate = STUDENT,
                       sexe = choice([MALE,FEMALE], [0.5122, 0.4878]),

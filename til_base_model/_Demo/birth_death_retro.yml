@@ -16,7 +16,7 @@ entities:
                       men = men,
                       age = age,
                       agem = agem,
-                      conj = id,
+                      partner = id,
                       civilstate =  MARRIED,
                       sexe = if(ISMALE,FEMALE,MALE),
                       foy = foy,

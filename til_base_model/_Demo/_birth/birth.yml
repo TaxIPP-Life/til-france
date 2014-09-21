@@ -3,7 +3,7 @@ entities:
         processes:          
             birth:  
                 - interm : invl_pere.count() # nombre d'enfant du pere
-                - before_max: ((invl_mere.count()<8) and (l_conj.interm <8))
+                - before_max: ((invl_mere.count()<8) and (l_partner.interm <8))
                 #on pourra retirer cette condition qui était technique avec R.
                 # Note, on n'a pas de jumeaux
                 - to_give_birth: logit_regr(0.0,
@@ -12,15 +12,15 @@ entities:
                  
                 # le niveau d'études de l'enfant est pré-determinée
                 - annee: trunc(period/100)
-                - temp_pere: if( conj>0, l_conj.findet + (l_conj.age>35+annee-2009) + (l_conj.age>45+annee-2009) + (l_conj.age>55+annee-2009), 0)
+                - temp_pere: if( partner>0, l_partner.findet + (l_partner.age>35+annee-2009) + (l_partner.age>45+annee-2009) + (l_partner.age>55+annee-2009), 0)
                 - temp_mere: findet + (l_mere.age>35+annee-2009) + (l_mere.age>45+annee-2009) + (l_mere.age>55+annee-2009)
-                - findet_temp: if(conj>0, trunc((temp_pere+temp_mere)/2),temp_mere)
+                - findet_temp: if(partner>0, trunc((temp_pere+temp_mere)/2),temp_mere)
                 - new('person', filter=to_give_birth,
                       mere = id,
-                      pere = conj,
+                      pere = partner,
                       age = 0,
                       agem = 0,
-                      conj = UNSET,
+                      partner = UNSET,
                       civilstate = SINGLE,
                       workstate = STUDENT,
                       sexe = choice([MALE,FEMALE], [0.5122, 0.4878]),
@@ -39,7 +39,7 @@ entities:
                         id=id, sexe=sexe, pere=pere, mere=mere, vivant=True, naiss=period, findet=findet)
                 
                 - show('Avg age of "young" mothers', avg(age, filter=to_give_birth and ISFEMALE))
-                - show('Avg age of "young" fathers', avg(l_conj.age, filter=to_give_birth and ISFEMALE and ISMARRIED))
+                - show('Avg age of "young" fathers', avg(l_partner.age, filter=to_give_birth and ISFEMALE and ISMARRIED))
                 - show('Avg age of all mothers', avg(l_mere.age, filter=l_mere.age>-1))  #la condition -1 permet de ne prendre que les vraies meres !
                 - show('Avg age of all fathers', avg(l_pere.age, filter=l_pere.age>-1 ))  
                 - show('Number of birth', count(age==0))

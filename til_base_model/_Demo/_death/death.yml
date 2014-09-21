@@ -26,11 +26,11 @@ entities:
                 ### par simplicite pour l'heritage (parce que pour le reste ca marche)
                 ### on ne fait mourir qu une seule personne
                 ### A retirer pour tester, ca doit etre bon maintenant
-                - dead: if( l_conj.dead and l_conj.id < id, False, dead)
+                - dead: if( l_partner.dead and l_partner.id < id, False, dead)
                 - dead: if( l_pere.dead, False, dead)
                 - dead: if( l_mere.dead, False, dead)
 
-                - show('Avg age of conj', avg(l_conj.age, filter=l_conj.age>-1))
+                - show('Avg age of partner', avg(l_partner.age, filter=l_partner.age>-1))
                 - show('Number of male death', count(dead and ISMALE))
                 - show('Number of male death', count(dead and ISFEMALE))
                 - show('Number of male death', count(dead))
@@ -40,7 +40,7 @@ entities:
                
                 # Changement dans les regroupements (declar et menages)
                 ### ménages
-                - quimen: if(ORDINARY_HOUSE and l_conj.dead and l_conj.men == men and l_conj.quimen == 0, 0, quimen)
+                - quimen: if(ORDINARY_HOUSE and l_partner.dead and l_partner.men == men and l_partner.quimen == 0, 0, quimen)
                 # si pour les enfants assez jeunes, on cherche un autre parent (note, fonctionne si le parent est dans le ménage)                
                 - orph_pere: (l_pere.dead and (l_pere.men == men) and (quimen>1) and (age<20))
                 - men: if(orph_pere and mere>-1 and not l_mere.dead, l_mere.men, men)               
@@ -57,13 +57,13 @@ entities:
                 - men: if(orph_dass, DASS, men) 
                 #- csv( dump(), fname='death.csv')
                 - assertTrue( min(men) != -1)
-                - live_together_c: l_conj.orph_indep and l_conj.men == men
+                - live_together_c: l_partner.orph_indep and l_partner.men == men
                 - live_together_p: l_pere.orph_indep and l_pere.men == men
                 - live_together_m: l_mere.orph_indep and l_mere.men == men
                 - men: if(orph_indep, 
                             new('menage', region_id=l_men.region_id,rent=l_men.rent/1.5, pref=id),
                         men)  
-                - men: if(live_together_c, l_conj.men, men)
+                - men: if(live_together_c, l_partner.men, men)
                 - men: if(live_together_p, l_pere.men, men)
                 - men: if(live_together_m, l_mere.men, men)
                 - quimen: if(orph_indep, 0, quimen)
@@ -71,16 +71,16 @@ entities:
                 - quimen: if(live_together_p or live_together_m, 2, quimen)
                 # Colocation (les enfants sont partis juste au-dessus)
                 # dans ce cas, il faut trouver une nouvelle personne de référence
-                - coloc: (l_men.l_pref.dead and l_men.l_pref.conj < 1 and
+                - coloc: (l_men.l_pref.dead and l_men.l_pref.partner < 1 and
                             l_men.l_pref.id != pere and l_men.l_pref.id != mere and quimen>1)
                 - show('les personnes qui vivaient avec un individu décédés mais sans lien de filiation avec lui était', count(coloc))
                 # le plus vieux devient personne de reference
                 - quimen: if( coloc and id == l_men.get(persons.min(id, not dead)), 0, quimen)
                 # et son conjoint devient quimen==1 du coup
-                - quimen: if( l_conj.coloc and l_conj.men == men and l_conj.id == l_conj.l_men.get(persons.min(id, not dead)), 1, quimen)  
+                - quimen: if( l_partner.coloc and l_partner.men == men and l_partner.id == l_partner.l_men.get(persons.min(id, not dead)), 1, quimen)  
                 
                 ### declar
-                - quifoy: if(l_conj.dead and l_conj.foy==foy and l_conj.quifoy == 0, 0, quifoy)
+                - quifoy: if(l_partner.dead and l_partner.foy==foy and l_partner.quifoy == 0, 0, quifoy)
                 # si pour les enfants assez jeunes, on cherche un autre parent (note, fonctionne si le parent est dans le ménage)                
                 - orph_pere: (l_pere.dead and (l_pere.foy == foy) and (quifoy>1) and (age<20))
                 - foy: if(orph_pere and mere>-1 and not l_mere.dead, l_mere.foy, foy)               
@@ -95,13 +95,13 @@ entities:
                               (l_mere.dead and (l_mere.foy == foy) and pere == UNSET)) and
                                 (quifoy>1) and (age <= 15)
                 - remove(orph_das)
-                - live_together_c: l_conj.orph_indep and l_conj.foy == foy
+                - live_together_c: l_partner.orph_indep and l_partner.foy == foy
                 - live_together_p: l_pere.orph_indep and l_pere.foy == foy
                 - live_together_m: l_mere.orph_indep and l_mere.foy == foy
                 - foy: if(orph_indep, 
                             new('declar',pond=l_foy.pond, vous= id),
                             foy)  
-                - foy: if(live_together_c, l_conj.foy, foy)
+                - foy: if(live_together_c, l_partner.foy, foy)
                 - foy: if(live_together_p, l_pere.foy, foy)
                 - foy: if(live_together_m, l_mere.foy, foy)
                 - quifoy: if(orph_indep, 0, quifoy)
@@ -110,13 +110,13 @@ entities:
                 
                 # Colocation (les enfants sont partis juste au-dessus)
                 # dans ce cas, il faut trouver une nouvelle personne de référence
-                - coloc: (l_foy.l_vous.dead and l_foy.l_vous.conj < 1 and
+                - coloc: (l_foy.l_vous.dead and l_foy.l_vous.partner < 1 and
                             l_foy.l_vous.id != pere and l_foy.l_vous.id != mere and quifoy>1)
                 - show('les personnes qui vivaient avec un individu décédés mais sans lien de filiation avec lui était', count(coloc))
                 # le plus vieux devient personne de reference
                 - quifoy: if( coloc and id == l_foy.get(on_declar.min(id, not dead)), 0, quifoy)
                 # et son conjoint devient quifoy==1 du coup
-                - quifoy: if( l_conj.coloc and l_conj.foy == foy and l_conj.id == l_conj.l_foy.get(on_declar.min(id, not dead)), 1, quifoy)  
+                - quifoy: if( l_partner.coloc and l_partner.foy == foy and l_partner.id == l_partner.l_foy.get(on_declar.min(id, not dead)), 1, quifoy)  
                         
                 
                 ############# Inheritance ########### 
@@ -158,13 +158,13 @@ entities:
                 #### si conjoint
                 # on fait l'hypothese de pas de donation au dernier vivant
                 - nb_part_herit: nb_rang1+nb_rang2+nb_rang3
-                - patrimoine: if(not dead and l_conj.dead,
-                                    if(l_conj.nb_part_herit>0, 
-                                        patrimoine+l_conj.patrimoine/4,
-                                        patrimoine+l_conj.patrimoine),
+                - patrimoine: if(not dead and l_partner.dead,
+                                    if(l_partner.nb_part_herit>0, 
+                                        patrimoine+l_partner.patrimoine/4,
+                                        patrimoine+l_partner.patrimoine),
                                     patrimoine)
                 # on retire le patrimoine, de la personne decedée
-                - patrimoine: if(dead and not l_conj.dead, 
+                - patrimoine: if(dead and not l_partner.dead, 
                                     if(nb_part_herit>0, patrimoine*3/4, 0), 
                                     patrimoine)
                                     
@@ -175,9 +175,9 @@ entities:
                 - pers2reg.heritage_asc: if(dead and nb_part_herit==0, pers2reg.heritage_asc+patrimoine, pers2reg.heritage_asc)                
 
                 ############# Suppression ###########                
-                - civilstate: if(l_conj.dead and LEGAL_UNION, WIDOW, civilstate)
-                - dur_in_couple: if(l_conj.dead, 0, dur_in_couple)
-                - conj: if(l_conj.dead, UNSET, conj)
+                - civilstate: if(l_partner.dead and LEGAL_UNION, WIDOW, civilstate)
+                - dur_in_couple: if(l_partner.dead, 0, dur_in_couple)
+                - partner: if(l_partner.dead, UNSET, partner)
                 - mere: if(l_mere.dead, UNSET, mere)
                 - pere: if(l_pere.dead, UNSET, pere)
                 
