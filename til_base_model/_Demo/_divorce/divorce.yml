@@ -35,7 +35,8 @@ entities:
                 - MOVE: to_divorce and l_partner.men==men
                 # on séléctionne au plus 1
                 - NOT_MOVE: ((l_pere.men == men or l_mere.men == men) and (quimen>1))
-
+                
+                - NOT_MOVE: if(l_partner.NOT_MOVE and NOT_MOVE, id < l_partner.id, NOT_MOVE)
                 - WHO_MOVE: if(l_partner.NOT_MOVE or NOT_MOVE,
                                l_partner.NOT_MOVE,
                                id < l_partner.id)
@@ -60,15 +61,16 @@ entities:
                 ###foy
                 # biggest move out from declar
                 # on ajoute condition sur l_partner, pour ne pas appliquer aux couples non mariés
-                - MOVE: to_divorce and l_partner.foy==foy
+                - MOVE_foy: to_divorce and l_partner.foy==foy
                 # on séléctionne au plus 1
-                - NOT_MOVE: ((l_pere.foy == foy or l_mere.foy == foy) and (quifoy>1))
+                - NOT_MOVE_foy: ((l_pere.foy == foy or l_mere.foy == foy) and (quifoy>1))
 
-                - WHO_MOVE: if(l_partner.NOT_MOVE or NOT_MOVE,
-                               l_partner.NOT_MOVE,
+                - NOT_MOVE_foy: if(l_partner.NOT_MOVE_foy and NOT_MOVE_foy, id < l_partner.id, NOT_MOVE_foy)
+                - WHO_MOVE_foy: if(l_partner.NOT_MOVE_foy or NOT_MOVE_foy,
+                               l_partner.NOT_MOVE_foy,
                                id < l_partner.id)
-                - WHO_MOVE: WHO_MOVE and MOVE
-                - assertEqual(count(WHO_MOVE), count(MOVE)/2)
+                - WHO_MOVE_foy: WHO_MOVE_foy and MOVE_foy
+                - assertEqual(count(WHO_MOVE_foy), count(MOVE_foy)/2)
                  # - csv(dump(id, age, sexe, l_partner.id, l_partner.age,
                            # l_partner.sexe, foy, filter=justcoupled),
                       # fname='check_simul//person_{period}.csv')              
