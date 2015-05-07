@@ -9,11 +9,11 @@ import:
     - _Fiscal/declar.yml
     - _Work/work_PensIPP.yml  # work0, work_pensIPP
     - _Work/income2.yml
-    - _Demo/_birth//birth.yml
+    - _Demo/_birth/birth.yml
     - _Demo/_migration/migration.yml
-    - _Demo/_death//death.yml
-    - _Demo/_union//union.yml
-    - _Demo/_divorce//divorce.yml
+    - _Demo/_death/death.yml
+    - _Demo/_union/union.yml
+    - _Demo/_divorce/divorce.yml
     - _Educ/youth.yml
     - _House/moving.yml
     - _Consumption/conso.yml
@@ -69,10 +69,10 @@ simulation:
         - person: [ineducation, outwork, inwork, retire, chomage, salaire , retraite
 #            dump_all
         ]
-        - person: [check]        
+        - person: [check]
         - menage: [init_value,consumption,saving]
         - companies: [rien]
-        - legislation: [2009] #[annee leg] = année de départ de la simulation
+        # - legislation: [2009] #[annee leg] = année de départ de la simulation
         # - register: [alive]
         # - register: [sum_indiv]
         - person: [stat_period]
@@ -80,7 +80,7 @@ simulation:
     # final_stat: True
 
     input:
-        file: Patrimoine_1500.h5
+        file: Patrimoine_1300.h5
 
     output:
         file: simul.h5
