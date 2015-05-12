@@ -15,8 +15,8 @@ path_model = os.path.join(
 
 def test():
     config = Config()
-    print config.__dict__
     output_dir = config.get('til', 'output_dir')
+    # output_dir = os.path.join(os.path.dirname(__file__), 'output'),
     console_file = os.path.join(path_model, 'console.yml')
     simulation = Simulation.from_yaml(
         console_file,

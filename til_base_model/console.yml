@@ -87,10 +87,10 @@ simulation:
 
     skip_shows: True
     timings: False
-    time_scale: 'year'
+    # time_scale: 'year'
     # retro: True
 
 
     # first simulated period
-    init_period: 200901
+    start_period: 200901
     periods: 5
