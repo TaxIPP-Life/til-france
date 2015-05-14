@@ -1,5 +1,5 @@
 entities:
-    person:
+    individu:
         processes:
             death:
                 ############# Tirage ###########
@@ -75,9 +75,9 @@ entities:
                             l_men.l_pref.id != pere and l_men.l_pref.id != mere and quimen>1)
                 - show('les personnes qui vivaient avec un individu décédés mais sans lien de filiation avec lui était', count(coloc))
                 # le plus vieux devient personne de reference
-                - quimen: if( coloc and id == l_men.get(persons.min(id, not dead)), 0, quimen)
+                - quimen: if( coloc and id == l_men.get(individus.min(id, not dead)), 0, quimen)
                 # et son patneroint devient quimen==1 du coup
-                - quimen: if( l_partner.coloc and l_partner.men == men and l_partner.id == l_partner.l_men.get(persons.min(id, not dead)), 1, quimen)  
+                - quimen: if( l_partner.coloc and l_partner.men == men and l_partner.id == l_partner.l_men.get(individus.min(id, not dead)), 1, quimen)  
                 
                 ### declar
                 - quifoy: if(l_partner.dead and l_partner.foy==foy and l_partner.quifoy == 0, 0, quifoy)
@@ -185,7 +185,7 @@ entities:
                 - pers2reg.deces: if(dead, period, pers2reg.deces)
                 - remove(dead)
                 #- csv( dump(), fname='death2.csv')
-                - assertEqual(max(l_men.get(persons.count(quimen==0 and not dead))),1)
+                - assertEqual(max(l_men.get(individus.count(quimen==0 and not dead))),1)
                 - assertTrue( min(men) != -1)
                 - assertEqual(max(l_foy.get(on_declar.count(quifoy==0 and not dead))),1)
                 - assertTrue( min(foy) != -1)

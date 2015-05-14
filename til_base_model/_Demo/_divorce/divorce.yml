@@ -1,5 +1,5 @@
 entities:
-    person:          
+    individu:          
         processes:     
             divorce : 
                 - agediff: if(ISFEMALE and INCOUPLE, age - l_partner.age, 0)
@@ -73,7 +73,7 @@ entities:
                 - assertEqual(count(WHO_MOVE_foy), count(MOVE_foy)/2)
                  # - csv(dump(id, age, sexe, l_partner.id, l_partner.age,
                            # l_partner.sexe, foy, filter=justcoupled),
-                      # fname='check_simul//person_{period}.csv')              
+                      # fname='check_simul//individu_{period}.csv')              
                 - new_foy: if(WHO_MOVE, 
                                 new('declar', filter=MOVE ,
                                      pond=l_foy.pond, vous= id),
@@ -103,19 +103,19 @@ entities:
   
 
                 # remplacera les etapes d'actualisation menage et declar quand fonctionnel
-                # - l_men.set(pref = persons.max(id,quimen==0)
+                # - l_men.set(pref = individus.max(id,quimen==0)
                 # - l_foy.set(vous = on_declar.max(id,quifoy==0)
                 
                 # - l_men.pref: if(quimen==0, id, l_men.pref)
                 # - l_foy.vous: if(quifoy==0, id, l_foy.vous)
                 
-                - assertEqual(max(l_men.get(persons.count(quimen==0))),1)
+                - assertEqual(max(l_men.get(individus.count(quimen==0))),1)
                 - assertTrue(min(men)>=0)
                 - assertEqual(max(l_foy.get(on_declar.count(quifoy==0))),1)
                 - assertTrue(min(foy)>=0)                
                 
 
-            dump_info: csv(dump(id, age, sexe, men, l_men.nb_persons,
+            dump_info: csv(dump(id, age, sexe, men, l_men.nb_individus,
                                 l_mere.age, l_partner.age), suffix='info')
             
             civilstate_changes: show(groupby(civilstate, lag(civilstate)))

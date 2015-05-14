@@ -1,5 +1,5 @@
 entities:
-    person:          
+    individu:          
         processes:     
             init_couple: 
                 - dur_in_couple : if(INCOUPLE,max(((age+l_partner.age)/2 - 20 ),0),0)
@@ -104,10 +104,10 @@ entities:
                                 l_men.l_pref.new_men,
                                 new_men) 
                 - men: new_men
-                # - test : l_men.get(persons.count(quimen==0))
+                # - test : l_men.get(individus.count(quimen==0))
                 # - csv(dump(id, to_move_together, move_in, age, sexe, l_partner.id, l_partner.age, dur_in_couple, quimen , l_partner.dur_in_couple, l_partner.quimen,  l_partner.to_move_together, l_partner.partner, 
                 #      test, pere, mere, men, tuteur, filter=(test!=1)), fname='perso2_{period}.csv') 
-                - assertEqual(max(l_men.get(persons.count(quimen==0))),1)
+                - assertEqual(max(l_men.get(individus.count(quimen==0))),1)
                 - assertTrue(min(men)>=0)
                                 
             legal_union:
@@ -164,7 +164,7 @@ entities:
                 
                 # - csv(dump(id, age, sexe, l_partner.id, l_partner.age,
                            # l_partner.sexe, men, filter=justcoupled),
-                      # fname='check_simul//person_{period}.csv')  
+                      # fname='check_simul//individu_{period}.csv')  
                 
                 # - l_men.pref: if(quimen==0,id, l_men.pref)
                 # - l_foy.vous: if(quifoy==0,id, l_foy.vous)

@@ -6,7 +6,7 @@ entities:
             - size:    {type: int, initialdata: false}
              
         links:
-            persons:  {type: one2many, target: person, field: Cie}
+            individus:  {type: one2many, target: individu, field: Cie}
             
         processes:
             init_size:

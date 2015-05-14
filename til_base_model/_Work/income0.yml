@@ -1,56 +1,56 @@
 entities:
-    person:          
-        processes:   
-        
-            init_productivity:            
+    individu:
+        processes:
+
+            init_productivity:
                 - productivity: 0
                 # destinie (1991)
                 # Roux (jusque 2002)
-                - mincer : 7.6 + 0.08 * findet + 0.04 * xpr - 0.0006 * xpr*xpr                                
-                - productivity: if( sali>0,
-                            sali - mincer, 
+                - mincer : 7.6 + 0.08 * findet + 0.04 * xpr - 0.0006 * xpr * xpr
+                - productivity: if( sal>0,
+                             sal- mincer,
                             productivity)
-                      
+
             chomage:
-                - fet: findet  
-                - seuil_xpr : max(6-xpr,0)
-                - seuil_anc : max(6-anc,0)
+                - fet: findet
+                - seuil_xpr : max(6 - xpr, 0)
+                - seuil_anc : max(6 - anc, 0)
                 - xprer: xpr
-                - choi: if(ISUNEMPLOYED, 
-                             if(BEGINER, 0.7*sali, 0.8*choi), 
+                - choi: if(ISUNEMPLOYED,
+                             if(BEGINER, 0.7 * sal, 0.8 * choi),
                           0)
-            retraite: 
-                - rsti: if(ISRETIRED, 
-                             if(BEGINER, 0.7*sali, rsti), 
+            retraite:
+                - rsti: if(ISRETIRED,
+                             if(BEGINER, 0.7 * sal, rsti), 
                           0)
                 # Actualisation du nombre d'enfants par régime
-                - new_born: invl_mere.count(agem==0) + invl_pere.count(agem==0) 
+                - new_born: invl_mere.count(agem==0) + invl_pere.count(agem==0)
                 - nb_enf_RG: if(WORK_PRIVE, nb_enf + new_born, nb_enf)
                 - nb_enf_RSI: if(WORK_INDEP, nb_enf + new_born, nb_enf)
                 - nb_enf_FP: if(WORK_PUBLIC, nb_enf + new_born, nb_enf)
-                
+
                 - nb_pac: invl_mere.count(age <= 18) + invl_pere.count(age <= 18)
-                
-                - date_depart: date_retired() 
+
+                - date_depart: date_retired()
                 - to_be_retired: date_depart <= period and date_depart != -1 and not ISRETIRED
-                
+
                 - start_retirement: if(to_be_retired, period, start_retirement)
-                - workstate: if(to_be_retired, RETIRED, workstate) 
+                - workstate: if(to_be_retired, RETIRED, workstate)
                 - rsti: pension_func() # -> TODO: Add a filter with to_be_retired
                 - test: count(rsti>0)
-                          
+
             salaire:
                 - mincer: 0
                 # destinie (1991)
                 # Roux (jusque 2002)
-                - mincer : 7.6 + 0.08 * findet + 0.04 * xpr - 0.0006 * xpr*xpr 
+                - mincer : 7.6 + 0.08 * findet + 0.04 * xpr - 0.0006 * xpr*xpr
                 # Aubert-Bachelet (destinie)
                 #demander les vrai coeff ci-dessous pour faire du non statique
-                - fet: findet  
+                - fet: findet
                 - seuil_xpr : max(6-xpr,0)
                 - seuil_anc : max(6-anc,0)
-                - mincer: if( WORK_PRIVE, 
-                            if(ISMALE, 
+                - mincer: if( WORK_PRIVE,
+                            if(ISMALE,
                                 -63.90
                                 +3.13*xpr-0.05*xpr*xpr-3.86*seuil_xpr
                                 +1.95*anc-0.03*anc*anc-4.02*seuil_anc-58.98*(anc==1)
@@ -64,8 +64,8 @@ entities:
                                 +0.28*fet*xpr-0.01*fet*xpr*xpr-0.34*fet*seuil_xpr
                                 +0.20*fet*anc+0.00*fet*anc*anc+0.16*fet*seuil_anc),
                            mincer)
-                - mincer: if(  WORK_PUBLIC, 
-                            if(ISMALE, 
+                - mincer: if(WORK_PUBLIC,
+                            if(ISMALE,
                                 -43.44
                                 +1.64*xpr-0.02*xpr*xpr-2.04*seuil_xpr
                                 +1.21*anc-0.01*anc*anc-0.75*seuil_anc-17.31*(anc==1)
@@ -79,14 +79,14 @@ entities:
                                 +0.26*fet*xpr+0.00*fet*xpr*xpr+0.42*fet*seuil_xpr
                                 -0.18*fet*anc+0.00*fet*anc*anc-0.55*fet*seuil_anc),
                            mincer)
-                - mincer: if(  WORK_INDEP, 
-                            if(ISMALE, 
+                - mincer: if(WORK_INDEP,
+                            if(ISMALE,
                                 -54.88,
                                 -63.8),
-                           mincer)    
+                           mincer)
                 - mincer: exp(mincer/100)
-                
-                - sali:  if( ISINWORK, mincer + productivity,0)
-                
+
+                - sal:  if( ISINWORK, mincer + productivity,0)
+
             rev_cap:
-                - capital_inc: l_men.wealth*0.1 * (quimen==1)
+                - capital_inc: l_men.wealth * 0.1 * (quimen==1)

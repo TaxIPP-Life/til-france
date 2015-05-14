@@ -1,5 +1,5 @@
 entities:
-    person:
+    individu:
         processes:
             init_couple:
                 - civilstate: SINGLE
@@ -114,7 +114,7 @@ entities:
                                     if(ISMARRIED, dur_in_couple + 1, 0))
                 - csv(dump(id, age, sexe, partner.id, partner.age,
                            partner.sexe, men, filter=justcoupled),
-                      fname='output/person_{period}.csv')
+                      fname='output/individu_{period}.csv')
 
             divorce :
                 - agediff: if(ISFEMALE and ISMARRIED, age - partner.age, 0)
@@ -154,7 +154,7 @@ entities:
                 # with mother :
                 - foy: if(mater.to_divorce, mater.foy, foy )
 
-            dump_info: csv(dump(id, age, sexe, men, household.nb_persons,
+            dump_info: csv(dump(id, age, sexe, men, household.nb_individus,
                                 mater.age, partner.age), suffix='info')
 
             # civilstate_changes: show(groupby(civilstate, lag(civilstate)))

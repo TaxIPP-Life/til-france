@@ -1,5 +1,5 @@
 entities:
-    person:          
+    individu:          
         processes:      
             # le programme est pense pour faire tourner d'abord entree chomage et ensuite entree_emploi
             outwork: 

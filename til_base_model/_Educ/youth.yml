@@ -1,5 +1,5 @@
 entities:
-    person:          
+    individu:          
         processes:    
  
             init_education_level:

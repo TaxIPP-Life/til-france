@@ -1,8 +1,8 @@
 entities:
-    person:          
+    individu:          
         processes:    
             independance:
-                - alone: l_men.nb_persons == 1
+                - alone: l_men.nb_individus == 1
                 - men: if(not(ISMARRIED) and not alone and (age >= 24) and (quimen>1),
                             new('menage',
                                 region_id=l_men.region_id,

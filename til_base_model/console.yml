@@ -3,8 +3,8 @@
 
 
 import:
-    - _Person/person.yml
-    - _Person/register.yml
+    - _Individu/individu.yml
+    - _Individu/register.yml
     - _House/menage.yml
     - _Fiscal/declar.yml
     - _Work/work_PensIPP.yml  # work0, work_pensIPP
@@ -30,60 +30,57 @@ globals:
 simulation:
     init:
         - menage: [init_weight_men, init_region_id, init_rent, init_value, init_wealth, init_owner, men_composition]
-        - person: [init_weight_ind, init_couple, init_education_level, init_productivity]
+        - individu: [init_weight_ind, init_couple, init_education_level, init_productivity]
         - companies: [init_size]
         - declar: [cases,empty_declar]
         - register: [init_reg]
         # - legislation: [2009]
         - register: [sum_indiv]
-        - person: [stat_period_ini, stat_period]
+        - individu: [stat_period_ini, stat_period]
 
     processes:
     # apres chaque étape qui modifie les ménages, on fait tourner une moulinette sur declar et menage, pour s'assurer qu'on a les bons
-    # vous et pref, plus tard, quand le code le permettra, on changera ce vous directement dans l'étape au niveau person
-        # - person: [age, dump_info, show_demography , marriage]
+    # vous et pref, plus tard, quand le code le permettra, on changera ce vous directement dans l'étape au niveau individu
+        # - individu: [age, dump_info, show_demography , marriage]
         - register: [rien]
-        - person: [ageing]
-        - person: [death]
-#        - person: [migration]
-        - person: [check]
-        - person: [independance]
-        - person: [check]
-        - person: [birth]
-        - person: [check]
+        - individu: [ageing]
+        - individu: [death]
+#        - individu: [migration]
+        - individu: [check]
+        - individu: [independance]
+        - individu: [check]
+        - individu: [birth]
+        - individu: [check]
         - menage: [men_composition]
         - declar: [cases,empty_declar]
-        - person: [[into_couple,'year']]
-        - person: [move_together]
-        - person: [check]
-        - person: [legal_union]
-        - person: [check]
+        - individu: [[into_couple, 'year']]
+        - individu: [move_together]
+        - individu: [check]
+        - individu: [legal_union]
+        - individu: [check]
         # - register: [sum_indiv]
-        - menage: [[men_composition,'year']]
-        - declar: [[cases,'year']]
-        - declar: [[empty_declar,'year']]
-        - person: [divorce]
-        - person: [check]
+        - menage: [[men_composition, 'year']]
+        - declar: [[cases, 'year']]
+        - declar: [[empty_declar, 'year']]
+        - individu: [divorce]
+        - individu: [check]
         - menage: [men_composition]
         - declar: [cases,empty_declar]
-        - person: [ineducation, outwork, inwork, retire, chomage, salaire , retraite
+        - individu: [ineducation, outwork, inwork, retire, chomage, salaire , retraite
 #            dump_all
         ]
-        - person: [check]
-        - menage: [init_value,consumption,saving]
+        - individu: [check]
+        - menage: [init_value, consumption, saving]
         - companies: [rien]
         # - legislation: [2009] #[annee leg] = année de départ de la simulation
         # - register: [alive]
         # - register: [sum_indiv]
-        - person: [stat_period]
-
+        - individu: [stat_period]
     # final_stat: True
-
-    input:
-        file: Patrimoine_1300.h5
-
+    # input:
+    #   file: Patrimoine_1300.h5
     output:
-        file: simul.h5
+       file: simul.h5
 
     skip_shows: True
     timings: False
@@ -91,6 +88,7 @@ simulation:
     # retro: True
 
 
-    # first simulated period
-    start_period: 200901
+    start_period: 200801
+    # first simulated period is start_period + 1  TODO: a bit ugly !
+
     periods: 5

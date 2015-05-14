@@ -1,5 +1,5 @@
 entities:
-    person:          
+    individu:          
         processes:          
             birth: 
                 - birth: agem < 0
@@ -10,7 +10,7 @@ entities:
             death:
                 - dead: forruptv == trunc(period/100)
                 - show('Number of re-birth', count(dead)) 
-                - new('person', filter=dead,
+                - new('individu', filter=dead,
                       mere = 0,
                       pere = 0,
                       men = men,

@@ -1,5 +1,5 @@
 entities:
-    person:          
+    individu:          
         processes:    
             independance:
                 - alone: (jequit == year(period) or forseul == year(period))

@@ -1,5 +1,5 @@
 entities:
-    person:
+    individu:
         processes:
             migration:
             # note : There is only immigration in the Insee prevision
@@ -14,7 +14,7 @@ entities:
                 - select: select_men or select_women
 
 
-                - new('person', filter=select,
+                - new('individu', filter=select,
                       mere = id,
                       pere = partner,
                       age = 0,
@@ -24,7 +24,7 @@ entities:
                       workstate = STUDENT,
                       sexe = choice([MALE,FEMALE], [0.5122, 0.4878]),
                       productivity = 0,
-                      sali = 0,
+                      sal = 0,
                       rsti = 0,
                       choi = 0,
                       men = men,
