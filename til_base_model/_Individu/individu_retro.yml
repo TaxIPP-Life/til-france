@@ -3,7 +3,7 @@ entities:
         fields:
         # individual intrinseq
             - age:    int
-            - agem:     {type: int, initialdata: false}
+            - age_en_mois:     {type: int, initialdata: false}
             - sexe:   int
             - wprm_init: {type: int, initialdata: false}
 
@@ -146,15 +146,15 @@ entities:
             init_weight_ind:
                 - wprm_init: 1
                 - month: randint(0,11)
-                - agem: 12*age + month
+                - age_en_mois: 12*age + month
                 # - wprm_init: permet de faire des tests
                 - wprm_init: 100*age + month
 
             ageing:
-                - agem: add_time_scale(agem)
-                - age: trunc(agem/12)
+                - age_en_mois: add_time_scale(age_en_mois)
+                - age: trunc(age_en_mois/12)
                 # - wprm_init: permet de faire des tests
-                - wprm_init: lag(agem,2)
+                - wprm_init: lag(age_en_mois,2)
 
             stat_period_ini:
                 - csv( 'period', 'population', 'naissance', 'sal', 'rsti', 'choi','age moyen',fname='stat.csv')

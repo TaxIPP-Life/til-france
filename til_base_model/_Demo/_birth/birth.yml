@@ -19,7 +19,7 @@ entities:
                       mere = id,
                       pere = partner,
                       age = 0,
-                      agem = 0,
+                      age_en_mois = 0,
                       partner = UNSET,
                       civilstate = SINGLE,
                       workstate = STUDENT,

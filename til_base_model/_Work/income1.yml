@@ -97,7 +97,7 @@ entities:
                              if(BEGINER, 0.7 * sal, rsti), 
                           0)
                 # Actualisation du nombre d'enfants par régime
-                - new_born: invl_mere.count(agem==0) + invl_pere.count(agem==0)
+                - new_born: invl_mere.count(age_en_mois==0) + invl_pere.count(age_en_mois==0)
                 - nb_enf_RG: if(WORK_PRIVE, nb_enf + new_born, nb_enf)
                 - nb_enf_RSI: if(WORK_INDEP, nb_enf + new_born, nb_enf)
                 - nb_enf_FP: if(WORK_PUBLIC, nb_enf + new_born, nb_enf)
