@@ -2,13 +2,13 @@ entities:
     individus:
         fields:
         # individual intrinseq
-            - agem:   int
-            - age:    {type: int, initialdata: false}
-            - sexe:   int
+            - agem: int
+            - age: {type: int, initialdata: false}
+            - sexe: int
             - wprm_init: {type: int, initialdata: false}
 
         # l_men
-            - men:    int  # il faudra changer les men en men
+            - men: int  # il faudra changer les men en men
             - quimen: int
 
         # foyer l_foy
@@ -16,8 +16,8 @@ entities:
             - quifoy:   int
 
         # family
-            - pere:   int
-            - mere:   int
+            - pere: int
+            - mere: int
             - partner: int
             - tuteur: int
             - dur_in_couple: {type: float, initialdata: false}
@@ -32,13 +32,13 @@ entities:
 
         # work
             - workstate: int
-            - sal:  {type: float, default: 0.0}
+            - sal: {type: float, default: 0.0}
             - productivity: {type: float, initialdata: false}
             - rsti: float
             - tauxprime: float
             - start_retirement: {type: int, initialdata: false}
             - choi: float
-            - xpr: int # name to avoid confusion with function exp
+            - xpr: int  # name to avoid confusion with function exp
             - anc: int
             - dur_rest_ARE: {type: int, initialdata: false}
 
@@ -117,13 +117,13 @@ entities:
             RETIRED:   10
             STUDENT:   11
 
-            ISINWORK:     (workstate == 3) or (workstate == 4) or (workstate == 5)  or (workstate == 6) or (workstate == 7)
-            WORK_PUBLIC:  (workstate == 5)  or (workstate == 6)
-            WORK_PRIVE:   (workstate == 3) or (workstate == 4)
-            WORK_INDEP:   (workstate == 7)
-            ISUNEMPLOYED: (workstate == 2)
-            ISSTUDENT:    (workstate == 11)
-            ISRETIRED:    (workstate == 10)
+            ISINWORK: (workstate == 3) or (workstate == 4) or (workstate == 5)  or (workstate == 6) or (workstate == 7)
+            WORK_PUBLIC: (workstate == 5)  or (workstate == 6)
+            WORK_PRIVE: (workstate == 3) or (workstate == 4)
+            WORK_INDEP: (workstate == 7)
+            ISUNEMPLOYED:(workstate == 2)
+            ISSTUDENT: (workstate == 11)
+            ISRETIRED: (workstate == 10)
             ISOTHERINACTIVE: (workstate == 1)
 
             BEGINER: xpr == 1
@@ -145,11 +145,11 @@ entities:
                 - month: randint(0,11)
                 - age: trunc(agem/12)
                 # - wprm_init: permet de faire des tests
-                - wprm_init: 100*age + month
+                - wprm_init: 100 * age + month
 
             ageing:
                 - agem: add_time_scale(agem)
-                - age: trunc(agem/12)
+                - age: trunc(agem / 12)
                 # - wprm_init: permet de faire des tests
                 - wprm_init: lag(agem,2)
 
