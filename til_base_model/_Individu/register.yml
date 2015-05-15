@@ -36,7 +36,7 @@ entities:
             # - pfam: {type: int, initialdata: false, default: 0}
             # - logt: {type: int, initialdata: false, default: 0}
 
-            # legislation declar
+            # legislation foyer fiscal
             - decote: {type: float, initialdata: false, default: 0.0}
             - irpp: {type: float, initialdata: false, default: 0.0}
             - isf_tot: {type: float, initialdata: false, default: 0.0}
@@ -109,7 +109,7 @@ entities:
                 # - logt: reg2pers.logt + logt
                 # on pourrait aussi ajouter les sommes d'état
 
-            # declar
+            # foyer_fiscal
                 - decote: if(reg2pers.quifoy<2,
                         reg2pers.l_foy.decote/reg2pers.l_foy.nb_adultes + decote,
                         decote)

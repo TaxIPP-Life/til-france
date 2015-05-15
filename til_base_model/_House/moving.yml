@@ -19,7 +19,7 @@ entities:
             #immigration:
             
                 - foy: if(not(ISMARRIED) and (quifoy>1) and (age>24 or (age>21 and not ISSTUDENT)),
-                            new('declar',
+                            new('foyer_fiscal',
                                 pond=l_foy.pond,                            
                                 vous = id),
                             foy)

@@ -59,7 +59,7 @@ entities:
                 # les autres restent mais pourquoi ??...
 
                 ###foy
-                # biggest move out from declar
+                # biggest move out from foyer_fiscal
                 # on ajoute condition sur l_partner, pour ne pas appliquer aux couples non mariés
                 - MOVE_foy: to_divorce and l_partner.foy==foy
                 # on séléctionne au plus 1
@@ -75,7 +75,7 @@ entities:
                            # l_partner.sexe, foy, filter=justcoupled),
                       # fname='check_simul//individu_{period}.csv')              
                 - new_foy: if(WHO_MOVE, 
-                                new('declar', filter=MOVE ,
+                                new('foyer_fiscal', filter=MOVE ,
                                      pond=l_foy.pond, vous= id),
                                 foy) 
                 - quifoy: if(MOVE and quifoy==1, 0, quifoy)
@@ -102,16 +102,16 @@ entities:
                 # note : dur_in_couple is incremented in union
   
 
-                # remplacera les etapes d'actualisation menage et declar quand fonctionnel
+                # remplacera les etapes d'actualisation menage et foyer_fiscal quand fonctionnel
                 # - l_men.set(pref = individus.max(id,quimen==0)
-                # - l_foy.set(vous = on_declar.max(id,quifoy==0)
+                # - l_foy.set(vous = in_foyer_fiscal.max(id,quifoy==0)
                 
                 # - l_men.pref: if(quimen==0, id, l_men.pref)
                 # - l_foy.vous: if(quifoy==0, id, l_foy.vous)
                 
                 - assertEqual(max(l_men.get(individus.count(quimen==0))),1)
                 - assertTrue(min(men)>=0)
-                - assertEqual(max(l_foy.get(on_declar.count(quifoy==0))),1)
+                - assertEqual(max(l_foy.get(in_foyer_fiscal.count(quifoy==0))),1)
                 - assertTrue(min(foy)>=0)                
                 
 

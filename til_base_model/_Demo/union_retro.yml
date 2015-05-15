@@ -103,7 +103,7 @@ entities:
                 # parent par exemple) mais comme plus pour quimen, il faudra gerer ca plus tard.
                 - foy: if(mater.justcoupled and ISFEMALE, mater.foy, foy)
 
-                # for foy, their no new foy but everyone go to male's declar. Yes it's sexist.
+                # for foy, their no new foy but everyone go to male's foyer fiscal. Yes it's sexist.
                 - quifoy: if(justcoupled, if(ISMALE,1,2), quifoy)
                 - quimen: if(justcoupled, if(ISMALE,1,2), quimen)
                 - men:    if(justcoupled, newhousehold,men)
@@ -146,8 +146,8 @@ entities:
                                 rent=household.rent/1.5),
                             men)
                 - quimen: if(to_divorce, 1, quimen)
-                # female move out from declar
-                - foy: if(ISFEMALE and to_divorce, new('declar'), foy)
+                # female move out from foyer fiscal
+                - foy: if(ISFEMALE and to_divorce, new('foyer_fiscal'), foy)
                 - quifoy: if(to_divorce, 1, quifoy)
                 # children goes with....HYPOTHESIS
                 # with fater  : nothing to do

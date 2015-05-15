@@ -133,7 +133,7 @@ entities:
                 # to move_out_together
                 - who_vous: to_move_together and id < l_partner.id
                 - new_foy: if(to_move_together and who_vous ,
-                                    new('declar', filter=to_move_together and who_vous,pond=l_foy.pond, vous= id),                                
+                                    new('foyer_fiscal', filter=to_move_together and who_vous,pond=l_foy.pond, vous= id),                                
                                      new_foy)
                 - new_foy: if(to_move_together and not who_vous, l_partner.new_foy, new_foy)
                 - quifoy: if(to_move_together and who_vous, 0, quifoy)
@@ -159,7 +159,7 @@ entities:
                 #TODO: dissocier pacs et mariage
                 - civilstate: if(to_move_together, MARRIED, civilstate)
                
-                - assertEqual(max(l_foy.get(on_declar.count(quifoy==0))),1)
+                - assertEqual(max(l_foy.get(in_foyer_fiscal.count(quifoy==0))),1)
                 - assertTrue(min(foy)>=0)
                 
                 # - csv(dump(id, age, sexe, l_partner.id, l_partner.age,
