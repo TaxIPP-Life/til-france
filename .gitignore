@@ -2,6 +2,14 @@
 # Local configuration file
 ##########################
 
+til_base_model/tests/output/*.csv
+til_base_model/tests/output/*.h5
+
+
+##########################
+# Local configuration file
+##########################
+
 config_local.ini
 
 #################
