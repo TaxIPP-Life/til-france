@@ -24,11 +24,11 @@ entities:
             - forseul: int
 
         # l_men
-            - men:    int
+            - idmen:    int
             - quimen: int
 
         # foyer l_foy
-            - foy:      int
+            - idfoy:      int
             - quifoy:   int
 
         # family
@@ -77,8 +77,8 @@ entities:
 
 
         links:
-            l_men:      {type: many2one, target: menage, field: men}
-            l_foy:      {type: many2one, target: foyer_fiscal, field: foy}
+            l_men:      {type: many2one, target: menage, field: idmen}
+            l_foy:      {type: many2one, target: foyer_fiscal, field: idfoy}
             l_mere:     {type: many2one, target: individu, field: mere}  # to know alive mother
             l_pere:     {type: many2one, target: individu, field: pere}
             l_partner:     {type: many2one, target: individu, field: partner}

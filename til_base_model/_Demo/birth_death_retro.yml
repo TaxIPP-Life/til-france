@@ -13,13 +13,13 @@ entities:
                 - new('individu', filter=dead,
                       mere = 0,
                       pere = 0,
-                      men = men,
+                      idmen = idmen,
                       age = age,
                       age_en_mois = age_en_mois,
                       partner = id,
                       civilstate =  MARRIED,
                       sexe = if(ISMALE,FEMALE,MALE),
-                      foy = foy,
+                      idfoy = idfoy,
                       quifoy = 1,
                       quimen = 1
                       )

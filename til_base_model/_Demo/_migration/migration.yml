@@ -27,9 +27,9 @@ entities:
                       sal = 0,
                       rsti = 0,
                       choi = 0,
-                      men = men,
+                      idmen = idmen,
                       quimen = 2,
-                      foy = foy,
+                      idfoy = idfoy,
                       wprm_init = wprm_init,
                       quifoy = 1,
                       select = 2

@@ -3,12 +3,12 @@ entities:
         processes:    
             independance:
                 - alone: l_men.nb_individus == 1
-                - men: if(not(ISMARRIED) and not alone and (age >= 24) and (quimen>1),
+                - idmen: if(not(ISMARRIED) and not alone and (age >= 24) and (quimen>1),
                             new('menage',
                                 region_id=l_men.region_id,
                                 rent=800, 
                                 pref = id),
-                            men)
+                            idmen)
                 - quimen: if(not(ISMARRIED) and not alone and (age >= 24) and (quimen>1),
                             0,
                             quimen)
@@ -18,11 +18,11 @@ entities:
             #emigration:
             #immigration:
             
-                - foy: if(not(ISMARRIED) and (quifoy>1) and (age>24 or (age>21 and not ISSTUDENT)),
+                - idfoy: if(not(ISMARRIED) and (quifoy>1) and (age>24 or (age>21 and not ISSTUDENT)),
                             new('foyer_fiscal',
                                 pond=l_foy.pond,                            
                                 vous = id),
-                            foy)
+                            idfoy)
                 - quifoy: if(not(ISMARRIED) and (quifoy>1) and (age>24 or (age>21 and not ISSTUDENT)),
                             0,
                             quifoy)                

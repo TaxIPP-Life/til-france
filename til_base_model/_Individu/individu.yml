@@ -8,11 +8,11 @@ entities:
             - wprm_init: {type: int, initialdata: false}
 
         # l_men
-            - men:    int  # il faudra changer les men en men
+            - idmen:    int  # il faudra changer les men en men
             - quimen: int
 
         # foyer l_foy
-            - foy:      int
+            - idfoy:      int
             - quifoy:   int
 
         # family
@@ -68,8 +68,8 @@ entities:
             - nb_enf_FP: {type: int, initialdata: false, default: 0}
 
         links:
-            l_men:      {type: many2one, target: menage, field: men}
-            l_foy:      {type: many2one, target: foyer_fiscal, field: foy}
+            l_men:      {type: many2one, target: menage, field: idmen}
+            l_foy:      {type: many2one, target: foyer_fiscal, field: idfoy}
             l_mere:     {type: many2one, target: individu, field: mere}
             l_pere:     {type: many2one, target: individu, field: pere}
             l_partner:     {type: many2one, target: individu, field: partner}
@@ -173,7 +173,7 @@ entities:
                 - assertEqual(count((mere == partner) and (mere > -1)), 0)
                 - assertEqual(count(id != l_partner.partner and partner > -1), 0)
                 - assertEqual(count(civilstate != l_partner.civilstate and LEGAL_UNION), 0)
-                # - NOT_MOVE: ((l_pere.men == men or l_mere.men == men) and (quimen>1))
+                # - NOT_MOVE: ((l_pere.idmen == idmen or l_mere.idmen == idmen) and (quimen>1))
                 # - assertEqual(count(NOT_MOVE and l_partner.NOT_MOVE), 0)
-                # - NOT_MOVE_foy: ((l_pere.foy == foy or l_mere.foy == foy) and (quifoy>1))
+                # - NOT_MOVE_foy: ((l_pere.idfoy == idfoy or l_mere.idfoy == idfoy) and (quifoy>1))
                 # - assertEqual(count(NOT_MOVE and l_partner.NOT_MOVE), 0)

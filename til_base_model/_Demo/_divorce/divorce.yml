@@ -32,9 +32,9 @@ entities:
                 # TODO: à améliorer en fonction de la propriété, de qui part et tout
                 # si on est chez ses parents et que c'est eux les chef, c'est à l'autre de bouger : on les retire
                 # TODO: retirer le quimen>1 ?
-                - MOVE: to_divorce and l_partner.men==men
+                - MOVE: to_divorce and l_partner.idmen==idmen
                 # on séléctionne au plus 1
-                - NOT_MOVE: ((l_pere.men == men or l_mere.men == men) and (quimen>1))
+                - NOT_MOVE: ((l_pere.idmen == idmen or l_mere.idmen == idmen) and (quimen>1))
                 
                 - NOT_MOVE: if(l_partner.NOT_MOVE and NOT_MOVE, id < l_partner.id, NOT_MOVE)
                 - WHO_MOVE: if(l_partner.NOT_MOVE or NOT_MOVE,
@@ -47,13 +47,13 @@ entities:
                             new('menage', filter=MOVE,
                                 region_id=l_men.region_id,
                                 rent=l_men.rent/1.5, pref=id),
-                            men)
+                            idmen)
                 - quimen: if(MOVE and quimen == 1, 0, quimen)
                 
                 # enfants -> restent avec leur mère
-                - new_men: if(l_mere.MOVE and  (l_mere.men==men) and (new_men==men),
+                - new_men: if(l_mere.MOVE and  (l_mere.idmen==idmen) and (new_men==idmen),
                                 l_mere.new_men,
-                                if(l_pere.MOVE and  (l_pere.men==men) and (new_men==men),
+                                if(l_pere.MOVE and  (l_pere.idmen==idmen) and (new_men==idmen),
                                     l_pere.new_men,
                                 new_men))               
                 # les autres restent mais pourquoi ??...
@@ -61,9 +61,9 @@ entities:
                 ###foy
                 # biggest move out from foyer_fiscal
                 # on ajoute condition sur l_partner, pour ne pas appliquer aux couples non mariés
-                - MOVE_foy: to_divorce and l_partner.foy==foy
+                - MOVE_foy: to_divorce and l_partner.idfoy==idfoy
                 # on séléctionne au plus 1
-                - NOT_MOVE_foy: ((l_pere.foy == foy or l_mere.foy == foy) and (quifoy>1))
+                - NOT_MOVE_foy: ((l_pere.idfoy == idfoy or l_mere.idfoy == idfoy) and (quifoy>1))
 
                 - NOT_MOVE_foy: if(l_partner.NOT_MOVE_foy and NOT_MOVE_foy, id < l_partner.id, NOT_MOVE_foy)
                 - WHO_MOVE_foy: if(l_partner.NOT_MOVE_foy or NOT_MOVE_foy,
@@ -77,7 +77,7 @@ entities:
                 - new_foy: if(WHO_MOVE, 
                                 new('foyer_fiscal', filter=MOVE ,
                                      pond=l_foy.pond, vous= id),
-                                foy) 
+                                idfoy) 
                 - quifoy: if(MOVE and quifoy==1, 0, quifoy)
                 # plus tard changer le vous ici directement
                  
@@ -85,15 +85,15 @@ entities:
                 # children go with....?? HYPOTHESIS
                 # priority to fater...
                 #TODO: do it randomly (but test if the couple are parents and not a second marriage)
-                - new_foy: if(l_pere.MOVE and (l_pere.foy==foy) and (new_foy==foy),
+                - new_foy: if(l_pere.MOVE and (l_pere.idfoy==idfoy) and (new_foy==idfoy),
                                     l_pere.new_foy,
-                                    if(l_mere.MOVE and (l_mere.foy==foy) and (new_foy==foy),
+                                    if(l_mere.MOVE and (l_mere.idfoy==idfoy) and (new_foy==idfoy),
                                          l_mere.new_foy,
                                          new_foy))
                                     
                 # les autres pac restent mais pourquoi ??...
-                - men: new_men
-                - foy: new_foy
+                - idmen: new_men
+                - idfoy: new_foy
 
                 - civilstate: if(to_divorce and LEGAL_UNION, DIVORCED, civilstate)
                 - partner: if(to_divorce, UNSET, partner)
@@ -115,7 +115,7 @@ entities:
                 - assertTrue(min(foy)>=0)                
                 
 
-            dump_info: csv(dump(id, age, sexe, men, l_men.nb_individus,
+            dump_info: csv(dump(id, age, sexe, idmen, l_men.nb_individus,
                                 l_mere.age, l_partner.age), suffix='info')
             
             civilstate_changes: show(groupby(civilstate, lag(civilstate)))

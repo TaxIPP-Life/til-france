@@ -21,9 +21,9 @@ def test():
     simulation = Simulation.from_yaml(
         console_file,
         input_dir = None,
-        input_file = None,
+        input_file = 'Patrimoine_1300.h5',
         output_dir = output_dir,
-        output_file = None,
+        output_file = 'simul.h5',
         )
     simulation.run(False)
 

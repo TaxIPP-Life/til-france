@@ -18,7 +18,7 @@ entities:
             - avantage_qf: {type: float, initialdata: false}
 
         links:
-            in_foyer_fiscal: {type: one2many, target: individu, field: foy}
+            in_foyer_fiscal: {type: one2many, target: individu, field: idfoy}
             l_vous: {type: many2one, target: individu, field: vous}
 
         processes:
@@ -40,7 +40,7 @@ entities:
 
                 - test_vous: in_foyer_fiscal.count(quifoy==0)
                 - show('nombre de quifoy', groupby(test_vous,nb_individus))
-                - separ: l_vous.foy != id
+                - separ: l_vous.idfoy != id
                 - show('nombre probleme de vous', count(l_vous.quifoy != 0))
                 - show('nombre separ', count(separ))
                 - candidat: in_foyer_fiscal.min(id,quifoy==0)

@@ -49,7 +49,7 @@ entities:
 
 
         links:
-            individus:  {type: one2many, target: individu, field: men}
+            individus:  {type: one2many, target: individu, field: idmen}
             l_pref:    {type: many2one, target: individu, field: pref}
             landlord: {type: many2one, target: individu, field: owner}
 
@@ -75,8 +75,8 @@ entities:
 
                 - test_pref: individus.count(quimen==0)
                 - show('nombre de quimen', groupby(test_pref,nb_individus))
-                - separ: l_pref.men != id
-                - show('nombre probleme de pref', count(l_pref.men != 0))
+                - separ: l_pref.idmen != id
+                - show('nombre probleme de pref', count(l_pref.idmen != 0))
                 - show('nombre separ', count(separ))
                 - candidat: individus.min(id, quimen == 0)
                 - pref: if(separ and individus.count(quimen==0) == 1,

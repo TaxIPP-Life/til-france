@@ -5,13 +5,13 @@ entities:
                 - alone: (jequit == year(period) or forseul == year(period))
                 - alone: alone or (jequit == 0 and forseul == 0 and age < 24 )
                 - alone: alone and (pere>0 or mere>0)
-                - men:  if(alone,
+                - idmen:  if(alone,
                             if(mere>0,
-                                l_mere.men,
+                                l_mere.idmen,
                                 if(pere>0, 
-                                    l_pere.men,
-                                    men)),
-                           men)
+                                    l_pere.idmen,
+                                    idmen)),
+                           idmen)
                 
                 - quimen: if(alone, 2, quimen)
                             
@@ -22,13 +22,13 @@ entities:
             
                 - decl_seul: not(ISMARRIED) and (quimen==0) and (age<24 or (age<21 and not ISSTUDENT))
                 - decl_seul: decl_seul and (pere>0 or mere>0)
-                - foy: if(decl_seul,
+                - idfoy: if(decl_seul,
                             if(pere>0,
-                                l_mere.foy,
+                                l_mere.idfoy,
                                 if(mere>0, 
-                                    l_mere.foy,
-                                    foy)),
-                           foy)
+                                    l_mere.idfoy,
+                                    idfoy)),
+                           idfoy)
                            
                 - quifoy: if(decl_seul, 2, quifoy)         
 
