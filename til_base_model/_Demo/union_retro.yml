@@ -87,7 +87,7 @@ entities:
                                      rent=1500)
                 - newhousehold: if(justcoupled and ISMALE, partner.newhousehold, newhousehold)
                 # same newhousehold for huseband, useful beyong
-                # dealing with idmen, foy, quimen and quifoy
+                # dealing with idmen, idfoy, quimen and quifoy
                 # first with children living with their parent we can identify by pere.idmen == idmen or mere.idmen == idmen
                 - idmen: if(mater.justcoupled,
                             if(mater.idmen==idmen, mater.newhousehold, idmen),
@@ -106,7 +106,7 @@ entities:
                 # for foy, their no new foy but everyone go to male's foyer fiscal. Yes it's sexist.
                 - quifoy: if(justcoupled, if(ISMALE,1,2), quifoy)
                 - quimen: if(justcoupled, if(ISMALE,1,2), quimen)
-                - idmen:    if(justcoupled, newhousehold,men)
+                - idmen:    if(justcoupled, newhousehold, idmen)
 
                 - civilstate: if(justcoupled, MARRIED, civilstate)
                 - dur_in_couple: if(justcoupled,
@@ -152,7 +152,7 @@ entities:
                 # children goes with....HYPOTHESIS
                 # with fater  : nothing to do
                 # with mother :
-                - idfoy: if(mater.to_divorce, mater.idfoy, foy )
+                - idfoy: if(mater.to_divorce, mater.idfoy, idfoy )
 
             dump_info: csv(dump(id, age, sexe, idmen, household.nb_individus,
                                 mater.age, partner.age), suffix='info')

@@ -13,7 +13,7 @@ entities:
             - findet: int
 
         # # work
-            - sal: {type: float, initialdata: false, default: 0.0}
+            - salaire_imposable: {type: float, initialdata: false, default: 0.0}
             - test: {type: float, initialdata: false, default: 0.0}
             - rsti: {type: float, initialdata: false, default: 0.0}
             - choi: {type: float, initialdata: false, default: 0.0}
@@ -87,7 +87,7 @@ entities:
 
             sum_indiv:
             # revenus
-                - sal: reg2pers.sal + sal
+                - salaire_imposable: reg2pers.salaire_imposable + salaire_imposable
                 - test: reg2pers.
                 - rsti: reg2pers.rsti + rsti
                 - choi: reg2pers.choi + choi

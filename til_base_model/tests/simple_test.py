@@ -39,8 +39,6 @@ def dump(simulation, file_path = None, overwrite = False):
             (variable, simulation.get_or_new_holder(variable).get_array(period = simulation.period))
             for variable in entity_class.column_by_name
             ]))
-        if 'salaire_imposable' in data_frame.columns:
-            data_frame.rename(columns = dict(salaire_imposable = 'sal'), inplace = True)
         data_frame['id'] = data_frame.index.values.copy()
         data_frame['period'] = 200901
         data_frame.sort_index(axis = 1, inplace = True)
@@ -49,24 +47,25 @@ def dump(simulation, file_path = None, overwrite = False):
     store.close()
 
 
-def test():
-    tax_benefit_system = TaxBenefitSystem()
-    scenario = tax_benefit_system.new_scenario().init_single_entity(
-        period = 2014,
-        parent1 = dict(
-            age = 25,
-            salaire_imposable = 12000,
-            ),
-        )
-    simulation = scenario.new_simulation()
-    dump(
-        simulation,
-        file_path = os.path.join(path_model, 'toto.h5'),
-        overwrite = True,
-        )
+def test(regenerate_hdf_file = False, test_case = False):
+    if regenerate_hdf_file:
+        tax_benefit_system = TaxBenefitSystem()
+        scenario = tax_benefit_system.new_scenario().init_single_entity(
+            period = 2014,
+            parent1 = dict(
+                age = 25,
+                salaire_imposable = 12000,
+                ),
+            )
+        simulation = scenario.new_simulation()
+        dump(
+            simulation,
+            file_path = os.path.join(path_model, 'toto.h5'),
+            overwrite = True,
+            )
 
     output_dir = os.path.join(os.path.dirname(__file__), 'output')
-    console_file = os.path.join(path_model, 'console.yml')
+    console_file = os.path.join(path_model, 'test_case' if test_case else '', 'console.yml')
     simulation = Simulation.from_yaml(
         console_file,
         input_dir = None,
@@ -82,7 +81,7 @@ def test():
     # cProfile.runctx( command, globals(), locals(), filename="OpenGLContext.profile1")
 
 
-def test2():
+def test_variables():
     patrimoine_store = pandas.HDFStore(os.path.join(path_model, 'Patrimoine_1500.h5'))
     openfisca_store = pandas.HDFStore(os.path.join(path_model, 'toto.h5'))
 
@@ -94,4 +93,4 @@ def test2():
         print set(patrimoine_columns).difference(set(openfisca_columns))
 
 if __name__ == '__main__':
-    simulation = test2()
+    simulation = test()

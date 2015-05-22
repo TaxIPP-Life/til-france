@@ -47,7 +47,7 @@ entities:
 
         # work
             - workstate: int
-            - sal: {type: float, default: 0.0}
+            - salaire_imposable: {type: float, default: 0.0}
             - productivity: {type: float, initialdata: false}
             - rsti: float
             - choi: float
@@ -157,12 +157,12 @@ entities:
                 - wprm_init: lag(age_en_mois,2)
 
             stat_period_ini:
-                - csv( 'period', 'population', 'naissance', 'sal', 'rsti', 'choi','age moyen',fname='stat.csv')
+                - csv( 'period', 'population', 'naissance', 'salaire_imposable', 'rsti', 'choi','age moyen',fname='stat.csv')
                 - csv( 'period', 'inactive', 'unemployed', 'non cadre', 'cadre', 'fonct_a', 'fonct_s',
                         'indep', 'avpf', 'pre_ret', 'retired', 'student', 'others', fname='workstate.csv')
                 - csv( 'period', 'marrie', 'celib', 'divorce', 'voeuf', 'autre', fname='civilstate.csv')
             stat_period:
-                - csv(avg(period), count(), count(age==0), sum(sal), sum(rsti), sum(choi), avg(age), fname='stat.csv', mode='a')
+                - csv(avg(period), count(), count(age==0), sum(salaire_imposable), sum(rsti), sum(choi), avg(age), fname='stat.csv', mode='a')
                 - csv( avg(period), count(workstate==1), count(workstate==2), count(workstate==3), count(workstate==4),
                        count(workstate==5), count(workstate==6), count(workstate==7), count(workstate==8),
                        count(workstate==9), count(workstate==10), count(workstate==11), count(workstate < 1),

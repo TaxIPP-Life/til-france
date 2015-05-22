@@ -8,10 +8,10 @@ entities:
                 # destinie (1991)
                 # Roux (jusque 2002)
                 - mincer : 7.6 + 0.08 * findet + 0.04 * xpr - 0.0006 * xpr*xpr
-                - productivity: if( sal >0,
+                - productivity: if( salaire_imposable >0,
                             sal*0.5 - 1820*mincer,
                             0)
-                - productivity: if(sal <=0,
+                - productivity: if(salaire_imposable<=0,
                             normal(loc=avg(productivity, filter=(sal>0)),
                                     scale=std(productivity, filter=(sal>0))),
                             productivity)
@@ -66,7 +66,7 @@ entities:
                 #salaire journalier de reference -> faire tourner avant salaire toujours
                 #34308 plafond de securite sociale en 2009
                 - SJR: if(entree_chom,
-                            min(4*34308,sal)/365,
+                            min(4*34308,salaire_imposable)/365,
                             0)
                 - AJ_ARE: 11.57 + 40.4*SJR/100
                 # maximum et minimum
@@ -162,7 +162,7 @@ entities:
                 - miner: if(ISMALE, mincer * 1.08, mincer * 0.9)
                 #le 0.5 pour passer au brut. Oui c'est moche
                 #15000=smic
-                - sal:  if(ISINWORK,
+                - salaire_imposable:  if(ISINWORK,
                                max(mincer * 0.5 - productivity, 15000), 0)
 
             rev_cap:

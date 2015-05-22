@@ -7,8 +7,8 @@ entities:
                 # destinie (1991)
                 # Roux (jusque 2002)
                 - mincer : 7.6 + 0.08 * findet + 0.04 * xpr - 0.0006 * xpr * xpr
-                - productivity: if( sal>0,
-                             sal- mincer,
+                - productivity: if( salaire_imposable>0,
+                             salaire_imposable- mincer,
                             productivity)
 
             chomage:
@@ -17,11 +17,11 @@ entities:
                 - seuil_anc : max(6 - anc, 0)
                 - xprer: xpr
                 - choi: if(ISUNEMPLOYED,
-                             if(BEGINER, 0.7 * sal, 0.8 * choi),
+                             if(BEGINER, 0.7 * salaire_imposable, 0.8 * choi),
                           0)
             retraite:
                 - rsti: if(ISRETIRED,
-                             if(BEGINER, 0.7 * sal, rsti), 
+                             if(BEGINER, 0.7 * salaire_imposable, rsti),
                           0)
                 # Actualisation du nombre d'enfants par régime
                 - new_born: invl_mere.count(age_en_mois==0) + invl_pere.count(age_en_mois==0)
@@ -86,7 +86,7 @@ entities:
                            mincer)
                 - mincer: exp(mincer/100)
 
-                - sal:  if( ISINWORK, mincer + productivity,0)
+                - salaire_imposable:  if( ISINWORK, mincer + productivity, 0)
 
             rev_cap:
                 - capital_inc: l_men.wealth * 0.1 * (quimen==1)

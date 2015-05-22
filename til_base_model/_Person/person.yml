@@ -32,7 +32,7 @@ entities:
 
         # work
             - workstate: int
-            - sal: {type: float, default: 0.0}
+            - salaire_imposable: {type: float, default: 0.0}
             - productivity: {type: float, initialdata: false}
             - rsti: float
             - tauxprime: float
@@ -131,7 +131,7 @@ entities:
             #TODO: add others
             ORDINARY_HOUSE: (men>9)
             DASS: 1
-            INDASS: (foy==1)
+            INDASS: (idfoy==1)
             # IS_LOWER_SECONDARY_EDU: education_level == 2
             # IS_UPPER_SECONDARY_EDU: education_level == 3
             # IS_TERTIARY_EDU: education_level == 4
@@ -154,12 +154,12 @@ entities:
                 - wprm_init: lag(age_en_mois,2)
 
             stat_period_ini:
-                - csv('period', 'population', 'naissance', 'sal', 'rsti', 'choi','age moyen',fname='stat.csv')
+                - csv('period', 'population', 'naissance', 'salaire_imposable', 'rsti', 'choi','age moyen',fname='stat.csv')
                 - csv('period', 'inwork', 'inpublic', 'inprive', 'independant', 'chomage', 'students',
                         'retired', 'other_inact', fname='workstate.csv')
                 - csv('period', 'marie', 'celib', 'divorce', 'voeuf', 'pacs', 'en_couple', fname='civilstate.csv')
             stat_period:
-                - csv(avg(period), count(), count(age==0), sum(sal), sum(rsti), sum(choi), avg(age), fname='stat.csv', mode='a')
+                - csv(avg(period), count(), count(age==0), sum(salaire_imposbale), sum(rsti), sum(choi), avg(age), fname='stat.csv', mode='a')
                 - csv( avg(period), count(ISINWORK), count(WORK_PUBLIC), count(WORK_PRIVE), count(WORK_INDEP),
                        count(ISUNEMPLOYED), count(ISSTUDENT), count(ISRETIRED), count(ISOTHERINACTIVE),
                        fname='workstate.csv', mode='a')

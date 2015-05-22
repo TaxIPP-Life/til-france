@@ -6,7 +6,7 @@ import:
     - _Individu/individu.yml
     - _Individu/register.yml
     - _House/menage.yml
-    - _Fiscal/foyer_fiscal.yml
+    - _Foyer_fiscal/foyer_fiscal.yml
     - _Work/work_PensIPP.yml  # work0, work_pensIPP
     - _Work/income2.yml
     - _Demo/_birth/birth.yml
@@ -65,7 +65,7 @@ simulation:
         - individu: [divorce]
         - individu: [check]
         - menage: [men_composition]
-        - foyer_fiscal: [cases,empty_declar]
+        - foyer_fiscal: [cases, empty_declar]
         - individu: [ineducation, outwork, inwork, retire, chomage, salaire , retraite
 #            dump_all
         ]
@@ -81,6 +81,10 @@ simulation:
     #   file: Patrimoine_1300.h5
     output:
        file: simul.h5
+
+    logging:
+        level: processes
+
 
     skip_shows: True
     timings: False

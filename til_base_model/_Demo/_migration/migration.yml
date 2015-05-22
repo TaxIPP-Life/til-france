@@ -24,7 +24,7 @@ entities:
                       workstate = STUDENT,
                       sexe = choice([MALE,FEMALE], [0.5122, 0.4878]),
                       productivity = 0,
-                      sal = 0,
+                      salaire_imposable = 0,
                       rsti = 0,
                       choi = 0,
                       idmen = idmen,

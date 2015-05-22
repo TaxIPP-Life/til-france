@@ -14,12 +14,12 @@ entities:
                 - mincer : 1.04/1.7*exp(mincer)
 
 
-                - productivity: if(sal > 0,
-                            sal / mincer,
+                - productivity: if(salaire_imposable> 0,
+                            salaire_imposable / mincer,
                             productivity)
-                - productivity: if( sal >0,
+                - productivity: if( salaire_imposable >0,
                             productivity,
-                            avg(productivity, sal > 0))
+                            avg(productivity, salaire_imposable > 0))
 
 
             #source: vos droits services public.fr
@@ -124,7 +124,7 @@ entities:
                 # 1/1.7 pour passer au net et  1.04 pour passer a 2009
                 - mincer : 1.04/1.7*exp(mincer)
 
-                - sal:  if( ISINWORK, round(mincer * productivity),0)
+                - salaire_imposable:  if( ISINWORK, round(mincer * productivity),0)
 
             rev_cap:
                 - capital_inc: l_men.wealth*0.1 * (quimen==1)

@@ -8,11 +8,11 @@ entities:
             - wprm_init: {type: int, initialdata: false}
 
         # l_men
-            - idmen:    int  # il faudra changer les men en men
+            - idmen: int  # il faudra changer les men en men
             - quimen: int
 
         # foyer l_foy
-            - idfoy:      int
+            - idfoy: int
             - quifoy:   int
 
         # family
@@ -32,7 +32,7 @@ entities:
 
         # work
             - workstate: int
-            - sal: {type: float, default: 0.0}
+            - salaire_imposable: {type: float, default: 0.0}
             - productivity: {type: float, initialdata: false}
             - rsti: float
             - tauxprime: float
@@ -129,9 +129,9 @@ entities:
             BEGINER: xpr == 1
 
             #TODO: add others
-            ORDINARY_HOUSE: (men>9)
+            ORDINARY_HOUSE: (idmen>9)
             DASS: 1
-            INDASS: (foy==1)
+            INDASS: (idfoy==1)
             # IS_LOWER_SECONDARY_EDU: education_level == 2
             # IS_UPPER_SECONDARY_EDU: education_level == 3
             # IS_TERTIARY_EDU: education_level == 4
@@ -142,24 +142,24 @@ entities:
         processes:
             init_weight_ind:
                 - wprm_init: 1
-                - month: randint(0,11)
-                - age: trunc(age_en_mois/12)
+                - month: randint(0, 11)
+                - age: trunc(age_en_mois / 12)
                 # - wprm_init: permet de faire des tests
                 - wprm_init: 100*age + month
 
             ageing:
                 - age_en_mois: add_time_scale(age_en_mois)
-                - age: trunc(age_en_mois/12)
+                - age: trunc(age_en_mois / 12)
                 # - wprm_init: permet de faire des tests
                 - wprm_init: lag(age_en_mois,2)
 
             stat_period_ini:
-                - csv('period', 'population', 'naissance', 'sal', 'rsti', 'choi','age moyen',fname='stat.csv')
+                - csv('period', 'population', 'naissance', 'salaire_imposable', 'rsti', 'choi','age moyen',fname='stat.csv')
                 - csv('period', 'inwork', 'inpublic', 'inprive', 'independant', 'chomage', 'students',
                         'retired', 'other_inact', fname='workstate.csv')
                 - csv('period', 'marie', 'celib', 'divorce', 'voeuf', 'pacs', 'en_couple', fname='civilstate.csv')
             stat_period:
-                - csv(avg(period), count(), count(age==0), sum(sal), sum(rsti), sum(choi), avg(age), fname='stat.csv', mode='a')
+                - csv(avg(period), count(), count(age==0), sum(salaire_imposable), sum(rsti), sum(choi), avg(age), fname='stat.csv', mode='a')
                 - csv( avg(period), count(ISINWORK), count(WORK_PUBLIC), count(WORK_PRIVE), count(WORK_INDEP),
                        count(ISUNEMPLOYED), count(ISSTUDENT), count(ISRETIRED), count(ISOTHERINACTIVE),
                        fname='workstate.csv', mode='a')
