@@ -6,7 +6,7 @@ import:
     - _Individu/individu.yml
     - _Individu/register.yml
     - _House/menage.yml
-    - _Foyer_fiscal/foyer_fiscal.yml
+    - _Foyer_fiscal/foyers_fiscaux.yml
     - _Work/work_PensIPP.yml  # work0, work_pensIPP
     - _Work/income2.yml
     - _Demo/_birth/birth.yml
@@ -29,53 +29,52 @@ globals:
 
 simulation:
     init:
-        - menage: [init_weight_men, init_region_id, init_rent, init_value, init_wealth, init_owner, men_composition]
-        - individu: [init_weight_ind, init_couple, init_education_level, init_productivity]
+        - menages: [init_weight_men, init_region_id, init_rent, init_value, init_wealth, init_owner, men_composition]
+        - individus: [init_weight_ind, init_couple, init_education_level, init_productivity]
         - companies: [init_size]
-        - foyer_fiscal: [cases,empty_declar]
+        - foyers_fiscaux: [cases,empty_declar]
         - register: [init_reg]
         # - legislation: [2009]
         - register: [sum_indiv]
-        - individu: [stat_period_ini, stat_period]
+        - individus: [stat_period_ini, stat_period]
 
     processes:
-    # apres chaque étape qui modifie les ménages, on fait tourner une moulinette sur foyer_fiscal et menage, pour s'assurer qu'on a les bons
-    # vous et pref, plus tard, quand le code le permettra, on changera ce vous directement dans l'étape au niveau individu
-        # - individu: [age, dump_info, show_demography , marriage]
+    # apres chaque étape qui modifie les ménages, on fait tourner une moulinette sur foyers_fiscaux et menages,pour s'assurer qu'on a les bons
+    # vous et pref, plus tard, quand le code le permettra, on changera ce vous directement dans l'étape au niveau individus        # - individus: [age, dump_info, show_demography , marriage]
         - register: [rien]
-        - individu: [ageing]
-        - individu: [death]
-#        - individu: [migration]
-        - individu: [check]
-        - individu: [independance]
-        - individu: [check]
-        - individu: [birth]
-        - individu: [check]
-        - menage: [men_composition]
-        - foyer_fiscal: [cases,empty_declar]
-        - individu: [[into_couple, 'year']]
-        - individu: [move_together]
-        - individu: [check]
-        - individu: [legal_union]
-        - individu: [check]
+        - individus: [ageing]
+        - individus: [death]
+#        - individus: [migration]
+        - individus: [check]
+        - individus: [independance]
+        - individus: [check]
+        - individus: [birth]
+        - individus: [check]
+        - menages: [men_composition]
+        - foyers_fiscaux: [cases,empty_declar]
+        - individus: [[into_couple, 'year']]
+        - individus: [move_together]
+        - individus: [check]
+        - individus: [legal_union]
+        - individus: [check]
         # - register: [sum_indiv]
-        - menage: [[men_composition, 'year']]
-        - foyer_fiscal: [[cases, 'year']]
-        - foyer_fiscal: [[empty_declar, 'year']]
-        - individu: [divorce]
-        - individu: [check]
-        - menage: [men_composition]
-        - foyer_fiscal: [cases, empty_declar]
-        - individu: [ineducation, outwork, inwork, retire, chomage, salaire , retraite
+        - menages: [[men_composition, 'year']]
+        - foyers_fiscaux: [[cases, 'year']]
+        - foyers_fiscaux: [[empty_declar, 'year']]
+        - individus: [divorce]
+        - individus: [check]
+        - menages: [men_composition]
+        - foyers_fiscaux: [cases, empty_declar]
+        - individus: [ineducation, outwork, inwork, retire, chomage, salaire , retraite
 #            dump_all
         ]
-        - individu: [check]
-        - menage: [init_value, consumption, saving]
+        - individus: [check]
+        - menages: [init_value, consumption, saving]
         - companies: [rien]
         # - legislation: [2009] #[annee leg] = année de départ de la simulation
         # - register: [alive]
         # - register: [sum_indiv]
-        - individu: [stat_period]
+        - individus: [stat_period]
     # final_stat: True
     # input:
     #   file: Patrimoine_1300.h5
@@ -88,7 +87,7 @@ simulation:
 
     skip_shows: True
     timings: False
-    # time_scale: 'year'
+    time_scale: 'year'
     # retro: True
 
 

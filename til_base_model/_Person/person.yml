@@ -1,7 +1,7 @@
 entities:
     individus:
         fields:
-        # individual intrinseq
+        # individusl intrinseq
             - age_en_mois: int
             - age: {type: int, initialdata: false}
             - sexe: int
@@ -68,19 +68,19 @@ entities:
             - nb_enf_FP: {type: int, initialdata: false, default: 0}
 
         links:
-            l_men:      {type: many2one, target: menage, field: idmen}
-            l_foy:      {type: many2one, target: foyer_fiscal, field: idfoy}
-            l_mere:     {type: many2one, target: individu, field: mere}
-            l_pere:     {type: many2one, target: individu, field: pere}
-            l_partner:     {type: many2one, target: individu, field: partner}
-            l_tuteur:   {type: many2one, target: individu, field: tuteur}
-            invl_mere:  {type: one2many, target: individu, field: mere}
-            invl_pere:  {type: one2many, target: individu, field: pere}
+            l_men:      {type: many2one, target: menages,field: idmen}
+            l_foy:      {type: many2one, target: foyers_fiscaux, field: idfoy}
+            l_mere:     {type: many2one, target: individus, field: mere}
+            l_pere:     {type: many2one, target: individus, field: pere}
+            l_partner:     {type: many2one, target: individus, field: partner}
+            l_tuteur:   {type: many2one, target: individus, field: tuteur}
+            invl_mere:  {type: one2many, target: individus, field: mere}
+            invl_pere:  {type: one2many, target: individus, field: pere}
             pers2reg:   {type: many2one, target: register, field: id}
 
         # possible transitions and regressions. The actual list used in the
         # simulation must be defined below
-            homes:      {type: one2many, target: menage, field: owner}
+            homes:      {type: one2many, target: menages,field: owner}
 
         macros:
             MALE: 0
@@ -129,7 +129,7 @@ entities:
             BEGINER: xpr == 1
 
             #TODO: add others
-            ORDINARY_HOUSE: (men>9)
+            ORDINARY_HOUSE: (idmen>9)
             DASS: 1
             INDASS: (idfoy==1)
             # IS_LOWER_SECONDARY_EDU: education_level == 2

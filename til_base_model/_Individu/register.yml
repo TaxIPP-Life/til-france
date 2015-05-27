@@ -29,7 +29,7 @@ entities:
             - cotpat_noncontrib: {type: int, initialdata: false, default: 0}
             - cotsal_contrib: {type: int, initialdata: false, default: 0}
             - cotsal: {type: int, initialdata: false, default: 0}
-            # # fonctionnera quand on aura de l'individualisation
+            # # fonctionnera quand on aura de l'individuslisation
             # - impo: {type: int, initialdata: false, default: 0}
             # - psoc: {type: int, initialdata: false, default: 0}
             # - mini: {type: int, initialdata: false, default: 0}
@@ -74,7 +74,7 @@ entities:
             # - rang3:  {type: int, initialdata: False}
 
         links:
-            reg2pers:  {type: many2one, target: individu, field: id}
+            reg2pers:  {type: many2one, target: individus, field: id}
             reg_mere:     {type: many2one, target: register, field: mere}
             reg_pere:     {type: many2one, target: register, field: pere}
             reg_inv_mere:     {type: one2many, target: register, field: mere}
@@ -88,7 +88,7 @@ entities:
             sum_indiv:
             # revenus
                 - salaire_imposable: reg2pers.salaire_imposable + salaire_imposable
-                - test: reg2pers.
+                - test: reg2pers.salaire_imposable
                 - rsti: reg2pers.rsti + rsti
                 - choi: reg2pers.choi + choi
             # legislation
@@ -109,7 +109,7 @@ entities:
                 # - logt: reg2pers.logt + logt
                 # on pourrait aussi ajouter les sommes d'état
 
-            # foyer_fiscal
+            # foyers_fiscaux
                 - decote: if(reg2pers.quifoy<2,
                         reg2pers.l_foy.decote/reg2pers.l_foy.nb_adultes + decote,
                         decote)

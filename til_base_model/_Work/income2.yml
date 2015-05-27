@@ -1,5 +1,5 @@
 entities:
-    individu:
+    individus:
         processes:
 
             init_productivity:
@@ -9,11 +9,11 @@ entities:
                 # Roux (jusque 2002)
                 - mincer : 7.6 + 0.08 * findet + 0.04 * xpr - 0.0006 * xpr*xpr
                 - productivity: if( salaire_imposable >0,
-                            sal*0.5 - 1820*mincer,
+                            salaire_imposable * 0.5 - 1820 * mincer,
                             0)
                 - productivity: if(salaire_imposable<=0,
-                            normal(loc=avg(productivity, filter=(sal>0)),
-                                    scale=std(productivity, filter=(sal>0))),
+                            normal(loc=avg(productivity, filter=(salaire_imposable > 0)),
+                                    scale=std(productivity, filter=(salaire_imposable > 0))),
                             productivity)
 
             #source: vos droits services public.fr

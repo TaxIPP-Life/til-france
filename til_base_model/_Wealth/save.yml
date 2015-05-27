@@ -1,5 +1,5 @@
 entities:
-    menage:
+    menages:
         processes:
             init_wealth:
                 - wealth: 0

@@ -1,6 +1,6 @@
 entities:
     # yes, household level seems better
-    menage:
+    menages:
         processes:
             consumption :
                 - rien: 0

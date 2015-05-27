@@ -1,5 +1,5 @@
 entities:
-    individu:
+    individus:
         processes:
 
             init_productivity:
@@ -73,7 +73,7 @@ entities:
                 #salaire journalier de reference -> faire tourner avant salaire toujours
                 #34308 plafond de securite sociale en 2009
                 - SJR: if(entree_chom,
-                            min(4*34308, sal)/365,
+                            min(4 * 34308, salaire_imposable)/365,
                             0)
                 - AJ_ARE: 11.57 + 40.4*SJR/100
                 # maximum et minimum
@@ -94,7 +94,7 @@ entities:
 
             retraite:
                 - rsti: if(ISRETIRED,
-                             if(BEGINER, 0.7 * sal, rsti), 
+                             if(BEGINER, 0.7 * salaire_imposable, rsti),
                           0)
                 # Actualisation du nombre d'enfants par régime
                 - new_born: invl_mere.count(age_en_mois==0) + invl_pere.count(age_en_mois==0)

@@ -1,5 +1,5 @@
 entities:
-    individu:
+    individus:
         processes:
             init_couple:
                 - civilstate: SINGLE
@@ -82,7 +82,7 @@ entities:
                                           orderby=difficult_match),
                                  partneroint)
                 - justcoupled: (to_couple2==1) and (partneroint > 0)
-                - newhousehold: new('menage', filter=justcoupled and ISFEMALE,
+                - newhousehold: new('menages', filter=justcoupled and ISFEMALE,
                                      region_id=choice([0, 1, 2, 3], [0.1, 0.2, 0.3, 0.4]),
                                      rent=1500)
                 - newhousehold: if(justcoupled and ISMALE, partner.newhousehold, newhousehold)
@@ -141,13 +141,13 @@ entities:
                 # males move out from house
                 # à améliorer en fonction de la propriété, de qui part et tout
                 - idmen: if(ISMALE and to_divorce,
-                            new('menage',
+                            new('menages',
                                 region_id=household.region_id,
                                 rent=household.rent/1.5),
                             idmen)
                 - quimen: if(to_divorce, 1, quimen)
                 # female move out from foyer fiscal
-                - idfoy: if(ISFEMALE and to_divorce, new('foyer_fiscal'), idfoy)
+                - idfoy: if(ISFEMALE and to_divorce, new('foyers_fiscaux'), idfoy)
                 - quifoy: if(to_divorce, 1, quifoy)
                 # children goes with....HYPOTHESIS
                 # with fater  : nothing to do

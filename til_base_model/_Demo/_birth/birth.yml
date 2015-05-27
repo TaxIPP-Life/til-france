@@ -1,5 +1,5 @@
 entities:
-    individu:
+    individus:
         processes:
             birth:
                 - interm : invl_pere.count() # nombre d'enfant du pere
@@ -15,7 +15,7 @@ entities:
                 - temp_pere: if( partner>0, l_partner.findet + (l_partner.age>35+annee-2009) + (l_partner.age>45+annee-2009) + (l_partner.age>55+annee-2009), 0)
                 - temp_mere: findet + (l_mere.age>35+annee-2009) + (l_mere.age>45+annee-2009) + (l_mere.age>55+annee-2009)
                 - findet_temp: if(partner>0, trunc((temp_pere+temp_mere)/2),temp_mere)
-                - new('individu', filter=to_give_birth,
+                - new('individus', filter=to_give_birth,
                       mere = id,
                       pere = partner,
                       age = 0,

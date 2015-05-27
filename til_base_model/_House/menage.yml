@@ -1,5 +1,5 @@
 entities:
-    menage:
+    menages:
         fields:
             # period and id are implicit
             - nb_individus:  {type: int, initialdata: false}
@@ -49,9 +49,9 @@ entities:
 
 
         links:
-            individus:  {type: one2many, target: individu, field: idmen}
-            l_pref:    {type: many2one, target: individu, field: pref}
-            landlord: {type: many2one, target: individu, field: owner}
+            individus:  {type: one2many, target: individus, field: idmen}
+            l_pref:    {type: many2one, target: individus, field: pref}
+            landlord: {type: many2one, target: individus, field: owner}
 
         processes:
             init_region_id:

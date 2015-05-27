@@ -1,5 +1,5 @@
 entities:
-    individu:
+    individus:
         processes:
             divorce :
                 - agediff: if(ISFEMALE and INCOUPLE, age - l_partner.age, 0)
@@ -44,7 +44,7 @@ entities:
                 - assertEqual(count(WHO_MOVE), count(MOVE)/2)
                 # pour les couples homosexuels, à ce niveau là, on peut avoir deux MOVE
                 - new_men: if(WHO_MOVE,
-                            new('menage', filter=MOVE,
+                            new('menages', filter=MOVE,
                                 region_id=l_men.region_id,
                                 rent=l_men.rent/1.5, pref=id),
                             idmen)
@@ -59,7 +59,7 @@ entities:
                 # les autres restent mais pourquoi ??...
 
                 ###foy
-                # biggest move out from foyer_fiscal
+                # biggest move out from foyers_fiscaux
                 # on ajoute condition sur l_partner, pour ne pas appliquer aux couples non mariés
                 - MOVE_foy: to_divorce and l_partner.idfoy==idfoy
                 # on séléctionne au plus 1
@@ -75,7 +75,7 @@ entities:
                            # l_partner.sexe, idfoy, filter=justcoupled),
                       # fname='check_simul//individu_{period}.csv')
                 - new_foy: if(WHO_MOVE,
-                                new('foyer_fiscal', filter=MOVE ,
+                                new('foyers_fiscaux', filter=MOVE ,
                                      pond=l_foy.pond, vous= id),
                                 idfoy)
                 - quifoy: if(MOVE and quifoy==1, 0, quifoy)
@@ -102,17 +102,17 @@ entities:
                 # note : dur_in_couple is incremented in union
 
 
-                # remplacera les etapes d'actualisation menage et foyer_fiscal quand fonctionnel
+                # remplacera les etapes d'actualisation menage et foyers_fiscaux quand fonctionnel
                 # - l_men.set(pref = individus.max(id,quimen==0)
-                # - l_foy.set(vous = in_foyer_fiscal.max(id,quifoy==0)
+                # - l_foy.set(vous = in_foyers_fiscaux.max(id,quifoy==0)
 
                 # - l_men.pref: if(quimen==0, id, l_men.pref)
                 # - l_foy.vous: if(quifoy==0, id, l_foy.vous)
 
                 - assertEqual(max(l_men.get(individus.count(quimen==0))),1)
-                - assertTrue(min(men)>=0)
-                - assertEqual(max(l_foy.get(in_foyer_fiscal.count(quifoy==0))),1)
-                - assertTrue(min(foy)>=0)
+                - assertTrue(min(idmen)>=0)
+                - assertEqual(max(l_foy.get(in_foyers_fiscaux.count(quifoy==0))),1)
+                - assertTrue(min(idfoy)>=0)
 
 
             dump_info: csv(dump(id, age, sexe, idmen, l_men.nb_individus,

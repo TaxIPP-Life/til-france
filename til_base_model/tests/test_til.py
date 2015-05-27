@@ -21,7 +21,7 @@ def test():
     simulation = Simulation.from_yaml(
         console_file,
         input_dir = None,
-        input_file = 'Patrimoine_1300.h5',
+        input_file = 'Patrimoine_next_1300.h5',
         output_dir = output_dir,
         output_file = 'simul.h5',
         )

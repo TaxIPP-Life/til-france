@@ -85,7 +85,7 @@ def test_variables():
     patrimoine_store = pandas.HDFStore(os.path.join(path_model, 'Patrimoine_1500.h5'))
     openfisca_store = pandas.HDFStore(os.path.join(path_model, 'toto.h5'))
 
-    entities = [('person', 'individu'), ('declar', 'foyer_fiscal'), ('menage', 'menage')]
+    entities = [('person', 'individus), ('declar', 'foyers_fiscaux'), ('menages', 'menages']
     for patrimoine_entity, openfisca_entity in entities:
         print patrimoine_entity, openfisca_entity
         patrimoine_columns = patrimoine_store['/entities/{}'.format(patrimoine_entity)]

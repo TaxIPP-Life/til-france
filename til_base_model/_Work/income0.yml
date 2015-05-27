@@ -1,5 +1,5 @@
 entities:
-    individu:
+    individus:
         processes:
 
             init_productivity:
