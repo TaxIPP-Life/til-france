@@ -4,7 +4,7 @@ import os
 import pkg_resources
 
 from til_base_model.config import Config
-from liam2.simulation import Simulation
+from til.simulation import TilSimulation
 
 
 path_model = os.path.join(
@@ -18,7 +18,7 @@ def test():
     output_dir = config.get('til', 'output_dir')
     # output_dir = os.path.join(os.path.dirname(__file__), 'output'),
     console_file = os.path.join(path_model, 'console.yml')
-    simulation = Simulation.from_yaml(
+    simulation = TilSimulation.from_yaml(
         console_file,
         input_dir = None,
         input_file = 'Patrimoine_next_1300.h5',
@@ -30,6 +30,7 @@ def test():
     # import cProfile
     # command = """simulation.run(False)"""
     # cProfile.runctx( command, globals(), locals(), filename="OpenGLContext.profile1")
+
 
 
 if __name__ == '__main__':
