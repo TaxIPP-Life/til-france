@@ -71,7 +71,7 @@ simulation:
         - individus: [check]
         - menages: [init_value, consumption, saving]
         - companies: [rien]
-        # - legislation: [2009] #[annee leg] = année de départ de la simulation
+        - legislation: [2009] #[annee leg] = année de départ de la simulation
         # - register: [alive]
         # - register: [sum_indiv]
         - individus: [stat_period]
@@ -91,7 +91,7 @@ simulation:
     # retro: True
 
 
-    start_period: 200801
+    start_period: 200901
     # first simulated period is start_period + 1  TODO: a bit ugly !
 
-    periods: 5
+    periods: 3

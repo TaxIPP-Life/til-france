@@ -12,8 +12,6 @@ entities:
                                 +0.053*xpr-0.00068*xpr*xpr)
                 # 1/1.7 pour passer au net et  1.04 pour passer a 2009
                 - mincer : 1.04/1.7*exp(mincer)
-
-
                 - productivity: if(salaire_imposable> 0,
                             salaire_imposable / mincer,
                             productivity)
@@ -21,17 +19,16 @@ entities:
                             productivity,
                             avg(productivity, salaire_imposable > 0))
 
-
             #source: vos droits services public.fr
             chomage:
                 ####### duree de versement
                 # on la marque en annee mais le calcul est normalement en mois
                 - entree_chom : ISUNEMPLOYED and not lag(ISUNEMPLOYED)
-                #TODO: avoir une meilleure fonction que duration pour avoir toutes les
+                # TODO: avoir une meilleure fonction que duration pour avoir toutes les
                 #preriode d'emploi, la on a que la derniere, on mettra la periode d'evaluation plus tard
                 - show('nombre d entree au chom', count(entree_chom))
                 - test: workstate
-                - workstate: if(entree_chom,CADRE,workstate)
+                - workstate: if(entree_chom, CADRE, workstate)
                 - dur_ver: if(entree_chom,
                                 if(age <50 ,
                                         duration(ISINWORK and not WORK_INDEP),

@@ -74,9 +74,9 @@ entities:
             # - rang3:  {type: int, initialdata: False}
 
         links:
-            reg2pers:  {type: many2one, target: individus, field: id}
-            reg_mere:     {type: many2one, target: register, field: mere}
-            reg_pere:     {type: many2one, target: register, field: pere}
+            reg2pers: {type: many2one, target: individus, field: id}
+            reg_mere: {type: many2one, target: register, field: mere}
+            reg_pere: {type: many2one, target: register, field: pere}
             reg_inv_mere:     {type: one2many, target: register, field: mere}
             reg_inv_pere:     {type: one2many, target: register, field: pere}
 

@@ -109,32 +109,33 @@ entities:
             salaire:
                 - mincer: 0
                 # destinie (1991)
-                #demander les vrai coeff ci-dessous pour faire du non statique
+                # demander les vrai coeff ci-dessous pour faire du non statique
 
                 - anais: trunc(period / 100) - age
                 - generation : 1 - max(0, min(1, (anais - 1935) / 35))
                 - fet: max(0, min(26 - 14, findet - 14))
                 - fer: -5 + 0.641 * fet + (1 - 0.641) / 12 * fet * fet
-                        + 3.961 * generation + 0.0238 * fet * generation
-                        - 0.0296 * generation * fet * fet
-
+                    + 3.961 * generation + 0.0238 * fet * generation
+                    - 0.0296 * generation * fet * fet
                 - seuil_xpr : max(6 - xpr, 0)
                 - seuil_anc : max(6 - anc, 0)
-                - mincer: if( WORK_PRIVE,
-                            if(ISMALE,
-                                -63.90
-                                +3.13*xpr-0.05*xpr*xpr-3.86*seuil_xpr
-                                +1.95*anc-0.03*anc*anc-4.02*seuil_anc-58.98*(anc==1)
-                                +6.24*fer
-                                +0.34*fer*xpr-0.01*fer*xpr*xpr+0.53*fer*seuil_xpr
-                                +0.43*fer*anc-0.01*fer*anc*anc-0.48*fer*seuil_anc,
-                                -66.42
-                                +1.10*xpr-0.02*xpr*xpr-2.48*seuil_xpr
-                                +3.09*anc-0.04*anc*anc-4.70*seuil_anc-66.68*(anc==1)
-                                +6.08*fer
-                                +0.28*fer*xpr-0.01*fer*xpr*xpr-0.34*fer*seuil_xpr
-                                +0.20*fer*anc+0.00*fer*anc*anc+0.16*fer*seuil_anc),
-                           mincer)
+                - mincer: if(
+                    WORK_PRIVE,
+                    if(ISMALE,
+                      -63.90
+                      + 3.13 * xpr - 0.05 * xpr * xpr - 3.86 * seuil_xpr
+                      + 1.95 * anc - 0.03 * anc * anc - 4.02 * seuil_anc -58.98 * (anc==1)
+                      + 6.24 * fer
+                      + 0.34 * fer * xpr -0.01 * fer * xpr * xpr + 0.53 * fer * seuil_xpr
+                      + 0.43 * fer * anc -0.01 * fer *anc * anc - 0.48 * fer * seuil_anc,
+                      - 66.42
+                      + 1.10 * xpr - 0.02 * xpr * xpr - 2.48 * seuil_xpr
+                      + 3.09 * anc - 0.04 * anc * anc - 4.70 * seuil_anc - 66.68 * (anc==1)
+                      + 6.08 * fer
+                      + 0.28 * fer * xpr - 0.01 * fer * xpr * xpr - 0.34 * fer * seuil_xpr
+                      + 0.20 * fer * anc + 0.00 * fer * anc * anc + 0.16 * fer * seuil_anc),
+                    mincer
+                    )
                 - mincer: if(WORK_PUBLIC,
                             if(ISMALE,
                                 -43.44
@@ -162,8 +163,10 @@ entities:
                 - miner: if(ISMALE, mincer * 1.08, mincer * 0.9)
                 #le 0.5 pour passer au brut. Oui c'est moche
                 #15000=smic
-                - salaire_imposable:  if(ISINWORK,
-                               max(mincer * 0.5 - productivity, 15000), 0)
-
+                - salaire_imposable: if(
+                    ISINWORK,
+                    max(mincer * 0.5 - productivity, 15000),
+                    0
+                    )
             rev_cap:
                 - capital_inc: l_men.wealth * 0.1 * (quimen == 1)

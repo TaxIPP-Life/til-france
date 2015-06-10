@@ -3,8 +3,8 @@ entities:
         fields:
         # individusl intrinseq
             - age_en_mois:   int
-            - age:    {type: int, initialdata: false}
-            - sexe:   int
+            - age: {type: int, initialdata: false}
+            - sexe: int
             - wprm_init: {type: int, initialdata: false}
 
         # l_men
@@ -38,7 +38,7 @@ entities:
             - tauxprime: float
             - start_retirement: {type: int, initialdata: false}
             - choi: float
-            - xpr: int # name to avoid confusion with function exp
+            - xpr: int # experience name to avoid confusion with function exp
             - anc: int
             - dur_rest_ARE: {type: int, initialdata: false}
 
@@ -68,19 +68,19 @@ entities:
             - nb_enf_FP: {type: int, initialdata: false, default: 0}
 
         links:
-            l_men:      {type: many2one, target: menages,field: idmen}
-            l_foy:      {type: many2one, target: foyers_fiscaux, field: idfoy}
-            l_mere:     {type: many2one, target: individus, field: mere}
-            l_pere:     {type: many2one, target: individus, field: pere}
-            l_partner:     {type: many2one, target: individus, field: partner}
-            l_tuteur:   {type: many2one, target: individus, field: tuteur}
-            invl_mere:  {type: one2many, target: individus, field: mere}
-            invl_pere:  {type: one2many, target: individus, field: pere}
-            pers2reg:   {type: many2one, target: register, field: id}
+            l_men: {type: many2one, target: menages,field: idmen}
+            l_foy: {type: many2one, target: foyers_fiscaux, field: idfoy}
+            l_mere: {type: many2one, target: individus, field: mere}
+            l_pere: {type: many2one, target: individus, field: pere}
+            l_partner: {type: many2one, target: individus, field: partner}
+            l_tuteur: {type: many2one, target: individus, field: tuteur}
+            invl_mere: {type: one2many, target: individus, field: mere}
+            invl_pere: {type: one2many, target: individus, field: pere}
+            pers2reg: {type: many2one, target: register, field: id}
 
         # possible transitions and regressions. The actual list used in the
         # simulation must be defined below
-            homes:      {type: one2many, target: menages,field: owner}
+            homes: {type: one2many, target: menages,field: owner}
 
         macros:
             MALE: 0
@@ -108,30 +108,30 @@ entities:
             INACTIVE:  1
             UNEMPLOYED: 2
             NON_CADRE: 3
-            CADRE:     4
-            FONCT_A:   5
-            FONCT_S:   6
-            INDEP  :   7
-            AVPF   :   8
-            PRE_RET:   9
-            RETIRED:   10
-            STUDENT:   11
+            CADRE: 4
+            FONCT_A: 5
+            FONCT_S: 6
+            INDEP  : 7
+            AVPF   : 8
+            PRE_RET: 9
+            RETIRED: 10
+            STUDENT: 11
 
-            ISINWORK:     (workstate == 3) or (workstate == 4) or (workstate == 5)  or (workstate == 6) or (workstate == 7)
-            WORK_PUBLIC:  (workstate == 5)  or (workstate == 6)
-            WORK_PRIVE:   (workstate == 3) or (workstate == 4)
-            WORK_INDEP:   (workstate == 7)
+            ISINWORK: (workstate == 3) or (workstate == 4) or (workstate == 5)  or (workstate == 6) or (workstate == 7)
+            WORK_PUBLIC: (workstate == 5)  or (workstate == 6)
+            WORK_PRIVE: (workstate == 3) or (workstate == 4)
+            WORK_INDEP: (workstate == 7)
             ISUNEMPLOYED: (workstate == 2)
-            ISSTUDENT:    (workstate == 11)
-            ISRETIRED:    (workstate == 10)
+            ISSTUDENT: (workstate == 11)
+            ISRETIRED: (workstate == 10)
             ISOTHERINACTIVE: (workstate == 1)
 
             BEGINER: xpr == 1
 
             #TODO: add others
-            ORDINARY_HOUSE: (idmen>9)
+            ORDINARY_HOUSE: (idmen > 9)
             DASS: 1
-            INDASS: (idfoy==1)
+            INDASS: (idfoy == 1)
             # IS_LOWER_SECONDARY_EDU: education_level == 2
             # IS_UPPER_SECONDARY_EDU: education_level == 3
             # IS_TERTIARY_EDU: education_level == 4
@@ -142,30 +142,48 @@ entities:
         processes:
             init_weight_ind:
                 - wprm_init: 1
-                - month: randint(0,11)
-                - age: trunc(age_en_mois/12)
+                - month: randint(0, 11)
+                - age: trunc(age_en_mois / 12)
+                - age_test_openfisca: openfisca_calculate('age_en_mois')
+                - assertEqual(age_test_openfisca, age)  # TODO REMOVE ME
                 # - wprm_init: permet de faire des tests
-                - wprm_init: 100*age + month
+                - wprm_init: 100 * age + month
 
             ageing:
                 - age_en_mois: add_time_scale(age_en_mois)
-                - age: trunc(age_en_mois/12)
+                - age: trunc(age_en_mois / 12)
                 # - wprm_init: permet de faire des tests
                 - wprm_init: lag(age_en_mois,2)
 
             stat_period_ini:
-                - csv('period', 'population', 'naissance', 'salaire_imposable', 'rsti', 'choi','age moyen',fname='stat.csv')
-                - csv('period', 'inwork', 'inpublic', 'inprive', 'independant', 'chomage', 'students',
-                        'retired', 'other_inact', fname='workstate.csv')
-                - csv('period', 'marie', 'celib', 'divorce', 'voeuf', 'pacs', 'en_couple', fname='civilstate.csv')
+                - csv(
+                    'period', 'population', 'naissance', 'salaire_imposable', 'rsti', 'choi','age moyen',
+                    fname = 'stat.csv'
+                    )
+                - csv(
+                    'period', 'inwork', 'inpublic', 'inprive', 'independant', 'chomage', 'students', 'retired',
+                    'other_inact',
+                    fname = 'workstate.csv'
+                    )
+                - csv(
+                    'period', 'marie', 'celib', 'divorce', 'voeuf', 'pacs', 'en_couple',
+                    fname='civilstate.csv'
+                    )
             stat_period:
-                - csv(avg(period), count(), count(age==0), sum(salaire_imposable), sum(rsti), sum(choi), avg(age), fname='stat.csv', mode='a')
-                - csv( avg(period), count(ISINWORK), count(WORK_PUBLIC), count(WORK_PRIVE), count(WORK_INDEP),
-                       count(ISUNEMPLOYED), count(ISSTUDENT), count(ISRETIRED), count(ISOTHERINACTIVE),
-                       fname='workstate.csv', mode='a')
-                - csv( avg(period), count(ISMARRIED), count(ISSINGLE), count(ISDIVORCED), count(ISWIDOW),
-                       count(ISPACS), count(INCOUPLE), fname='civilstate.csv', mode='a')
-
+                - csv(
+                    avg(period), count(), count(age==0), sum(salaire_imposable), sum(rsti), sum(choi), avg(age),
+                    fname = 'stat.csv', mode = 'a'
+                    )
+                - csv(
+                    avg(period), count(ISINWORK), count(WORK_PUBLIC), count(WORK_PRIVE), count(WORK_INDEP),
+                    count(ISUNEMPLOYED), count(ISSTUDENT), count(ISRETIRED), count(ISOTHERINACTIVE),
+                    fname = 'workstate.csv', mode = 'a'
+                    )
+                - csv(
+                    avg(period), count(ISMARRIED), count(ISSINGLE), count(ISDIVORCED), count(ISWIDOW),
+                    count(ISPACS), count(INCOUPLE),
+                    fname = 'civilstate.csv', mode = 'a'
+                    )
             check:
                 - assertEqual(count((pere == l_partner.pere) and (pere > -1)), 0)
                 - assertEqual(count((mere == l_partner.mere) and (mere > -1)), 0)
