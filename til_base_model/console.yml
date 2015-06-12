@@ -32,7 +32,7 @@ simulation:
         - menages: [init_weight_men, init_region_id, init_rent, init_value, init_wealth, init_owner, men_composition]
         - individus: [init_weight_ind, init_couple, init_education_level, init_productivity]
         - companies: [init_size]
-        - foyers_fiscaux: [cases,empty_declar]
+        - foyers_fiscaux: [cases, empty_declar]
         - register: [init_reg]
         # - legislation: [2009]
         - register: [sum_indiv]
@@ -66,8 +66,8 @@ simulation:
         - menages: [men_composition]
         - foyers_fiscaux: [cases, empty_declar]
         - individus: [ineducation, outwork, inwork, retire, chomage, salaire , retraite
-#            dump_all
-        ]
+            # dump_all
+            ]
         - individus: [check]
         - menages: [init_value, consumption, saving]
         - companies: [rien]
@@ -84,14 +84,12 @@ simulation:
     logging:
         level: processes
 
-
     skip_shows: True
     timings: False
     time_scale: 'year'
     # retro: True
 
-
     start_period: 200901
     # first simulated period is start_period + 1  TODO: a bit ugly !
 
-    periods: 3
+    periods: 10
