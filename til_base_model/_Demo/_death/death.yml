@@ -3,10 +3,11 @@ entities:
         processes:
             death:
                 ############# Tirage ###########
-                - dead: if(ISMALE,
-                           logit_regr(0.0, align='param/demo/hyp_mortaliteH.csv'),
-                           logit_regr(0.0, align='param/demo/hyp_mortaliteF.csv'))
-
+                - dead: if(
+                    ISMALE,
+                    logit_regr(0.0, align='param/demo/hyp_mortaliteH.csv'),
+                    logit_regr(0.0, align='param/demo/hyp_mortaliteF.csv')
+                    )
                 # - test_dead: age/100
                 # - test_log: logistic((age-50)/10)
                 # - test_logit: logit_score(age/100)
@@ -32,11 +33,10 @@ entities:
 
                 - show('Avg age of partner', avg(l_partner.age, filter=l_partner.age>-1))
                 - show('Number of male death', count(dead and ISMALE))
-                - show('Number of male death', count(dead and ISFEMALE))
-                - show('Number of male death', count(dead))
+                - show('Number of female death', count(dead and ISFEMALE))
+                - show('Number of deaths', count(dead))
                 - show('Avg age of dead women', avg(age, filter=dead and ISFEMALE))
                 - show('Widows', sum(ISWIDOW))
-
 
                 # Changement dans les regroupements (foyers_fiscaux et menages)
                 ### ménages
@@ -60,9 +60,11 @@ entities:
                 - live_together_c: l_partner.orph_indep and l_partner.idmen == idmen
                 - live_together_p: l_pere.orph_indep and l_pere.idmen == idmen
                 - live_together_m: l_mere.orph_indep and l_mere.idmen == idmen
-                - idmen: if(orph_indep,
-                            new('menages', region_id=l_men.region_id,rent=l_men.rent/1.5, pref=id),
-                        idmen)
+                - idmen: if(
+                      orph_indep,
+                      new('menages', region_id = l_men.region_id, rent = l_men.rent / 1.5, pref = id),
+                      idmen
+                      )
                 - idmen: if(live_together_c, l_partner.idmen, idmen)
                 - idmen: if(live_together_p, l_pere.idmen, idmen)
                 - idmen: if(live_together_m, l_mere.idmen, idmen)
@@ -73,7 +75,7 @@ entities:
                 # dans ce cas, il faut trouver une nouvelle personne de référence
                 - coloc: (l_men.l_pref.dead and l_men.l_pref.partner < 1 and
                             l_men.l_pref.id != pere and l_men.l_pref.id != mere and quimen>1)
-                - show('les personnes qui vivaient avec un individusdécédés mais sans lien de filiation avec lui était', count(coloc))
+                - show('les personnes qui vivaient avec un individus décédés mais sans lien de filiation avec lui était', count(coloc))
                 # le plus vieux devient personne de reference
                 - quimen: if( coloc and id == l_men.get(individus.min(id, not dead)), 0, quimen)
                 # et son patneroint devient quimen==1 du coup
@@ -88,9 +90,10 @@ entities:
                 - idfoy: if(orph_mere and pere>-1 and not l_pere.dead, l_pere.idfoy, idfoy)
                 # les enfants qui restent n'ont pas de deuxième parent ou bien sont assez vieux pour vivre seul.
                 #   si on a plus  de 16 ans on vit tout seul
-                - orph_indep: ((l_pere.dead and (l_pere.idfoy == idfoy) and mere == UNSET or (l_mere.idfoy != idfoy and age >=20)) or
-                              (l_mere.dead and (l_mere.idfoy == idfoy) and pere == UNSET or (l_pere.idfoy != idfoy and age >=20))) and
-                                (quifoy>1) and (age > 15)
+                - orph_indep: (
+                    (l_pere.dead and (l_pere.idfoy == idfoy) and mere == UNSET or (l_mere.idfoy != idfoy and age >=20)) or
+                    (l_mere.dead and (l_mere.idfoy == idfoy) and pere == UNSET or (l_pere.idfoy != idfoy and age >=20))
+                    ) and (quifoy > 1) and (age > 15)
                 - orph_das: ((l_pere.dead and (l_pere.idfoy == idfoy) and mere == UNSET) or
                               (l_mere.dead and (l_mere.idfoy == idfoy) and pere == UNSET)) and
                                 (quifoy>1) and (age <= 15)
@@ -113,7 +116,7 @@ entities:
                 # dans ce cas, il faut trouver une nouvelle personne de référence
                 - coloc: (l_foy.l_vous.dead and l_foy.l_vous.partner < 1 and
                             l_foy.l_vous.id != pere and l_foy.l_vous.id != mere and quifoy>1)
-                - show('les personnes qui vivaient avec un individusdécédés mais sans lien de filiation avec lui était', count(coloc))
+                - show('les personnes qui vivaient avec un individus décédés mais sans lien de filiation avec lui était', count(coloc))
                 # le plus vieux devient personne de reference
                 - quifoy: if( coloc and id == l_foy.get(in_foyers_fiscaux.min(id, not dead)), 0, quifoy)
                 # et son patneroint devient quifoy==1 du coup

@@ -3,36 +3,44 @@ entities:
         processes:
 
             init_productivity:
-                - dur_rest_ARE: 2*(choi>0)
+                - dur_rest_ARE: 2 * (choi > 0)
                 - productivity: 0
                 # destinie (1991)
                 # Roux (jusque 2002)
                 - mincer : 7.6 + 0.08 * findet + 0.04 * xpr - 0.0006 * xpr*xpr
-                - productivity: if( salaire_imposable >0,
+                - productivity: if(salaire_imposable > 0,
                             salaire_imposable * 0.5 - 1820 * mincer,
                             0)
-                - productivity: if(salaire_imposable<=0,
-                            normal(loc=avg(productivity, filter=(salaire_imposable > 0)),
-                                      scale=std(productivity, filter=(salaire_imposable > 0))),
-                            productivity)
+                - productivity: if(
+                    salaire_imposable <= 0,
+                    normal(
+                        loc = avg(productivity, filter=(salaire_imposable > 0)),
+                        scale = std(productivity, filter=(salaire_imposable > 0))
+                        ),
+                    productivity
+                    )
 
             #source: vos droits services public.fr
             chomage:
                 ####### duree de versement
                 # on la marque en annee mais le calcul est normalement en mois
                 - entree_chom : ISUNEMPLOYED and not lag(ISUNEMPLOYED)
-                #TODO: avoir une meilleure fonction que duration pour avoir toutes les
-                #preriode d'emploi, la on a que la derniere, on mettra la periode d'evaluation plus tard
-                # - show('nombre d entree au chom', count(entree_chom))
-                - workstate: if(entree_chom,CADRE,workstate)
-                - dur_ver: if(entree_chom,
-                                if(age <50 ,
-                                        duration(ISINWORK and not WORK_INDEP),
-                                         duration(ISINWORK and not WORK_INDEP)),
-                                0)
+                # TODO: avoir une meilleure fonction que duration pour avoir toutes les
+                # preriode d'emploi, la on a que la derniere, on mettra la periode d'evaluation plus tard
+                - show('nombre d entree au chom', count(entree_chom))
+                - workstate: if(entree_chom, CADRE, workstate)
+                - dur_ver: if(
+                    entree_chom,
+                    if(
+                        age < 50,
+                        duration(ISINWORK and not WORK_INDEP),
+                        duration(ISINWORK and not WORK_INDEP)
+                        ),
+                    0
+                    )
                 - dur_ver: dur_ver -1
-                - workstate: if(entree_chom,UNEMPLOYED,workstate)
-                # - show('nombre dannees de d act', groupby(ISUNEMPLOYED,dur_ver))
+                - workstate: if(entree_chom, UNEMPLOYED, workstate)
+                # - show('nombre d'annees de d act', groupby(ISUNEMPLOYED,dur_ver))
 
                 # maximum: c'est bien en vrai c'est 730 jours(=2 ans) + 365 jours(=1 ans)
                 # ser supprime quand on aura une bonne fonction duration
@@ -40,64 +48,56 @@ entities:
                 # minimum (ne sert a rien tant qu'on est en annee)
                 # c'est en fait un condition d'eligibilite
                 #122 jours = 4mois
-                - dur_ver: if(dur_ver > 0.25,
-                               dur_ver,
-                               0)
+                - dur_ver: if(dur_ver > 0.25, dur_ver, 0)
 
                 # chomage partiel : 182 jours, pas dans le modele pour l'instant
                 # convention chomage du 18 janvier 2006 au 31 mars 2009
-                - dur_rest_ARE: if(entree_chom,
-                                    dur_ver,
-                                    dur_rest_ARE)
+                - dur_rest_ARE: if(entree_chom, dur_ver, dur_rest_ARE)
                 # avant de baisser la duree par un on regarde des cas de prolongation
                 # prolongation
-                - prolong: (age>61) and (duration(choi>0)>=1 ) # and d'atres truc
+                - prolong: (age > 61) and (duration(choi > 0) >= 1) # and d'atres truc
                 #TODO: a completer quand on aura la fonction qui va bien (voir google group liam)
                 - dur_rest_ARE: if(prolong and (dur_rest_ARE==1),
                                     2,
                                     dur_rest_ARE)
-                - dur_rest_ARE: if((dur_rest_ARE>0),
-                                    dur_rest_ARE-1,
-                                    0)
+                - dur_rest_ARE: if((dur_rest_ARE > 0), dur_rest_ARE - 1, 0)
 
                 ####### Montant de l'ARE
                 # TODO: ajoute quotite quand dans le modele
                 # TODO: parametres et bonne valeur
                 #salaire journalier de reference -> faire tourner avant salaire toujours
                 #34308 plafond de securite sociale en 2009
-                - SJR: if(entree_chom,
-                            min(4*34308,salaire_imposable)/365,
-                            0)
-                - AJ_ARE: 11.57 + 40.4*SJR/100
+                - SJR: if(entree_chom, min(4 * 34308, salaire_imposable) / 365, 0)
+                - AJ_ARE: 11.57 + 40.4 * SJR / 100
                 # maximum et minimum
-                - AJ_ARE: min( max( AJ_ARE, 57.4*SJR/100), 75*SJR/100)
-
+                - AJ_ARE: min(max(AJ_ARE, 57.4 * SJR / 100), 75 * SJR / 100)
                 # passage au net
                 # financement retraite complementaire
-                - FRC: 3/100*SJR
+                - FRC: 3 / 100 * SJR
                 # CSG et CRDS sont calcule dans la legislation openfisca
                 # mais ce serait plus simple ici non ?
                 # Pour l'instant on oublie meme si c'est mal
                 # régime local d'assurance-maladie d'Alsace-Moselle
 
-                - choi: if(ISUNEMPLOYED and (dur_rest_ARE > 0),
-                          if(entree_chom, AJ_ARE * 365, choi),
-                          0)
-
+                - choi: if(
+                    ISUNEMPLOYED and (dur_rest_ARE > 0),
+                    if(entree_chom, AJ_ARE * 365, choi),
+                    0
+                    )
             retraite:
-#             Actualisation du nombre d'enfants par régime
+            # Actualisation du nombre d'enfants par régime
                 - new_born: invl_mere.count(age_en_mois == 0) + invl_pere.count(age_en_mois == 0)
                 - nb_enf_RG: if(WORK_PRIVE, nb_enf + new_born, nb_enf)
                 - nb_enf_RSI: if(WORK_INDEP, nb_enf + new_born, nb_enf)
                 - nb_enf_FP: if(WORK_PUBLIC, nb_enf + new_born, nb_enf)
                 - nb_pac: invl_mere.count(age <= 18) + invl_pere.count(age <= 18)
-                - date_depart: pension(filter = (age_en_mois > 12 * 55), varname = 'date_depart', regime = 'all')
+                - date_depart: -1 #pension(filter = (age_en_mois > 12 * 55), varname = 'date_depart', regime = 'all')
                 - to_be_retired: date_depart <= period and date_depart != -1 and not ISRETIRED
 
                 - start_retirement: if(to_be_retired, period, start_retirement)
                 - workstate: if(to_be_retired, RETIRED, workstate)
 
-                - new_rsti: pension(filter = (age_en_mois > 12 * 55), varname = 'pension', regime = 'all')
+                - new_rsti: 0 #pension(filter = (age_en_mois > 12 * 55), varname = 'pension', regime = 'all')
                 - revalo: 0
                 - rsti: if(to_be_retired, new_rsti, rsti * (1 + revalo))
                 - test: count(rsti > 0)

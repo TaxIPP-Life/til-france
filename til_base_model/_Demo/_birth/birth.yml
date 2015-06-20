@@ -11,11 +11,17 @@ entities:
                                             align='param/demo/Hyp_fecondite.csv')
 
                 # le niveau d'études de l'enfant est pré-determinée
-                - annee: trunc(period/100)
-                - temp_pere: if( partner>0, l_partner.findet + (l_partner.age>35+annee-2009) + (l_partner.age>45+annee-2009) + (l_partner.age>55+annee-2009), 0)
-                - temp_mere: findet + (l_mere.age>35+annee-2009) + (l_mere.age>45+annee-2009) + (l_mere.age>55+annee-2009)
-                - findet_temp: if(partner>0, trunc((temp_pere+temp_mere)/2),temp_mere)
-                - new('individus', filter=to_give_birth,
+                - annee: trunc(period / 100)
+                - temp_pere: if(
+                    partner > 0,
+                    l_partner.findet +
+                    (l_partner.age > 35 + annee - 2009) +
+                    (l_partner.age > 45 + annee - 2009) + (l_partner.age > 55 + annee - 2009),
+                    0
+                    )
+                - temp_mere: findet + (l_mere.age > 35 + annee - 2009) + (l_mere.age > 45 + annee - 2009) + (l_mere.age > 55 + annee - 2009)
+                - findet_temp: if(partner>0, trunc((temp_pere + temp_mere) / 2), temp_mere)
+                - new('individus', filter = to_give_birth,
                       mere = id,
                       pere = partner,
                       age = 0,
@@ -23,7 +29,7 @@ entities:
                       partner = UNSET,
                       civilstate = SINGLE,
                       workstate = STUDENT,
-                      sexe = choice([MALE,FEMALE], [0.5122, 0.4878]),
+                      sexe = choice([MALE, FEMALE], [0.5122, 0.4878]),
                       productivity = 0,
                       salaire_imposable = 0,
                       rsti = 0,
