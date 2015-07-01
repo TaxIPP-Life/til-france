@@ -5,6 +5,7 @@
 import:
     - _Individu/individu.yml
     - _Individu/register.yml
+    - _Individu/generation.yml
     - _House/menage.yml
     - _Foyer_fiscal/foyers_fiscaux.yml
     - _Work/work_PensIPP.yml  # work0, work_pensIPP
@@ -14,6 +15,7 @@ import:
     - _Demo/_death/death.yml
     - _Demo/_union/union.yml
     - _Demo/_divorce/divorce.yml
+    - _Dependance/dependance.yml
     - _Educ/youth.yml
     - _House/moving.yml
     - _Consumption/conso.yml
@@ -21,16 +23,26 @@ import:
     - _Jobs/companies.yml
 
 globals:
-    periodic:
-       path: param/globals.csv
-       fields:
-       - MINR: float
-       - WEMRA: int
+    #  periodic:
+    #     path: param/demo/mortalite_male.h5
+    #     fields:
+    #     - period: float
+    #     - WEMRA: int
+    mortality_rate_male:
+      type: float
+    mortality_rate_female:
+      type: float
+    mortality_rate_male_1997:
+      type: float
+    mortality_rate_female_1997:
+      type: float
 
 simulation:
     init:
         - menages: [init_weight_men, init_region_id, init_rent, init_value, init_wealth, init_owner, men_composition]
         - individus: [init_weight_ind, init_couple, init_education_level, init_productivity]
+        - generation: [mortality_rates]
+        - individus: [init_dependance]
         - companies: [init_size]
         - foyers_fiscaux: [cases, empty_declar]
         - register: [init_reg]
@@ -38,20 +50,24 @@ simulation:
         - register: [sum_indiv]
         - individus: [stat_period_ini, stat_period]
 
+
     processes:
     # apres chaque étape qui modifie les ménages, on fait tourner une moulinette sur foyers_fiscaux et menages,pour s'assurer qu'on a les bons
     # vous et pref, plus tard, quand le code le permettra, on changera ce vous directement dans l'étape au niveau individus        # - individus: [age, dump_info, show_demography , marriage]
         - register: [rien]
+        - generation: [education]
+        - generation: [mortality_rates]
+        - individus: [dependance]
         - individus: [ageing]
         - individus: [death]
-#        - individus: [migration]
+        - individus: [migration]
         - individus: [check]
         - individus: [independance]
         - individus: [check]
         - individus: [birth]
         - individus: [check]
         - menages: [men_composition]
-        - foyers_fiscaux: [cases,empty_declar]
+        - foyers_fiscaux: [cases, empty_declar]
         - individus: [[into_couple, 'year']]
         - individus: [move_together]
         - individus: [check]
@@ -84,7 +100,7 @@ simulation:
     logging:
         level: processes
 
-    skip_shows: True
+    skip_shows: False
     timings: False
     time_scale: 'year'
     # retro: True

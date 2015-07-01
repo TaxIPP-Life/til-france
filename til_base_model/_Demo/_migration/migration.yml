@@ -2,37 +2,54 @@ entities:
     individus:
         processes:
             migration:
-            # note : There is only immigration in the Insee prevision
-            #TODO: deal with emmigration and people leaving the country
-            #TODO: create home and families.
-            #TODO: associate a carrier (in longitudinal)
-                - select: 1
-                - select_men : align_abs(select, need='param/demo/hyp_soldemigH.csv',
-                         filter=ISMALE)
-                - select_women : align_abs(select, need='param/demo/hyp_soldemigF.csv',
-                         filter=ISFEMALE)
+                # note : There is only immigration in the Insee prevision
+                # TODO: deal with emmigration and people leaving the country
+                # TODO: create home and families.
+                # TODO: associate a carrier (in longitudinal)
+                # - select: 1
+                # - select_men: align_abs(select, need='param/demo/hyp_soldemigH.csv', filter=ISMALE)
+                # - select_women: align_abs(select, need='param/demo/hyp_soldemigF.csv', filter=ISFEMALE)
+                - migrant: false
+                - select_men: logit_regr(
+                    0.0,
+                    filter= ISMALE,
+                    align = 'param/demo/hyp_soldemigH_custom.csv'
+                    )
+                - select_women: logit_regr(
+                    0.0,
+                    filter= ISFEMALE,
+                    align = 'param/demo/hyp_soldemigF_custom.csv'
+                    )
                 - select: select_men or select_women
-
-
-                - new('individus', filter=select,
-                      mere = id,
-                      pere = partner,
-                      age = 0,
-                      age_en_mois = 0,
-                      partner = UNSET,
-                      civilstate = SINGLE,
-                      workstate = STUDENT,
-                      sexe = choice([MALE,FEMALE], [0.5122, 0.4878]),
-                      productivity = 0,
-                      salaire_imposable = 0,
-                      rsti = 0,
-                      choi = 0,
-                      idmen = idmen,
-                      quimen = 2,
-                      idfoy = idfoy,
-                      wprm_init = wprm_init,
-                      quifoy = 1,
-                      select = 2
-                      )
-                - new('register', filter=(select == 2) ,
-                        id=id, sexe=sexe, pere=pere, mere=mere, vivant=True, naiss=period, findet=findet)
+                - new('individus', filter = select,
+                    age = age,
+                    age_en_mois = age_en_mois,
+                    partner = UNSET,
+                    civilstate = SINGLE,
+                    workstate = workstate,
+                    sexe = sexe,
+                    productivity = productivity,
+                    salaire_imposable = salaire_imposable,
+                    rsti = 0,
+                    choi = 0,
+                    migrant = True,
+                    quimen = 0,
+                    quifoy = 0
+                    )
+                    ,
+                    # select = 2
+                    # naiss = naiss
+                - csv(
+                    period, count(migrant),
+                    fname = 'migrants.csv', mode = 'a'
+                    )
+                - new(
+                    'register',
+                    filter = migrant,
+                    id = id,
+                    sexe = sexe,
+                    vivant = True,
+                    findet = findet,
+                    migrant = period
+                    )
+                - show('Number of migrant', count(migrant))

@@ -3,10 +3,38 @@ entities:
         processes:
             death:
                 ############# Tirage ###########
+                - MU: .85
+                - qm: if(
+                    ISMALE,
+                    individu2generation.qm_male,
+                    individu2generation.qm_female
+                    )
+                - qm1997: if(
+                    ISMALE,
+                    individu2generation.qm_male_1997,
+                    individu2generation.qm_female_1997
+                    )
+                - lq: log((MU * qm + (1 - MU) * qm1997)) / (1 - (MU * qm + (1 - MU) * qm1997))
                 - dead: if(
                     ISMALE,
-                    logit_regr(0.0, align='param/demo/hyp_mortaliteH.csv'),
-                    logit_regr(0.0, align='param/demo/hyp_mortaliteF.csv')
+                    logit_regr(
+                        (dependance_level == 0) +
+                        (dependance_level == 1) * (
+                            (dependance_anciennete >= 10) * (1.510 + 1.228 * lq) +
+                            (dependance_anciennete < 10) * (.634 + .454 * lq)
+                            ) +
+                        (dependance_level == 2) * (1.815 + .752 * lq + .987 * (dependance_anciennete == 1)
+                            ),
+                        align='param/demo/hyp_mortaliteH.csv'
+                        ),
+                    logit_regr(
+                        (dependance_level == 0) +
+                        (dependance_level == 1) * (.241 + .319 * lq - .079 * dependance_anciennete) +
+                        (dependance_level == 2) * (
+                            (dependance_anciennete >= 10) * (2.306 + 1.059 * lq) +
+                            (dependance_anciennete < 10) * (.695 + .390 * lq + .244 * (dependance_anciennete == 1))
+                            )
+                        , align='param/demo/hyp_mortaliteF.csv')
                     )
                 # - test_dead: age/100
                 # - test_log: logistic((age-50)/10)
@@ -27,9 +55,9 @@ entities:
                 ### par simplicite pour l'heritage (parce que pour le reste ca marche)
                 ### on ne fait mourir qu une seule personne
                 ### A retirer pour tester, ca doit etre bon maintenant
-                - dead: if( l_partner.dead and l_partner.id < id, False, dead)
-                - dead: if( l_pere.dead, False, dead)
-                - dead: if( l_mere.dead, False, dead)
+                - dead: if(l_partner.dead and l_partner.id < id, False, dead)
+                - dead: if(l_pere.dead, False, dead)
+                - dead: if(l_mere.dead, False, dead)
 
                 - show('Avg age of partner', avg(l_partner.age, filter=l_partner.age>-1))
                 - show('Number of male death', count(dead and ISMALE))
@@ -159,9 +187,9 @@ entities:
                 - show('nb_enfants morts avec enfants vivant', groupby(dead,nb_rang2))
                 - show('nb_enfants morts avec petits-enfants vivant seuelement', groupby(dead,nb_rang3))
 
-                #### si patneroint
+                #### si patner
                 # on fait l'hypothese de pas de donation au dernier vivant
-                - nb_part_herit: nb_rang1+nb_rang2+nb_rang3
+                - nb_part_herit: nb_rang1 + nb_rang2 + nb_rang3
                 - patrimoine: if(not dead and l_partner.dead,
                                     if(l_partner.nb_part_herit>0,
                                         patrimoine+l_partner.patrimoine/4,
@@ -169,7 +197,7 @@ entities:
                                     patrimoine)
                 # on retire le patrimoine, de la personne decedée
                 - patrimoine: if(dead and not l_partner.dead,
-                                    if(nb_part_herit>0, patrimoine*3/4, 0),
+                                    if(nb_part_herit > 0, patrimoine * 3 / 4, 0),
                                     patrimoine)
 
                 - pers2reg.heritage: if(dead and nb_part_herit>0,
@@ -178,16 +206,20 @@ entities:
                 # apres on fait une etape dans le registre
                 - pers2reg.heritage_asc: if(dead and nb_part_herit==0, pers2reg.heritage_asc+patrimoine, pers2reg.heritage_asc)
 
-                ############# Suppression ###########
+                # Suppression du decéde
+                # enregistrement dans le registre et elimination de la table individus
                 - civilstate: if(l_partner.dead and LEGAL_UNION, WIDOW, civilstate)
                 - dur_in_couple: if(l_partner.dead, 0, dur_in_couple)
                 - partner: if(l_partner.dead, UNSET, partner)
                 - mere: if(l_mere.dead, UNSET, mere)
                 - pere: if(l_pere.dead, UNSET, pere)
-
                 - pers2reg.deces: if(dead, period, pers2reg.deces)
+                - csv(
+                    period, count(dead),
+                    fname = 'deaths.csv', mode = 'a'
+                    )
                 - remove(dead)
-                #- csv( dump(), fname='death2.csv')
+
                 - assertEqual(max(l_men.get(individus.count(quimen==0 and not dead))),1)
                 - assertTrue( min(idmen) != -1)
                 - assertEqual(max(l_foy.get(in_foyers_fiscaux.count(quifoy==0 and not dead))),1)

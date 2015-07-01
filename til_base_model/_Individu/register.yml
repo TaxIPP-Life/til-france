@@ -5,14 +5,16 @@ entities:
             - vivant:  {type: bool, initialdata: False, default: True}
             - deces:   {type: int, initialdata: False}
             - naiss:   {type: int, initialdata: False}
-        # family
+            - migrant:   {type: int, initialdata: False}
+
+            # family
             - pere:  int
             - mere:  int
 
-        # education
+            # education
             - findet: int
 
-        # # work
+            # work
             - salaire_imposable: {type: float, initialdata: false, default: 0.0}
             - test: {type: float, initialdata: false, default: 0.0}
             - rsti: {type: float, initialdata: false, default: 0.0}

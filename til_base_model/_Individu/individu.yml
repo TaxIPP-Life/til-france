@@ -2,13 +2,15 @@ entities:
     individus:
         fields:
         # individusl intrinseq
-            - age_en_mois:   int
+            - age_en_mois: int
             - age: {type: int, initialdata: false}
             - sexe: int
             - wprm_init: {type: int, initialdata: false}
+            - migrant: {type: bool, initialdata: false, default: false}
+            - naiss: {type: int, initialdata: false, default: 0}
 
         # l_men
-            - idmen:    int  # il faudra changer les men en men
+            - idmen: int  # il faudra changer les men en men
             - quimen: int
 
         # foyer l_foy
@@ -16,8 +18,8 @@ entities:
             - quifoy: int
 
         # family
-            - pere:   int
-            - mere:   int
+            - pere: int
+            - mere: int
             - partner: int
             - tuteur: int
             - dur_in_couple: {type: float, initialdata: false}
@@ -41,6 +43,10 @@ entities:
             - xpr: int # experience name to avoid confusion with function exp
             - anc: int
             - dur_rest_ARE: {type: int, initialdata: false}
+
+            # dependance 0 non dependant, 1: moyennement dependant, 2: fortmeent dependant
+            - dependance_level: {type: int, initialdata: false, default: 0}
+            - dependance_anciennete: {type: int, initialdata: false, default: -1}
 
         # patrimoine
             - patrimoine: {type: float, initialdata: false}
@@ -77,10 +83,11 @@ entities:
             invl_mere: {type: one2many, target: individus, field: mere}
             invl_pere: {type: one2many, target: individus, field: pere}
             pers2reg: {type: many2one, target: register, field: id}
+            individu2generation: {type: many2one, target: generation, field: age}
 
         # possible transitions and regressions. The actual list used in the
         # simulation must be defined below
-            homes: {type: one2many, target: menages,field: owner}
+            homes: {type: one2many, target: menages, field: owner}
 
         macros:
             MALE: 0
@@ -128,6 +135,10 @@ entities:
 
             BEGINER: xpr == 1
 
+            ISDEPENDANT: (dependance_level == 1) or (dependance_level == 2)
+            ISGIR_1_2: (dependance_level == 2)
+            ISGIR_3_4: (dependance_level == 1)
+
             # TODO: add others
             ORDINARY_HOUSE: (idmen > 9)
             DASS: 1
@@ -156,10 +167,21 @@ entities:
                 - wprm_init: lag(age_en_mois,2)
 
             stat_period_ini:
-                - csv('population_by_period ',
+                - csv('period', 'births',
+                      fname = 'births.csv'
+                      )
+                - csv('period', 'deaths',
+                      fname = 'deaths.csv'
+                      )
+                - csv('period', 'migrants',
+                      fname = 'migrants.csv'
+                      )
+                - csv('population_by_period',
                       fname = 'population2.csv'
                       )
-
+                - csv('dependance_by_period',
+                      fname = 'dependance.csv'
+                      )
                 - csv(
                     'period', 'population', 'naissance', 'salaire_imposable', 'rsti', 'choi','age moyen',
                     fname = 'stat.csv'

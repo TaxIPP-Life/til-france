@@ -10,6 +10,7 @@ import pkg_resources
 
 import numpy
 import pandas
+from matplotlib import pyplot as plt
 
 
 path_model = os.path.join(
@@ -117,11 +118,30 @@ population_destinie = destinie_til.loc[destinie_til.age >= 0, ['age_group', 'age
 population_destinie.rename(columns = dict(age = 'total_destinie'), inplace = True)
 
 
-import matplotlib as plt
 population_til
 population
 summary =  pandas.concat([population_patrimoine, population_til, population_destinie, population], axis = 1)
 summary = summary.append(summary.sum(), ignore_index = True)
+
+
+target = 'total_destinie'
+
+fig, axes = plt.subplots(ncols=1)
+axes.barh(summary.index[:11], summary[target][:11]/1e6, align='center', color='red')
+axes.barh(summary.index[:11], summary['total'][:11]/1e6, align='center', color='blue', alpha = .4)
+axes.grid(True)
+
+plt.yticks(summary.index[:11], ["{} - {}".format(i * 10, i * 10 + 9) for i in summary.index[:11]])
+
+plt.xlabel(u"Population (en millions d'individus)")
+plt.title(u"Différence avec les projections de population INSEE")
+fig.tight_layout()
+
+fig.show()
+
+
+
+
 
 summary.eval('abs_diff_til = total_til - total', engine = 'python')
 summary.eval('rel_diff_til = abs_diff_til / total', engine = 'python')

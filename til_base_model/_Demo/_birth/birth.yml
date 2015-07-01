@@ -7,8 +7,8 @@ entities:
                 #on pourra retirer cette condition qui était technique avec R.
                 # Note, on n'a pas de jumeaux
                 - to_give_birth: logit_regr(0.0,
-                                            filter=ISFEMALE and (age >= 15) and (age <= 50) and before_max,
-                                            align='param/demo/Hyp_fecondite.csv')
+                                            filter = ISFEMALE and (age >= 15) and (age <= 50) and before_max,
+                                            align = 'param/demo/Hyp_fecondite.csv')
 
                 # le niveau d'études de l'enfant est pré-determinée
                 - annee: trunc(period / 100)
@@ -41,11 +41,14 @@ entities:
                       wprm_init = wprm_init,
                       quifoy = 2
                       )
-                - new('register', filter=(age == 0) ,
+                - new('register', filter=(age == 0),
                         id=id, sexe=sexe, pere=pere, mere=mere, vivant=True, naiss=period, findet=findet)
-
+                - csv(
+                    period, count(age==0),
+                    fname = 'births.csv', mode = 'a'
+                    )
                 - show('Avg age of "young" mothers', avg(age, filter=to_give_birth and ISFEMALE))
                 - show('Avg age of "young" fathers', avg(l_partner.age, filter=to_give_birth and ISFEMALE and ISMARRIED))
                 - show('Avg age of all mothers', avg(l_mere.age, filter=l_mere.age>-1))  #la condition -1 permet de ne prendre que les vraies meres !
                 - show('Avg age of all fathers', avg(l_pere.age, filter=l_pere.age>-1 ))
-                - show('Number of birth', count(age==0))
+                - show('Number of births', count(age==0))
