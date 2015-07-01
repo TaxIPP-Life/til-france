@@ -2,20 +2,19 @@ entities:
     individus:
         processes:
             init_couple:
-                - dur_in_couple : if(INCOUPLE,max(((age+l_partner.age)/2 - 20 ),0),0)
+                - dur_in_couple : if(INCOUPLE, max(((age + l_partner.age) / 2 - 20 ), 0), 0)
                 - dur_out_couple : 0
 
             into_couple:
                 - nb_children_ind : invl_mere.count() + invl_pere.count()
                 - to_couple: 0
-                # TODO: changer l'age par l'age_corr = age moins age de fin d'études
                 - agec: age - findet
                 - etude_courte: (findet<20)
                 - etude_longue: (findet>20)
                 - to_couple: if((age >= 18) and (age <= 90) and not INCOUPLE,
                                  if(ISMALE,
-                                    logit_score(-73.10 + 8.96 * agec - 0.408* agec**2 + 0.00796 * agec ** 3 -5.72/100000*(agec ** 4) -0.13*etude_courte +0.04*etude_longue),
-                                    logit_score(-68.49 + 9.06 * agec -0.441* agec**2 + 0.00914 * agec ** 3 -6.91/100000*(agec ** 4) - 0.06*etude_longue) ),
+                                    logit_score(-73.10 + 8.96 * agec - 0.408 * agec**2 + 0.00796 * agec ** 3 -5.72/100000*(agec ** 4) -0.13*etude_courte +0.04*etude_longue),
+                                    logit_score(-68.49 + 9.06 * agec -0.441 * agec**2 + 0.00914 * agec ** 3 -6.91/100000*(agec ** 4) - 0.06*etude_longue) ),
                                  to_couple)
                 - ages : age - dur_out_couple #age at separtation time
                 - to_couple: if((age >= 18) and (age <= 90) and not INCOUPLE,

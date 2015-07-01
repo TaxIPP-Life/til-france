@@ -101,7 +101,6 @@ entities:
                 - dur_out_couple: if(not INCOUPLE, dur_out_couple + 1, 0)
                 # note : dur_in_couple is incremented in union
 
-
                 # remplacera les etapes d'actualisation menage et foyers_fiscaux quand fonctionnel
                 # - l_men.set(pref = individus.max(id,quimen==0)
                 # - l_foy.set(vous = in_foyers_fiscaux.max(id,quifoy==0)
