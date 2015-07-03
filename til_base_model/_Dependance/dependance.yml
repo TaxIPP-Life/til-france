@@ -42,6 +42,18 @@ entities:
                     being_dependant_score
                     )
                 - being_dependant: being_dependant_score > uniform()
+                - age_category: if(
+                    age > 60,
+                    min(trunc(age / 5) - 12 + 1, 6),
+                    0
+                    )
+                - show('Number of age_category 1', count(age_category == 1))
+                - show('Number of age_category 2', count(age_category == 2))
+                - show('Number of age_category 3', count(age_category == 3))
+                - show('Number of age_category 4', count(age_category == 4))
+                - show('Number of age_category 5', count(age_category == 5))
+                - show('Number of age_category 6', count(age_category == 6))
+                - being_dependant: align_abs(being_dependant_score, need = 'param/demo/dependance_prevalence_2010.csv')
                 - being_very_dependant_score: -1
                 - being_very_dependant_score: if(
                     ISMALE and being_dependant,

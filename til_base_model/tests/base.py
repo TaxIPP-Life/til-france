@@ -16,7 +16,7 @@ from til.simulation import TilSimulation
 matplotlib.style.use('ggplot')
 
 
-path_model = os.path.join(
+til_base_model_path = os.path.join(
     pkg_resources.get_distribution('Til-BaseModel').location,
     'til_base_model',
     )
@@ -27,7 +27,7 @@ def create_til_simulation(capitalized_name = None, uniform_weight = None):
     config = Config()
     name = capitalized_name.lower()
 
-    input_dir = path_model
+    input_dir = til_base_model_path
     input_file = '{}.h5'.format(capitalized_name)
     assert os.path.exists(os.path.join(input_dir, input_file))
 
@@ -35,7 +35,7 @@ def create_til_simulation(capitalized_name = None, uniform_weight = None):
     if not os.path.exists(output_dir):
         os.mkdir(output_dir)
 
-    console_file = os.path.join(path_model, 'console.yml')
+    console_file = os.path.join(til_base_model_path, 'console.yml')
     simulation = TilSimulation.from_yaml(
         console_file,
         input_dir = input_dir,
@@ -123,7 +123,8 @@ def extract_population_csv(simulation):
 
 
 def get_data_frame_insee(gender, by = 'age_group'):
-    data_path = '/home/benjello/openfisca/Til-BaseModel/til_base_model/param/demo/projpop0760_FECcentESPcentMIGcent.xls'
+
+    data_path = os.path.join(til_base_model_path, 'param/demo/projpop0760_FECcentESPcentMIGcent.xls')
     sheetname_by_gender = dict(zip(
         ['total', 'male', 'female'],
         ['populationTot', 'populationH', 'populationF']
@@ -150,7 +151,7 @@ def get_insee_projection(quantity, gender, function = None):
     assert quantity in ['births', 'deaths', 'migrants', 'population']
     assert gender in ['total', 'male', 'female']
 
-    data_path = '/home/benjello/openfisca/Til-BaseModel/til_base_model/param/demo/projpop0760_FECcentESPcentMIGcent.xls'
+    data_path = os.path.join(til_base_model_path, 'param/demo/projpop0760_FECcentESPcentMIGcent.xls')
     sheetname_by_gender_by_quantity = dict(
         births = 'nbre_naiss',
         deaths = dict(zip(
@@ -340,3 +341,17 @@ def plot_dependance_csv(simulation):
     fig = ax.get_figure()
     fig.savefig(os.path.join(figures_directory, 'dependance.png'))
     del ax, fig
+
+
+def get_dependance_drees():
+    excel_file_path = os.path.join(til_base_model_path, 'param', 'demo', 'drees', 'dss43_horizon_2060.xls')
+    df = pandas.read_excel(excel_file_path, sheetname ='Tab2', header = 3, parse_cols = 'B:O', skip_footer = 4)
+    for column in df.columns:
+        if column.startswith('Unnamed') or column.startswith('Ensemble'):
+            del df[column]
+    df.index = [index.year for index in df.index]
+    df.columns = range(1, 7)
+    csv_file_path = os.path.join(til_base_model_path, 'param', 'demo', 'dependance_prevalence_2010.csv')
+    data = df.xs(2010).reset_index()
+
+    data.to_csv(csv_file_path, index = False, header = ['age_category', 'being_dependant'])
