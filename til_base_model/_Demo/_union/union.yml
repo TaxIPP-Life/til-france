@@ -9,40 +9,58 @@ entities:
                 - nb_children_ind : invl_mere.count() + invl_pere.count()
                 - to_couple: 0
                 - agec: age - findet
-                - etude_courte: (findet<20)
-                - etude_longue: (findet>20)
-                - to_couple: if((age >= 18) and (age <= 90) and not INCOUPLE,
-                                 if(ISMALE,
-                                    logit_score(-73.10 + 8.96 * agec - 0.408 * agec**2 + 0.00796 * agec ** 3 -5.72/100000*(agec ** 4) -0.13*etude_courte +0.04*etude_longue),
-                                    logit_score(-68.49 + 9.06 * agec -0.441 * agec**2 + 0.00914 * agec ** 3 -6.91/100000*(agec ** 4) - 0.06*etude_longue) ),
-                                 to_couple)
+                - etude_courte: (findet < 20)
+                - etude_longue: (findet > 20)
+                - to_couple: if(
+                    (age >= 18) and (age <= 90) and ISSINGLE,
+                    if(
+                        ISMALE,
+                        logit_score(
+                            -73.10 + 8.96 * agec - 0.408 * agec ** 2 + 0.00796 * agec ** 3 -5.72 / 100000 * (agec ** 4) - 0.13 * etude_courte + 0.04 * etude_longue
+                            ),
+                        logit_score(
+                            -68.49 + 9.06 * agec -0.441 * agec ** 2 + 0.00914 * agec ** 3 -6.91 / 100000 * (agec ** 4) - 0.06 * etude_longue
+                            )
+                        ),
+                    to_couple
+                    )
                 - ages : age - dur_out_couple #age at separtation time
-                - to_couple: if((age >= 18) and (age <= 90) and not INCOUPLE,
-                                 if(ISMALE,
-                                     logit_score(-0.25 + 0.09*dur_out_couple +0.19*(dur_out_couple==0) - 0.05* (ages) +0.41*(nb_children_ind==0) - 0.19*etude_courte),
-                                     logit_score( 0.33 - 0.10*dur_out_couple +0.14*(dur_out_couple==0) - 0.08* (ages) +0.41*(nb_children_ind==0))- 0.57* ISWIDOW),
-                                 to_couple)
-
-                - to_couple: if(to_couple>0, logistic(to_couple), 0)
+                - to_couple: if(
+                    (age >= 18) and (age <= 90) and (not INCOUPLE) and (not ISSINGLE),
+                    if(
+                        ISMALE,
+                        logit_score(
+                            -0.25 + 0.09 * dur_out_couple + 0.19 * (dur_out_couple == 0) - 0.05 * ages + 0.41 * (nb_children_ind == 0)
+                            - 0.19 * etude_courte
+                            ),
+                        logit_score(
+                            0.33 - 0.10 * dur_out_couple + 0.14 * (dur_out_couple == 0) - 0.08 * (ages) + 0.41 * (nb_children_ind == 0)
+                            - 0.57* ISWIDOW
+                            )
+                        ),
+                    to_couple
+                    )
+                - to_couple: if(to_couple > 0, logistic(to_couple), 0)
                 - to_couple2: align_abs(to_couple, method = "sidewalk", periodicity_given="year")
-                                 # A changer pour : sum(to_couple)/count((age >= 18) and (age <= 90) and not in_couple))
-                - show('Number of male death', count(to_couple2))
+                # A changer pour : sum(to_couple)/count((age >= 18) and (age <= 90) and not in_couple))
+                - show('Number of mariages potentiels tocouple', count(to_couple))
+                - show('Number of mariages potentiels tocouple2', count(to_couple2))
                 # vérifier qu'il n'y a pas un bouléen dans to_couple2
-                - difficult_match: if((to_couple2==1) and ISFEMALE,
-                                      abs(age - avg(age, filter=(to_couple2==1) and ISMALE)),
-                                      nan)
-                - partner: if(to_couple2,
-                                 matching(set1filter=ISFEMALE, set2filter=ISMALE,
-                                          score=- 0.4893 * other.age
-                                                + 0.0131 * other.age ** 2
-                                                - 0.0001 * other.age ** 3
-                                                + 0.0467 * (other.age - age)
-                                                - 0.0189 * (other.age - age) ** 2
-                                                + 0.0003 * (other.age - age) ** 3
-                                                + 0.05   * (other.findet-findet),
-                                          orderby=difficult_match),
-                                 partner)
-
+                - difficult_match: if(
+                    (to_couple2==1) and ISFEMALE,
+                    abs(age - avg(age, filter=(to_couple2==1) and ISMALE)),
+                    nan
+                    )
+                - partner: if(
+                    to_couple2,
+                    matching(
+                        set1filter=ISFEMALE,
+                        set2filter=ISMALE,
+                        score = - 0.4893 * other.age + 0.0131 * other.age ** 2 - 0.0001 * other.age ** 3 + 0.0467 * (other.age - age) - 0.0189 * (other.age - age) ** 2 + 0.0003 * (other.age - age) ** 3 + 0.05 * (other.findet-findet),
+                        orderby = difficult_match
+                        ),
+                    partner
+                    )
                 # on corrige les incestes qui n'ont pas ete interdit dans le matching
                 # ca n'est pas bcp de cas, donc on considère que ça ne change pas les marges
                 # et puis entre les marges et un tabou universel, je sacrifie les marges
@@ -53,7 +71,7 @@ entities:
 
                 - dur_in_couple: if(INCOUPLE, dur_in_couple + 1, 0)
                 - dur_out_couple: if(INCOUPLE, 0, dur_out_couple)
-                # note : dur_out_couple is incremented in union
+                # NOTE : dur_out_couple is incremented in union
 
             move_together:
                 # on emmenage en fonction de la durée du couple (faire jouer l'age ?)
