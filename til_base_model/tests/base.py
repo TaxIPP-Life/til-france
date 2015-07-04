@@ -8,6 +8,8 @@ import pandas
 import matplotlib
 import matplotlib.pyplot as plt
 from  matplotlib.ticker import FuncFormatter
+import numpy
+
 
 from til_base_model.config import Config
 from til.simulation import TilSimulation
@@ -57,6 +59,7 @@ def create_or_get_figures_directory(simulation):
         )
     if not os.path.exists(figures_directory):
         os.mkdir(figures_directory)
+    assert os.path.exists(figures_directory)
     return figures_directory
 
 
@@ -333,6 +336,8 @@ def extract_dependance_csv(simulation):
 
 
 def plot_dependance_csv(simulation):
+    figures_directory = create_or_get_figures_directory(simulation)
+
     panel_simulation = extract_dependance_csv(simulation)
     panel_simulation = panel_simulation.squeeze()
     plt.figure()
@@ -341,6 +346,13 @@ def plot_dependance_csv(simulation):
     fig = ax.get_figure()
     fig.savefig(os.path.join(figures_directory, 'dependance.png'))
     del ax, fig
+
+
+def line_prepender(filename, line):
+    with open(filename, 'r+') as f:
+        content = f.read()
+        f.seek(0, 0)
+        f.write(line.rstrip('\r\n') + '\n' + content)
 
 
 def get_dependance_drees():
@@ -352,6 +364,7 @@ def get_dependance_drees():
     df.index = [index.year for index in df.index]
     df.columns = range(1, 7)
     csv_file_path = os.path.join(til_base_model_path, 'param', 'demo', 'dependance_prevalence_2010.csv')
-    data = df.xs(2010).reset_index()
-
-    data.to_csv(csv_file_path, index = False, header = ['age_category', 'being_dependant'])
+    data = pandas.DataFrame(df.xs(2010)).T
+    data = (data / 200).apply(numpy.round)   # TODO fix this
+    data.astype(int).to_csv(csv_file_path, index = False)
+    line_prepender(csv_file_path, 'age_category')

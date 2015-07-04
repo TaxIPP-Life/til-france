@@ -135,7 +135,7 @@ entities:
 
             BEGINER: xpr == 1
 
-            ISDEPENDANT: (dependance_level == 1) or (dependance_level == 2)
+            ISDEPENDANT: (dependance_level == 1) or (dependance_level == 2) 
             ISGIR_1_2: (dependance_level == 2)
             ISGIR_3_4: (dependance_level == 1)
 

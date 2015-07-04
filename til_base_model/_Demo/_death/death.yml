@@ -63,6 +63,7 @@ entities:
                 - show('Number of male death', count(dead and ISMALE))
                 - show('Number of female death', count(dead and ISFEMALE))
                 - show('Number of deaths', count(dead))
+                - show('Number of dependant deaths', count(dead and (dependance_level > 0)))
                 - show('Avg age of dead women', avg(age, filter=dead and ISFEMALE))
                 - show('Widows', sum(ISWIDOW))
 
