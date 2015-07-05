@@ -135,7 +135,7 @@ entities:
 
             BEGINER: xpr == 1
 
-            ISDEPENDANT: (dependance_level == 1) or (dependance_level == 2) 
+            ISDEPENDANT: (dependance_level == 1) or (dependance_level == 2)
             ISGIR_1_2: (dependance_level == 2)
             ISGIR_3_4: (dependance_level == 1)
 
@@ -176,6 +176,9 @@ entities:
                 - csv('period', 'migrants',
                       fname = 'migrants.csv'
                       )
+                - csv('population',
+                      fname = 'population.csv'
+                      )
                 - csv('population_by_period',
                       fname = 'population2.csv'
                       )
@@ -199,6 +202,10 @@ entities:
                 - csv('period', period, 'population',
                     groupby(trunc(age / 10), sexe),
                     fname = 'population2.csv', mode = 'a'
+                    )
+                - csv('period', period, 'population',
+                    groupby(age, sexe),
+                    fname = 'population.csv', mode = 'a'
                     )
                 - csv(
                     avg(period), count(), count(age==0), sum(salaire_imposable), sum(rsti), sum(choi), avg(age),

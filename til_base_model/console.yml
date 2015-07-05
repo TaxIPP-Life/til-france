@@ -23,11 +23,16 @@ import:
     - _Jobs/companies.yml
 
 globals:
-    #  periodic:
-    #     path: param/demo/mortalite_male.h5
+    # periodic:
+    #     path: param\demo\dependance_prevalence_all_years.csv
     #     fields:
-    #     - period: float
-    #     - WEMRA: int
+    #         # PERIOD is implicit
+    #         - DEPENDANTS: float
+
+    # periodic do not work
+    dependance_prevalence_all_years:
+      type: float
+
     mortality_rate_male:
       type: float
     mortality_rate_female:
@@ -57,9 +62,9 @@ simulation:
         - register: [rien]
         - generation: [education]
         - generation: [mortality_rates]
-        - individus: [dependance]
         - individus: [ageing]
         - individus: [death]
+        - individus: [dependance]
         - individus: [migration]
         - individus: [check]
         - individus: [independance]
@@ -108,4 +113,4 @@ simulation:
     start_period: 200901
     # first simulated period is start_period + 1  TODO: a bit ugly !
 
-    periods: 10
+    periods: 2

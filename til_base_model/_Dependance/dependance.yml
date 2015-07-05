@@ -113,10 +113,6 @@ entities:
                     )
                 # From Marbot and Roy following Duée-Rebillard
                 # Becoming dependant
-                - csv(id, age, sexe, dependance_level,
-                    fname = 'toto.csv',
-                    mode = 'a'
-                    )
                 - assertTrue(all(dependance_level == 0, filter = (age < 60)))
                 - show('Nombre de dependants total', count(ISDEPENDANT > 0))
                 - show('Nombre de dependants legers', count(dependance_level == 1))
@@ -156,7 +152,15 @@ entities:
                     becoming_dependant_score
                     )
                 - assertTrue(all(becoming_dependant_score == -1, filter = (age < 60)))
-                - becoming_dependant: uniform() < becoming_dependant_score
+                - year: trunc(period / 100)
+                - dependants: dependance_prevalence_all_years[year - 2009] / 200
+                - need: dependants - count(ISDEPENDANT)
+                - show('Amount ow newly deppendants people needed', need)
+                - becoming_dependant: align_abs(
+                    becoming_dependant_score, need = need, filter = becoming_dependant_score >=0
+                    )
+                - show('Amount ow newly deppendants people selected', count(becoming_dependant))
+                - assertTrue(1==0)
                 - dependance_anciennete: if(
                     becoming_dependant,
                     0,
@@ -185,7 +189,7 @@ entities:
                     choice([1, 2], [1 - .275, .275]),
                     dependance_level
                     )
-                    # TODO mettre cela avant ?
+                # Transiiton GIRE_3_3 vers GIR_1_2
                 - anc1: dependance_anciennete == 1  # anciennete d'un an dans la dependance
                 - becoming_gir_1_2: logit_regr(
                     -.277 + 0.512 * lq + .731 * anc1,
