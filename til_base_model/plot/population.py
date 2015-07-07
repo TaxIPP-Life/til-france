@@ -30,7 +30,7 @@ import pandas
 from StringIO import StringIO
 
 
-from til_base_model.tests.base import til_base_model_path, create_or_get_figures_directory
+from til_base_model.tests.base import til_base_model_path, create_or_get_figures_directory, ipp_colors
 
 
 def extract_population_csv(simulation):
@@ -264,6 +264,22 @@ def plot_ratio_demographique(simulation):
 
     ratio_60 = panel_simulation['total'].groupby(separate, axis = 0).sum()
     ratio_60 = ratio_60.loc['retired', :]/ratio_60.loc['active', :]
+    ratio_60.index.name = None
+    plt.figure()
+    ax = ratio_60.plot(
+        colors = ipp_colors['ipp_blue'],
+        title = u'Ratio démographique',
+        linewidth = 2,
+        xticks = [period for period in range(
+            min(ratio_60.index.astype(int)) + 1,
+            max(ratio_60.index.astype(int)),
+            10
+            )],
+        )
+    ax.set_ylabel(u"(+ de 60 ans / 20-59 ans)")
+    fig = ax.get_figure()
+    fig.savefig(os.path.join(figures_directory, 'ratio_demographique.pdf'))
+    del ax, fig
 
 
 def population_diagnostic(simulation):
@@ -290,14 +306,33 @@ def population_diagnostic(simulation):
             population = data_frame
 
     population.dropna(inplace = True)
-    population.index.name = 'year'
-    ax = population.plot(
-        title = 'Components of population growth',
-        style = ['k-', 'k--', 'g-', 'g--', 'b-', 'b--'],
-        xticks = [period for period in list(population.index.astype(int))],
+    population.index.name = None
+    population = population / 1000
+    population.rename(
+        columns = dict(
+            births = 'naissances',
+            births_insee = 'naissances (INSEE)',
+            deaths = u'décès',
+            deaths_insee = u'décès (INSEE)',
+            migrants = 'solde migratoire',
+            migrants_insee = 'solde migratoire (INSEE)',
+            ),
+        inplace = True
         )
+    ax = population.plot(
+        colors = ipp_colors.values(),
+        linewidth = 2,
+        title = u"Composantes de la croissance démographique",
+        xticks = [period for period in range(
+            min(population.index.astype(int)),
+            max(population.index.astype(int)),
+            10
+            )],
+        )
+    ax.set_ylabel(u"effectifs en milliers")
+    ax.legend(loc='center', bbox_to_anchor=(0.5, -.2), ncol=3)
     fig = ax.get_figure()
     plt.gca().xaxis.set_major_formatter(FuncFormatter(lambda x, _: int(x)))
-    fig.savefig(os.path.join(figures_directory, 'population_growth_compoennts.png'))
+    fig.savefig(os.path.join(figures_directory, 'population_growth_components.pdf'), bbox_inches='tight')
     del ax, fig
     return population

@@ -27,7 +27,7 @@ import pandas
 from StringIO import StringIO
 
 
-from til_base_model.tests.base import create_or_get_figures_directory
+from til_base_model.tests.base import create_or_get_figures_directory, ipp_colors
 
 
 def extract_dependance_csv(simulation):
@@ -88,13 +88,19 @@ def plot_dependance_csv(simulation):
         )
     plt.figure()
     ax = panel_simulation.plot(
-        xticks = [period for period in list(panel_simulation.index.astype(int))],
-        cmap = 'PuBu'
+        linewidth = 2,
+        colors = [ipp_colors[name] for name in ['ipp_dark_blue', 'ipp_medium_blue', 'ipp_light_blue']],
+        xticks = [period for period in range(
+            min(panel_simulation.index.astype(int)),
+            max(panel_simulation.index.astype(int)),
+            10
+            )],
+        # cmap = 'PuBu'
         )
     ax.set_ylabel(u"effectifs en milliers")
     ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1.2), ncol=3)
     plt.gca().xaxis.set_major_formatter(FuncFormatter(lambda x, _: int(x)))
     fig = ax.get_figure()
 
-    fig.savefig(os.path.join(figures_directory, 'dependance.png'))
+    fig.savefig(os.path.join(figures_directory, 'dependance.pdf'), bbox_inches='tight')
     del ax, fig

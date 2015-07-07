@@ -4,17 +4,26 @@ import os
 import pkg_resources
 
 
-import pandas
-import matplotlib
 import matplotlib.pyplot as plt
-from matplotlib.ticker import FuncFormatter
+import pandas
 
 
 from til_base_model.config import Config
 from til.simulation import TilSimulation
 
+from webcolors import rgb_to_hex
 
-# matplotlib.style.use('ggplot')
+# RGB tuples
+ipp_colors_not_normalized = dict(
+    ipp_very_dark_blue = (0, 80, 101),
+    ipp_dark_blue = (0, 135, 152),
+    ipp_medium_blue = (146, 205, 220),
+    ipp_light_blue = (183, 222, 232),
+    ipp_very_light_blue = (218, 238, 243),
+    ipp_blue = (75, 172, 197)
+    )
+
+ipp_colors = dict((name, rgb_to_hex(rgb)) for name, rgb in ipp_colors_not_normalized.iteritems())
 
 
 til_base_model_path = os.path.join(
@@ -86,3 +95,5 @@ def plot_csv(simulation):
         fig = ax.get_figure()
         fig.savefig(os.path.join(figures_directory, '{}.png'.format(csv_file)))
         del ax, fig
+
+
