@@ -14,9 +14,11 @@ entities:
             inwork:
                 - to_work: align(0.0, filter = ISUNEMPLOYED, proportions = 0.025)
                 # choix entrepreneur, public, prive
-                - type_act: if(to_work,
-                                choice([ NON_CADRE, CADRE, FONCT_A, FONCT_S, INDEP], [0.3, 0.1, 0.1, 0.2, 0.3])
-                                ,0)
+                - type_act: if(
+                    to_work,
+                    choice([NON_CADRE, CADRE, FONCT_A, FONCT_S, INDEP], [0.3, 0.1, 0.1, 0.2, 0.3]),
+                    0
+                    )
                 - workstate: if(to_work, type_act, workstate)
                 - xpr: if(to_work, 1, xpr)
                 - anc: if(to_work, 1, anc)

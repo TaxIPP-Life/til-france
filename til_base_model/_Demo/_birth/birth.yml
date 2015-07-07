@@ -6,10 +6,11 @@ entities:
                 - before_max: ((invl_mere.count()<8) and (l_partner.interm <8))
                 #on pourra retirer cette condition qui était technique avec R.
                 # Note, on n'a pas de jumeaux
-                - to_give_birth: logit_regr(0.0,
-                                            filter = ISFEMALE and (age >= 15) and (age <= 50) and before_max,
-                                            align = 'param/demo/Hyp_fecondite.csv')
-
+                - to_give_birth: logit_regr(
+                    0.0,
+                    filter = ISFEMALE and (age >= 15) and (age <= 50) and before_max,
+                    align = 'param/demo/Hyp_fecondite.csv'
+                    )
                 # le niveau d'études de l'enfant est pré-determinée
                 - annee: trunc(period / 100)
                 - temp_pere: if(
