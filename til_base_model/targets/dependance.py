@@ -53,7 +53,8 @@ def build_prevalence_2010():
     line_prepender(csv_file_path, 'age_category')
 
 
-def build_prevalence_all_years():
+def build_prevalence_all_years(hdf5_file_path = None, csv_file_path = None):
+    assert hdf5_file_path or csv_file_path
     df = pandas.read_excel(drees_excel_file_path, sheetname ='Tab6A', header = 3, parse_cols = 'B:E', skip_footer = 3)
     # "Au 1er janvier"
     df.columns = ['year', 'dependants_optimiste', 'DEPENDANTS', 'dependants_pessimiste']
@@ -63,12 +64,11 @@ def build_prevalence_all_years():
     data.index = [int(str(year - 1) + "01") for year in data.index]
     data.index.name = "PERIOD"
 
-    simulation_file_path = os.path.join(til_base_model_path, 'Patrimoine_next_metro_200.h5')
-    h5file = tables.open_file(simulation_file_path, mode="a")
-    array_to_disk_array(h5file, '/globals', 'dependance_prevalence_all_years', data.DEPENDANTS.values)
-    h5file.close()
-
-    csv_file_path = os.path.join(til_base_model_path, 'param', 'demo', 'dependance_prevalence_all_years.csv')
-    data = data.reset_index()[['PERIOD', 'DEPENDANTS']]
-    data.astype(int).to_csv(csv_file_path, index = False)
-
+    if hdf5_file_path:
+        h5file = tables.open_file(hdf5_file_path, mode="a")
+        array_to_disk_array(h5file, '/globals', 'dependance_prevalence_all_years', data.DEPENDANTS.values)
+        h5file.close()
+    elif csv_file_path:
+        csv_file_path = os.path.join(til_base_model_path, 'param', 'demo', 'dependance_prevalence_all_years.csv')
+        data = data.reset_index()[['PERIOD', 'DEPENDANTS']]
+        data.astype(int).to_csv(csv_file_path, index = False)

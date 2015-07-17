@@ -24,7 +24,7 @@ error_margin = .01
 
 
 # Data from INSEE projections
-data_path = '/home/benjello/openfisca/Til-BaseModel/til_base_model/param/demo/projpop0760_FECcentESPcentMIGcent.xls'
+data_path = os.path.join(path_model, 'param', 'demo', 'projpop0760_FECcentESPcentMIGcent.xls')
 sheetname_by_gender = dict(zip(
     ['total', 'male', 'female'],
     ['populationTot', 'populationH', 'populationF']

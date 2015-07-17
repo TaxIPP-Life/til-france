@@ -31,6 +31,7 @@ from StringIO import StringIO
 
 
 from til_base_model.tests.base import til_base_model_path, create_or_get_figures_directory, ipp_colors
+from til_base_model.targets.population import  get_data_frame_insee
 
 
 def extract_population_csv(simulation):
@@ -118,28 +119,6 @@ def extract_population_by_age_csv(simulation):
     return panel * uniform_weight
 
 
-def get_data_frame_insee(gender, by = 'age_group'):
-
-    data_path = os.path.join(til_base_model_path, 'param/demo/projpop0760_FECcentESPcentMIGcent.xls')
-    sheetname_by_gender = dict(zip(
-        ['total', 'male', 'female'],
-        ['populationTot', 'populationH', 'populationF']
-        ))
-    population_insee = pandas.read_excel(
-        data_path, sheetname = sheetname_by_gender[gender], skiprows = 2, header = 2)[:109].set_index(
-            u'Âge au 1er janvier')
-
-    population_insee.reset_index(inplace = True)
-    population_insee.drop(population_insee.columns[0], axis = 1, inplace = True)
-    population_insee.index.name = 'age'
-    population_insee.columns = population_insee.columns + (-1)  # Passage en âge en fin d'année
-    if by == 'age':
-        return population_insee
-    population_insee.reset_index(inplace = True)
-    population_insee['age_group'] = population_insee.age // 10
-    population_insee.drop('age', axis = 1, inplace = True)
-    data_frame_insee = population_insee.groupby(['age_group']).sum()
-    return data_frame_insee
 
 
 def get_insee_projection(quantity, gender, function = None):
@@ -267,7 +246,7 @@ def plot_ratio_demographique(simulation):
     ratio_60.index.name = None
     plt.figure()
     ax = ratio_60.plot(
-        colors = ipp_colors['ipp_blue'],
+        color = ipp_colors['ipp_blue'],
         title = u'Ratio démographique',
         linewidth = 2,
         xticks = [period for period in range(
@@ -320,7 +299,7 @@ def population_diagnostic(simulation):
         inplace = True
         )
     ax = population.plot(
-        colors = ipp_colors.values(),
+        color = ipp_colors.values(),
         linewidth = 2,
         title = u"Composantes de la croissance démographique",
         xticks = [period for period in range(

@@ -15,14 +15,15 @@ entities:
                                       # filter = ISFEMALE and INCOUPLE and (dur_in_couple > 0),
                                       # align = 0.2)
                 #TODO: séparer rupture et divorce, séparer ruputre de gens en couple et divorce
-                - proba_divorce:    logistic(-2.02-0.06*agediff-0.04*dur_in_couple
-                                       +0.58*(children_couple==0)
-                                       +0.21*(children_couple==1)
-                                       +0.13*(children_couple>3)
-                                       +0.41*(other_children>0))
-
-                - divorce: align_abs(proba_divorce, filter = ISFEMALE and INCOUPLE and (dur_in_couple > 0),
-                        method ="sidewalk", periodicity_given="year")
+                - proba_divorce: if(
+                    ISFEMALE and INCOUPLE and (dur_in_couple > 0),
+                    logistic(
+                      -2.02 - 0.06 * agediff - 0.04 * dur_in_couple + 0.58 * (children_couple == 0) +
+                      0.21 * (children_couple == 1) + 0.13 * (children_couple > 3) + 0.41 * (other_children > 0)
+                      ),
+                    0
+                    )
+                - divorce: align_abs(proba_divorce, need = sum(proba_divorce), filter = ISFEMALE and INCOUPLE and (dur_in_couple > 0))  #  ,method ="sidewalk", periodicity_given="year")
                 # - divorce1: align_abs(proba_divorce, 10+sum(proba_divorce), filter = ISFEMALE and INCOUPLE and (dur_in_couple > 0), method ="sidewalk")
                 # - show('nb divorce 1', sum(divorce1), 10+sum(proba_divorce))
                 # break link to partner

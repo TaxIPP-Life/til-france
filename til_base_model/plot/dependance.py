@@ -89,7 +89,7 @@ def plot_dependance_csv(simulation):
     plt.figure()
     ax = panel_simulation.plot(
         linewidth = 2,
-        colors = [ipp_colors[name] for name in ['ipp_dark_blue', 'ipp_medium_blue', 'ipp_light_blue']],
+        color = [ipp_colors[name] for name in ['ipp_dark_blue', 'ipp_medium_blue', 'ipp_light_blue']],
         xticks = [period for period in range(
             min(panel_simulation.index.astype(int)),
             max(panel_simulation.index.astype(int)),

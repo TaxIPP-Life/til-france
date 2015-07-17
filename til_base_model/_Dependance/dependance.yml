@@ -48,7 +48,7 @@ entities:
                     0
                     )
                 - being_dependant: align_abs(
-                    being_dependant_score, need = 'param/demo/dependance_prevalence_2010.csv',
+                    being_dependant_score, need = 'parameters/dependance/dependance_prevalence_2010.csv',
                     filter = (age_category >= 1)
                     )
                 - show('Number of initial male dependant aligned', count(being_dependant and ISMALE))
@@ -160,7 +160,6 @@ entities:
                     becoming_dependant_score, need = need, filter = becoming_dependant_score >=0
                     )
                 - show('Amount ow newly deppendants people selected', count(becoming_dependant))
-                - assertTrue(1==0)
                 - dependance_anciennete: if(
                     becoming_dependant,
                     0,

@@ -22,9 +22,10 @@ entities:
             - mere: int
             - partner: int
             - tuteur: int
-            - dur_in_couple: {type: float, initialdata: false}
-            - dur_out_couple: {type: int, initialdata: false}
+            - dur_in_couple: {type: float, initialdata: false, default 0}
+            - dur_out_couple: {type: int, initialdata: false, default 0}
             - civilstate: {type: int, initialdata: false}
+            # MARRIED: 1, SINGLE: 2, DIVORCED: 3, WIDOW: 4, PACS: 5
 
         # education
             - education_level: {type: int, initialdata: false, default: 10}

@@ -32,12 +32,12 @@ til_base_model_path = os.path.join(
     )
 
 
-def create_til_simulation(capitalized_name = None, uniform_weight = None):
+def create_til_simulation(capitalized_name = None, output_name_suffix = 'til_output', uniform_weight = None):
     assert capitalized_name is not None
     config = Config()
     name = capitalized_name.lower()
 
-    input_dir = til_base_model_path
+    input_dir = config.get('til', 'input_dir')
     input_file = '{}.h5'.format(capitalized_name)
     assert os.path.exists(os.path.join(input_dir, input_file)), 'Input file path should be {}'.format(
         os.path.join(input_dir, input_file))
@@ -52,7 +52,7 @@ def create_til_simulation(capitalized_name = None, uniform_weight = None):
         input_dir = input_dir,
         input_file = input_file,
         output_dir = output_dir,
-        output_file = '{}_til_output.h5'.format(name),
+        output_file = '{}_{}.h5'.format(name, output_name_suffix),
         # tax_benefit_system = 'tax_benefit_system',  # Add the OpenFisca TaxBenfitSystem to use
         )
     if uniform_weight:

@@ -113,4 +113,4 @@ simulation:
     start_period: 200901
     # first simulated period is start_period + 1  TODO: a bit ugly !
 
-    periods: 2
+    periods: 10

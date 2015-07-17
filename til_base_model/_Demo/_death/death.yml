@@ -25,7 +25,7 @@ entities:
                             ) +
                         (dependance_level == 2) * (1.815 + .752 * lq + .987 * (dependance_anciennete == 1)
                             ),
-                        align='param/demo/hyp_mortaliteH.csv'
+                        align='parameters/population/hyp_mortaliteH.csv'
                         ),
                     logit_regr(
                         (dependance_level == 0) +
@@ -34,7 +34,7 @@ entities:
                             (dependance_anciennete >= 10) * (2.306 + 1.059 * lq) +
                             (dependance_anciennete < 10) * (.695 + .390 * lq + .244 * (dependance_anciennete == 1))
                             )
-                        , align='param/demo/hyp_mortaliteF.csv')
+                        , align='parameters/population/hyp_mortaliteF.csv')
                     )
                 # - test_dead: age/100
                 # - test_log: logistic((age-50)/10)
@@ -201,7 +201,7 @@ entities:
                                     if(nb_part_herit > 0, patrimoine * 3 / 4, 0),
                                     patrimoine)
 
-                - pers2reg.heritage: if(dead and nb_part_herit>0,
+                - pers2reg.heritage: if(dead and nb_part_herit > 0,
                                         pers2reg.heritage + patrimoine/nb_part_herit,
                                         pers2reg.heritage)
                 # apres on fait une etape dans le registre

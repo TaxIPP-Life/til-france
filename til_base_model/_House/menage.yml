@@ -57,7 +57,7 @@ entities:
             init_region_id:
                 - region_id: choice([0, 1, 2, 3], [0.1, 0.2, 0.3, 0.4])
             init_rent:
-                - rent: 1000 *( individus.count() - individus.count(age < 18)*1.5 + individus.count(age < 18)*0.6)
+                - rent: 1000 *( individus.count() - individus.count(age < 18) * 1.5 + individus.count(age < 18) * 0.6)
             init_value:
                 - value: 100000
             init_owner:

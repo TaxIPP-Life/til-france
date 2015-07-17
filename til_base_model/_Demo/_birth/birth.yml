@@ -9,7 +9,7 @@ entities:
                 - to_give_birth: logit_regr(
                     0.0,
                     filter = ISFEMALE and (age >= 15) and (age <= 50) and before_max,
-                    align = 'param/demo/Hyp_fecondite.csv'
+                    align = 'parameters/population/Hyp_fecondite.csv'
                     )
                 # le niveau d'études de l'enfant est pré-determinée
                 - annee: trunc(period / 100)

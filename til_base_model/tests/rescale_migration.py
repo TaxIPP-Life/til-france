@@ -10,8 +10,11 @@ import numpy
 import pandas
 
 
+from til_base_model.tests.base import til_base_model_path
+
+
 # Data from INSEE projections
-data_path = '/home/benjello/openfisca/Til-BaseModel/til_base_model/param/demo/'
+data_path = os.path.join(til_base_model_path, 'param/demo')
 
 sheetname_by_gender = dict(zip(
     ['total', 'male', 'female'],
@@ -68,4 +71,3 @@ for gender, migration in migration_insee_by_gender.iteritems():
     with open(file_path, 'w') as output_file:
         output_file.writelines(header)
         output_file.writelines(data[1:])
-
