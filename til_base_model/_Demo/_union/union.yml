@@ -47,7 +47,7 @@ entities:
                     to_couple
                     )
                 #- to_couple: if(to_couple > 0, logistic(to_couple), 0)
-                - to_couple2: align_abs(to_couple, method = "sidewalk")  #need = sum(to_couple))  # , periodicity_given="year")
+                - to_couple2: align_abs(to_couple, method = "sidewalk", need = sum(to_couple))  # , periodicity_given="year")
                 # A changer pour : sum(to_couple)/count((age >= 18) and (age <= 90) and not in_couple))
                 - show('Number of mariages potentiels tocouple', sum(to_couple))
                 - show('Number of mariages potentiels tocouple2', count(to_couple2))

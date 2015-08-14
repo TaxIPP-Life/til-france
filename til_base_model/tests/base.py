@@ -39,8 +39,12 @@ def create_til_simulation(capitalized_name = None, output_name_suffix = 'til_out
 
     input_dir = config.get('til', 'input_dir')
     input_file = '{}.h5'.format(capitalized_name)
-    assert os.path.exists(os.path.join(input_dir, input_file)), 'Input file path should be {}'.format(
+
+    assertion_message = '''
+Input file path should be {}.
+You should run DataTil and check that the input path is correctly set in your config_local.ini'''.format(
         os.path.join(input_dir, input_file))
+    assert os.path.exists(os.path.join(input_dir, input_file)), assertion_message
 
     output_dir = os.path.join(config.get('til', 'output_dir'), name)
     if not os.path.exists(output_dir):

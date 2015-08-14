@@ -160,7 +160,7 @@ entities:
                 - csv( 'period', 'population', 'naissance', 'salaire_imposable', 'rsti', 'choi','age moyen',fname='stat.csv')
                 - csv( 'period', 'inactive', 'unemployed', 'non cadre', 'cadre', 'fonct_a', 'fonct_s',
                         'indep', 'avpf', 'pre_ret', 'retired', 'student', 'others', fname='workstate.csv')
-                - csv( 'period', 'marrie', 'celib', 'divorce', 'voeuf', 'autre', fname='civilstate.csv')
+                - csv( 'period', 'marrie', 'celib', 'divorce', 'veuf', 'autre', fname='civilstate.csv')
             stat_period:
                 - csv(avg(period), count(), count(age==0), sum(salaire_imposable), sum(rsti), sum(choi), avg(age), fname='stat.csv', mode='a')
                 - csv( avg(period), count(workstate==1), count(workstate==2), count(workstate==3), count(workstate==4),

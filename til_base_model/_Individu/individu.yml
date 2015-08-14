@@ -196,7 +196,7 @@ entities:
                     fname = 'workstate.csv'
                     )
                 - csv(
-                    'period', 'marie', 'celib', 'divorce', 'voeuf', 'pacs', 'en_couple',
+                    'period', 'marie', 'celib', 'divorce', 'veuf', 'pacs', 'en_couple',
                     fname='civilstate.csv'
                     )
             stat_period:
