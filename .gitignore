@@ -15,7 +15,7 @@ config_local.ini
 #################
 ## Eclipse
 #################
-
+*.tags*
 *.pydevproject
 .project
 .spyderproject
