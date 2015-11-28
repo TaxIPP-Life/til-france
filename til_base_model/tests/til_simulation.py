@@ -27,40 +27,58 @@ import os
 import pkg_resources
 
 
-import matplotlib.pyplot as plt
 import pandas
 
 
 from til_base_model.config import Config
 from til.simulation import TilSimulation
-from til.simulation import weighted_sum
-from til.simulation import weighted_count
 
 
-path_model = os.path.join(
+til_base_model_path = os.path.join(
     pkg_resources.get_distribution('Til-BaseModel').location,
     'til_base_model',
     )
 
 
-def get_simulation():
+def get_simulation(capitalized_name = None, output_name_suffix = 'til_output', uniform_weight = None):
+
+    assert capitalized_name is not None
     config = Config()
-    output_dir = config.get('til', 'output_dir')
-    # output_dir = os.path.join(os.path.dirname(__file__), 'output'),
-    console_file = os.path.join(path_model, 'console.yml')
+    name = capitalized_name.lower()
+
+    input_dir = config.get('til', 'input_dir')
+    input_file = '{}.h5'.format(capitalized_name)
+    assertion_message = '''
+Input file path should be {}.
+You should run DataTil and check that the input path is correctly set in your config_local.ini'''.format(
+        os.path.join(input_dir, input_file))
+    assert os.path.exists(os.path.join(input_dir, input_file)), assertion_message
+
+    output_dir = os.path.join(config.get('til', 'output_dir'), name)
+    assert os.path.exists(output_dir)
+
+    console_file = os.path.join(til_base_model_path, 'console.yml')
     simulation = TilSimulation.from_yaml(
         console_file,
-        input_dir = None,
-        input_file = 'Patrimoine_next_200.h5',
+        input_dir = input_dir,
+        input_file = input_file,
         output_dir = output_dir,
-        output_file = 'simul_long_2000.h5',
+        output_file = '{}_{}.h5'.format(name, output_name_suffix),
+        # tax_benefit_system = 'tax_benefit_system',  # Add the OpenFisca TaxBenfitSystem to use
         )
+    if uniform_weight:
+        simulation.uniform_weight = uniform_weight
+
     return simulation
 
 
 def test_panel():
-    variable_name = 'nb_children_af'
-    simulation = get_simulation()
+    variable_name = 'dependance_level'
+    simulation = get_simulation(
+        capitalized_name = 'Patrimoine_next_metro_200',
+        output_name_suffix = 'test_institutions',
+        uniform_weight = 200
+        )
     panel = simulation.get_variable([variable_name], fillna_value = 0)
     panel_mean = simulation.get_variable([variable_name], fillna_value = 0, function = "mean")
     panel_sum = simulation.get_variable([variable_name], fillna_value = 0, function = "sum")
@@ -85,5 +103,11 @@ def test_csv():
 
 if __name__ == '__main__':
 
-    TODO: this file must be cleaned
-    panel, panel_mean, panel_sum = test_panel()
+    # panel, panel_mean, panel_sum = test_panel()
+    simulation = get_simulation(
+        capitalized_name = 'Patrimoine_next_metro_200',
+        output_name_suffix = 'test_institutions',
+        uniform_weight = 200
+        )
+    dependance_level = simulation.get_variable(['dependance_level'])
+    data_origin = simulation.get_variable(['data_origin'])
