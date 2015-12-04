@@ -22,7 +22,6 @@ entities:
             l_vous: {type: many2one, target: individus, field: vous}
 
         processes:
-            rien: 0
 
             cases:
                 - nb_individus: in_foyers_fiscaux.count()

@@ -62,7 +62,7 @@ simulation:
     # vous et pref,
     # plus tard, quand le code le permettra, on changera ce vous directement dans l'étape au niveau individus
     # - individus: [age, dump_info, show_demography , marriage]
-        - register: [rien]
+        # - register: [rien]
         - generation: [education]
         - generation: [mortality_rates]
         - individus: [ageing]
@@ -94,7 +94,7 @@ simulation:
             ]
         - individus: [check]
         - menages: [init_value, consumption, saving]
-        - companies: [rien]
+        # - companies: [rien]
         - legislation: [2009] #[annee leg] = année de départ de la simulation
         # - register: [alive]
         # - register: [sum_indiv]

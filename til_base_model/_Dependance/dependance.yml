@@ -51,6 +51,7 @@ entities:
                     min(trunc(age / 5) - 12 + 1, 6),
                     0
                     )
+                - show(groupby(being_dependant, data_origin))
                 - show('Number of initial being dependant before alignment', groupby(being_dependant, data_origin))
                 - being_dependant: align_abs(
                     being_dependant_score, need = 'parameters/dependance/dependance_prevalence_2010.csv',

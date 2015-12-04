@@ -154,7 +154,8 @@ entities:
                 # with mother :
                 - idfoy: if(mater.to_divorce, mater.idfoy, idfoy )
 
-            dump_info: csv(dump(id, age, sexe, idmen, household.nb_individus,
+            dump_info:
+              - csv(dump(id, age, sexe, idmen, household.nb_individus,
                                 mater.age, partner.age), suffix='info')
 
             # civilstate_changes: show(groupby(civilstate, lag(civilstate)))

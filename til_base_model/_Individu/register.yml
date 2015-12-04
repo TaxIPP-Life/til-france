@@ -163,8 +163,5 @@ entities:
                 - rmi:  reg2pers.l_men.rmi/reg2pers.l_men.nb_individus + rmi
                 - rsa:  reg2pers.l_men.rsa/reg2pers.l_men.nb_individus + rsa
 
-
-            rien:
-                - rien: 0
             alive:
                 - vivant: (reg2pers.id>0)

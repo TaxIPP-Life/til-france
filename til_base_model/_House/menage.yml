@@ -68,20 +68,23 @@ entities:
 
             men_composition:
                 - nb_individus: individus.count()
+                - show(count())
+                - show(count() > 0)
+                - assertTrue(count() > 0)
                 - nb_children: individus.count(age < 18  and quimen > 1)
                 - nb_children_af: individus.count(age < 20 and quimen > 1)
                 - nb_adultes: individus.count(quimen <2)
                 - empty: (nb_individus==0)
 
                 - test_pref: individus.count(quimen==0)
-                - show('nombre de quimen', groupby(test_pref,nb_individus))
+                - show('nombre de quimen', groupby(test_pref, nb_individus))
                 - separ: l_pref.idmen != id
                 - show('nombre probleme de pref', count(l_pref.idmen != 0))
                 - show('nombre separ', count(separ))
                 - candidat: individus.min(id, quimen == 0)
                 - pref: if(separ and individus.count(quimen==0) == 1,
-                            individus.min(id, quimen==0),
-                            pref)
+                    individus.min(id, quimen==0),
+                    pref)
                 - remove(empty)
                 - uc: 0.5 + 0.5 * individus.count(age >= 14) +  0.3 * individus.count(age < 14)
                 - liv_std:  individus.sum(salaire_imposable + rsti + choi) / uc

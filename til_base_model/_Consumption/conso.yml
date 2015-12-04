@@ -3,7 +3,6 @@ entities:
     menages:
         processes:
             consumption :
-                - rien: 0
                 - house_inc: individus.sum(salaire_imposable+ rsti + choi) - rent
                 # ajouter les autres revenus quand on les auras tous
                 # retirer rent pour les proprietaires

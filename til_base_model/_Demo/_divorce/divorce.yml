@@ -115,7 +115,8 @@ entities:
                 - assertTrue(min(idfoy)>=0)
 
 
-            dump_info: csv(dump(id, age, sexe, idmen, l_men.nb_individus,
-                                l_mere.age, l_partner.age), suffix='info')
+            dump_info:
+              - csv(dump(id, age, sexe, idmen, l_men.nb_individus, l_mere.age, l_partner.age), suffix='info')
 
-            civilstate_changes: show(groupby(civilstate, lag(civilstate)))
+            civilstate_changes:
+              - show(groupby(civilstate, lag(civilstate)))
