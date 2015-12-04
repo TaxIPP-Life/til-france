@@ -25,42 +25,53 @@ entities:
                     invl_pere.count() >= 4,
                     invl_mere.count() >= 4
                     )
-                - being_dependant_score: -1
                 - being_dependant_score: if(
-                    ISMALE and (age >= 60),
+                    data_origin == 1,
+                    if(dependance_level >= 1, 1, -1),
+                    -1
+                    )
+                - being_dependant_score: if(
+                    ISMALE and (age >= 60) and data_origin != 1,
                     logit_score(0.478 + 1.055 * lq - 0.591 * etudes),
                     being_dependant_score
                     )
                 - being_dependant_score: if(
-                    ISFEMALE and (age >= 60) and (age < 80),
+                    ISFEMALE and (age >= 60) and (age < 80) and data_origin != 1,
                     logit_score(-0.099 + 0.686 * lq - 0.695 * etudes - 0.646 * enf_2_3),
                     being_dependant_score
                     )
                 - being_dependant_score: if(
-                    ISFEMALE and (age >= 80),
+                    ISFEMALE and (age >= 80) and data_origin != 1,
                     logit_score(1.500 + 1.189 * lq - 0.232 * etudes - 0.473 * enf_4),
                     being_dependant_score
                     )
                 - being_dependant: being_dependant_score > uniform()
                 - age_category: if(
-                    age > 60,
+                    age >= 60,
                     min(trunc(age / 5) - 12 + 1, 6),
                     0
                     )
+                - show('Number of initial being dependant before alignment', groupby(being_dependant, data_origin))
                 - being_dependant: align_abs(
                     being_dependant_score, need = 'parameters/dependance/dependance_prevalence_2010.csv',
                     filter = (age_category >= 1)
                     )
+                - show('Number of initial being dependant after alignment', groupby(being_dependant, data_origin))
+                - show('Number of initial being dependant after alignment by sex', groupby(sexe, being_dependant, data_origin))
                 - show('Number of initial male dependant aligned', count(being_dependant and ISMALE))
                 - show('Number of initial female dependant aligned', count(being_dependant and ISFEMALE))
-                - being_very_dependant_score: -1
                 - being_very_dependant_score: if(
-                    ISMALE and being_dependant,
+                    data_origin == 1,
+                    if(dependance_level >= 2, 1, -1),
+                    -1
+                    )
+                - being_very_dependant_score: if(
+                    ISMALE and being_dependant and data_origin != 1,
                     logit_score(0.434 + .368 * lq - 0.516 * etudes),
                     being_very_dependant_score
                     )
                 - being_very_dependant_score: if(
-                    ISFEMALE and being_dependant,
+                    ISFEMALE and being_dependant and data_origin != 1,
                     logit_score(0.194 + .150 * lq),
                     being_very_dependant_score
                     )
@@ -83,6 +94,12 @@ entities:
                     age, sexe, expr = count((dependance_level == 1) or (dependance_level == 2))
                     ),
                     fname = 'dependance.csv',
+                    mode = 'a'
+                    )
+                - csv('period', period, 'dependance', groupby(
+                    age, data_origin, expr = count((dependance_level == 1) or (dependance_level == 2))
+                    ),
+                    fname = 'dependance2.csv',
                     mode = 'a'
                     )
                 - assertTrue(all(dependance_level == 0, filter = (age < 60)))
@@ -214,4 +231,11 @@ entities:
                     fname = 'dependance.csv',
                     mode = 'a'
                     )
+                - csv('period', period, 'dependance', groupby(
+                    age, data_origin, expr = count((dependance_level == 1) or (dependance_level == 2))
+                    ),
+                    fname = 'dependance2.csv',
+                    mode = 'a'
+                    )
+
                 # Devenir dependant (voir http://insee.fr/fr/publications-et-services/docs_doc_travail/g2012-10.pdf)

@@ -1,16 +1,18 @@
 entities:
     individus:
         fields:
-        # individusl intrinseq
+        # individual intrinseq
             - age_en_mois: int
             - age: {type: int, initialdata: false}
             - sexe: int
             - wprm_init: {type: int, initialdata: false}
             - migrant: {type: bool, initialdata: false, default: false}
             - naiss: {type: int, initialdata: false, default: 0}
+            - data_origin: int
+            # O: patrimoine, 1: handicap santé instittutions
 
         # l_men
-            - idmen: int  # il faudra changer les men en men
+            - idmen: int
             - quimen: int
 
         # foyer l_foy
@@ -29,7 +31,7 @@ entities:
 
         # education
             - education_level: {type: int, initialdata: false, default: 10}
-            - findet: int
+            - findet: int  # âge de fin d'études
             # 1: in work, 2: unemployed including old-age unemployed,
             # 3: in education, 4: retired, 5: other inactive
 
@@ -45,9 +47,9 @@ entities:
             - anc: int
             - dur_rest_ARE: {type: int, initialdata: false}
 
-            # dependance 0 non dependant, 1: moyennement dependant, 2: fortmeent dependant
-            - dependance_level: {type: int, initialdata: false, default: 0}
-            - dependance_anciennete: {type: int, initialdata: false, default: -1}
+            # dependance 0 non dependant, 1: moyennement dependant, 2: fortement dependant
+            - dependance_level: {type: int, initialdata: true}
+            - dependance_anciennete: {type: int, initialdata: false, default: 0}
 
         # patrimoine
             - patrimoine: {type: float, initialdata: false}
@@ -165,7 +167,8 @@ entities:
                 - age_en_mois: add_time_scale(age_en_mois)
                 - age: trunc(age_en_mois / 12)
                 # - wprm_init: permet de faire des tests
-                - wprm_init: lag(age_en_mois,2)
+                - data_origin: data_origin
+                - wprm_init: lag(age_en_mois, 2)
 
             stat_period_ini:
                 - csv('period', 'births',
@@ -185,6 +188,9 @@ entities:
                       )
                 - csv('dependance_by_period',
                       fname = 'dependance.csv'
+                      )
+                - csv('dependance_by_period',
+                      fname = 'dependance2.csv'
                       )
                 - csv(
                     'period', 'population', 'naissance', 'salaire_imposable', 'rsti', 'choi','age moyen',

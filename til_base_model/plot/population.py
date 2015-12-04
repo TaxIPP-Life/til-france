@@ -119,8 +119,6 @@ def extract_population_by_age_csv(simulation):
     return panel * uniform_weight
 
 
-
-
 def get_insee_projection(quantity, gender, function = None):
 
     assert quantity in ['births', 'deaths', 'migrants', 'population']

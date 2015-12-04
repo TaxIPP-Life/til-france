@@ -6,7 +6,7 @@ from til_base_model.plot.population import plot_population2, population_diagnost
 
 simulation = create_til_simulation(
     capitalized_name = 'Patrimoine_next_metro_200',
-    output_name_suffix = 'test',
+    output_name_suffix = 'test_institutions',
     uniform_weight = 200
     )
 simulation.run()
