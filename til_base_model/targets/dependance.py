@@ -30,10 +30,7 @@ import tables
 from til_base_model.tests.base import line_prepender, til_base_model_path
 
 
-try:
-    from liam2.importer import array_to_disk_array
-except ImportError:
-    from src.importer import array_to_disk_array
+from liam2.importer import array_to_disk_array
 
 
 drees_excel_file_path = os.path.join(til_base_model_path, 'param', 'demo', 'drees', 'dss43_horizon_2060.xls')
@@ -61,12 +58,14 @@ def build_prevalence_all_years(hdf5_file_path = None, csv_file_path = None):
     df.set_index('year', inplace = True)
     data = df.reindex(index = range(2010, 2061)).interpolate(method='polynomial', order = 6)
     # On passe en année pleine
-    data.index = [int(str(year - 1) + "01") for year in data.index]
+    # data.index = [int(str(year - 1) + "01") for year in data.index]
+    data.index = [int(str(year - 1)) for year in data.index]
     data.index.name = "PERIOD"
 
     if hdf5_file_path:
         h5file = tables.open_file(hdf5_file_path, mode="a")
-        array_to_disk_array(h5file, '/globals', 'dependance_prevalence_all_years', data.DEPENDANTS.values)
+        globals_node = h5file.getNode('/globals')
+        array_to_disk_array(globals_node, 'dependance_prevalence_all_years', data.DEPENDANTS.values)
         h5file.close()
     elif csv_file_path:
         csv_file_path = os.path.join(til_base_model_path, 'param', 'demo', 'dependance_prevalence_all_years.csv')

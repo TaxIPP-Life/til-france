@@ -164,8 +164,9 @@ entities:
                 - wprm_init: 100 * age + month
 
             ageing:
-                - age_en_mois: add_time_scale(age_en_mois)
-                - age: trunc(age_en_mois / 12)
+                # - age_en_mois: add_time_scale(age_en_mois)
+                #- age: trunc(age_en_mois / 12)
+                - age: age + 1
                 # - wprm_init: permet de faire des tests
                 - data_origin: data_origin
                 - wprm_init: lag(age_en_mois, 2)

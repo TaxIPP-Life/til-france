@@ -32,7 +32,7 @@ from til_base_model.tests.base import create_or_get_figures_directory, ipp_color
 
 def extract_dependance_csv(simulation):
 
-    directory = os.path.dirname(simulation.data_source.output_path)
+    directory = os.path.dirname(simulation.data_sink.output_path)
     uniform_weight = simulation.uniform_weight
     file_path = os.path.join(directory, 'dependance.csv')
 
@@ -66,7 +66,7 @@ def extract_dependance_csv(simulation):
         df.drop(df.index[0], axis = 0, inplace = True)
         df.columns = ['male', 'female', 'total']
         df.columns.name = "dependants"
-        df['period'] = period // 100
+        df['period'] = period
         proto_panel = pandas.concat([proto_panel, df]) if proto_panel is not None else df
 
     panel = proto_panel.loc['total'].set_index(['period'], append = True).to_panel().astype(int)

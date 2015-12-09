@@ -35,7 +35,7 @@ from til_base_model.targets.population import  get_data_frame_insee
 
 
 def extract_population_csv(simulation):
-    directory = os.path.dirname(simulation.data_source.output_path)
+    directory = os.path.dirname(simulation.data_sink.output_path)
     uniform_weight = simulation.uniform_weight
     file_path = os.path.join(directory, 'population2.csv')
 
@@ -69,7 +69,7 @@ def extract_population_csv(simulation):
         df.drop(df.index[0], axis = 0, inplace = True)
         df.columns = ['male', 'female', 'total']
         df.columns.name = "population"
-        df['period'] = period // 100
+        df['period'] = period
         proto_panel = pandas.concat([proto_panel, df]) if proto_panel is not None else df
 
     panel = proto_panel.set_index(['period'], append = True).to_panel().fillna(0).astype(int)
@@ -77,7 +77,7 @@ def extract_population_csv(simulation):
 
 
 def extract_population_by_age_csv(simulation):
-    directory = os.path.dirname(simulation.data_source.output_path)
+    directory = os.path.dirname(simulation.data_sink.output_path)
     uniform_weight = simulation.uniform_weight
     file_path = os.path.join(directory, 'population.csv')
 
@@ -111,7 +111,7 @@ def extract_population_by_age_csv(simulation):
         df.drop(df.index[0], axis = 0, inplace = True)
         df.columns = ['male', 'female', 'total']
         df.columns.name = "population"
-        df['period'] = period // 100
+        df['period'] = period
         proto_panel = pandas.concat([proto_panel, df]) if proto_panel is not None else df
 
     panel = proto_panel.set_index(['period'], append = True).to_panel().fillna(0).astype(int)
@@ -261,13 +261,13 @@ def plot_ratio_demographique(simulation):
 
 def population_diagnostic(simulation):
     figures_directory = create_or_get_figures_directory(simulation)
-    directory = os.path.dirname(simulation.data_source.output_path)
+    directory = os.path.dirname(simulation.data_sink.output_path)
     uniform_weight = simulation.uniform_weight
 
     population = None
     for csv_file in ['births', 'deaths', 'migrants']:
         simulation_data_frame = pandas.read_csv(os.path.join(directory, csv_file + '.csv'))
-        simulation_data_frame.period = (simulation_data_frame['period'] / 100).round().astype(int)
+        simulation_data_frame.period = (simulation_data_frame['period']).round().astype(int)
         simulation_data_frame.set_index('period', inplace = True)
 
         insee_data_frame = pandas.DataFrame({

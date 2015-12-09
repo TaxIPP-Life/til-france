@@ -170,8 +170,7 @@ entities:
                     becoming_dependant_score
                     )
                 - assertTrue(all(becoming_dependant_score == -1, filter = (age < 60)))
-                - year: trunc(period / 100)
-                - dependants: dependance_prevalence_all_years[year - 2009] / 200
+                - dependants: dependance_prevalence_all_years[period - 2009] / 200  # 200 is the threshold
                 - need: dependants - count(ISDEPENDANT)
                 - show('Amount ow newly deppendants people needed', need)
                 - becoming_dependant: align_abs(

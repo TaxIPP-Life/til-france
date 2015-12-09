@@ -76,15 +76,15 @@ simulation:
         - individus: [check]
         - menages: [men_composition]
         - foyers_fiscaux: [cases, empty_declar]
-        - individus: [[into_couple, 'year']]
+        - individus: [into_couple]
         - individus: [move_together]
         - individus: [check]
         - individus: [legal_union]
         - individus: [check]
         # - register: [sum_indiv]
-        - menages: [[men_composition, 'year']]
-        - foyers_fiscaux: [[cases, 'year']]
-        - foyers_fiscaux: [[empty_declar, 'year']]
+        - menages: [men_composition]
+        - foyers_fiscaux: [cases]
+        - foyers_fiscaux: [empty_declar]
         - individus: [divorce]
         - individus: [check]
         - menages: [men_composition]
@@ -110,10 +110,10 @@ simulation:
 
     skip_shows: False
     timings: False
-    time_scale: 'year'
+    # time_scale: 'year0'
     # retro: True
 
-    start_period: 200901
+    start_period: 2010  #01
     # first simulated period is start_period + 1  TODO: a bit ugly !
 
-    periods: 2
+    periods: 10

@@ -67,7 +67,7 @@ You should run DataTil and check that the input path is correctly set in your co
 
 def create_or_get_figures_directory(simulation):
     figures_directory = os.path.join(
-        os.path.dirname(simulation.data_source.output_path),
+        os.path.dirname(simulation.data_sink.output_path),
         'figures',
         )
     if not os.path.exists(figures_directory):
@@ -86,7 +86,7 @@ def line_prepender(filename, line):
 def plot_csv(simulation):
     figures_directory = create_or_get_figures_directory(simulation)
 
-    directory = os.path.dirname(simulation.data_source.output_path)
+    directory = os.path.dirname(simulation.data_sink.output_path)
     uniform_weight = simulation.uniform_weight
 
     for csv_file in ['civilstate', 'stat', 'workstate']:
