@@ -1,0 +1,94 @@
+# second entity, links, link methods, init, procedures, local variables,
+# dump's suffix argument, choice
+
+        
+entities:
+    person:    
+        fields:
+            - couple: int
+            - anais : int
+            - sexe: int
+
+            - situa: int
+            # - jemnais: int
+            # - gparmat : int
+            # - jemprof : int
+            # - jemact : int
+            # - jepnais: int
+            # - gparpat : int
+            # - jepprof : int
+            - per1e: int
+            - mer1e: int
+            # - jegrave_div: int
+            # - classif: int
+            - dip6: int
+            - PARENT: int  
+            - nb_enf: int
+            - hodln: int
+
+            
+            - pere:  {type: int, initialdata: false}
+            - mere:  {type: int, initialdata: false}
+            
+            
+            - lien:  {type: int, initialdata: false}
+            
+        macros:
+            ENFANTS: not PARENT
+            PARENTS: PARENT
+        
+        processes:    
+            rien : 0 
+            union1: 
+                - lien: 0 
+                - enfant1 : ((ENFANTS) and (per1e==2) and (mer1e==2))
+                - parent1: (PARENTS  and (hodln==1)) 
+                - show('nb parent', grpsum(parent1))
+# Les parents avec hodln=1, on sait que leurs enfants, ont deux parents vivant
+# Mais les enfants avec deux parents vivant peuvent tres bien avoir leurs parents vivants separement 
+#TODO : faire un vrai score               
+                - lien:          matching(set1filter=parent1, set2filter=enfant1,
+                                          score=- 1 * (other.anais - anais)
+                                            - 1.0 * (other.situa - situa)
+                                            - 1.0 * (other.gparpat - gparpat)
+                                            - 1.0 * (other.gparmat - gparmat)
+                                            - 1.0 * (other.nb_enf - nb_enf)
+                                            - 1.0 * (other.jemact - jemact),                                      
+                                           orderby=num_clone) 
+                # - mere: if( ENFANTS,
+                            # if( lien >0 and , 
+                                      
+            union2: 
+                - enfant2 : ((ENFANTS) and (per1e==2) and (mer1e==2))
+                - mere2: (PARENTS  and (hodln==1))       
+# Les parents avec hodln=1, on sait que leurs enfants, ont deux parents vivant
+# Mais les enfants avec deux parents vivant peuvent tres bien avoir leurs parents vivants separement 
+#TODO : faire un vrai score               
+                - lien:          matching(set1filter=mere2, set2filter=enfant2,
+                                          score=- 1 * (other.anais - anais)
+                                            - 1.0 * (other.situa - situa)
+                                            - 1.0 * (other.gparpat - gparpat)
+                                            - 1.0 * (other.gparmat - gparmat)
+                                            - 1.0 * (other.nb_enf - nb_enf)
+                                            - 1.0 * (other.jemact - jemact),                                      
+                                           orderby=num_clone) 
+                                           
+                           
+    
+simulation:
+
+    init:
+        #- person: [anais, anaisgroup, dump_info, show_demography , marrianais]
+        - person: [union1,union2]
+        # - person: [union3]
+    processes:
+        - person: [rien]
+
+    input:
+        file: lien.h5
+    output:
+        file: matchTest.h5
+
+    # first simulated period
+    start_period: 2010
+    periods: 0

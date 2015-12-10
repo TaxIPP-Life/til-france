@@ -1,0 +1,156 @@
+# second entity, links, link methods, init, procedures, local variables,
+# dump's suffix argument, choice
+
+        
+entities:
+    person:    
+        fields:
+            - couple: int
+            - anais : int
+            - sexe: int
+            - situa: int
+            # - jemnais: int
+            # - gparmat : int
+            # - jemprof : int
+            # - jemact : int
+            # - jepnais: int
+            # - gparpat : int
+            # - jepprof : int
+            - per1e: int
+            - mer1e: int
+            # - jegrave_div: int
+            # - classif: int
+            - dip6: int
+            - parent: int  
+            - nb_enf: int
+            - pond: int
+            - id_origin: int
+            - pere: int
+            - mere: int        
+            
+            - link_pere:  {type: int, initialdata: false}
+            - link_mere:  {type: int, initialdata: false}
+            
+            
+            - lien1:  {type: int, initialdata: false}
+            - lien2:  {type: int, initialdata: false}
+            - lien3:  {type: int, initialdata: false}  
+        macros:
+            ENFANT:  parent==0
+            PARENT: parent==1
+            
+        links:
+            l1: {type: many2one, target: person, field: lien1}
+            l2: {type: many2one, target: person, field: lien2}
+            l3: {type: many2one, target: person, field: lien3}
+            
+        processes:    
+        # le fait d'avoir plusieurs union et surtout plusieurs lien peut semble bizarre 
+        # mais c'est utile si on ne match pas les enfants avec deux parents vivant d'un coup, 
+        # on ne veut pas écraser le lien de la mere avec le pere par exemple.
+            rien : 0 
+            union1: 
+                - lien: 0 
+                - enfant1 : ((ENFANT) and (per1e==2) and (mer1e==2))
+                - parent1: (PARENT  and (pere >0) and (mere>0)) 
+                - show('nb parent', sum(parent1))
+                - show('nb parent non match', sum(parent1 and not (lien1 >0)))
+                - show('nb enfant non match', sum(enfant1 and not (lien1 >0)))      
+                
+# Les parents avec hodln=1, on sait que leurs enfants, ont deux parents vivant
+# Mais les enfants avec deux parents vivant peuvent tres bien avoir leurs parents vivants separement 
+#TODO : faire un vrai score               
+                - lien1:          matching(set1filter=parent1, set2filter=enfant1,
+                                          score=- 1 * (other.anais - anais)
+                                            - 1.0 * (other.situa - situa)
+                                            - 0.5 * (other.sexe - sexe)
+                                            - 1.0 * (other.dip6 - dip6)
+                                            - 1.0 * (other.nb_enf - nb_enf),                                      
+                                           orderby=id) 
+                - show('nb parent non match', sum(parent1 and not (lien1 >0)))
+                - show('nb enfant non match', sum(enfant1 and not (lien1 >0)))                
+                # - mere: if( ENFANTS,
+                            # if( lien >0 and , 
+                                      
+            union2: 
+                - enfant2 : ((ENFANT) and (mer1e==2) and not (lien1>0))
+                - mere2: (PARENT  and (mere>0) and not (lien1>0))                     
+                - lien2:        matching(set1filter=mere2, set2filter=enfant2,
+                                          score=- 1 * (other.anais - anais)
+                                            - 1.0 * (other.situa - situa)
+                                            - 0.5 * (other.sexe - sexe)
+                                            - 1.0 * (other.dip6 - dip6)
+                                            - 1.0 * (other.nb_enf - nb_enf),                                      
+                                           orderby=id) 
+                - show('nb parent non match', sum(mere2 and not (lien2 >0)))
+                - show('nb enfant non match', sum(enfant2 and not (lien2 >0)))  
+
+            union3: 
+                - enfant3 : ((ENFANT) and (per1e==2) and not (lien1>0))
+                - pere3: (PARENT  and (pere>0) and not (lien1>0) and not (lien2>0))                      
+                - lien3:         matching(set1filter=pere3, set2filter=enfant3,
+                                          score=- 1 * (other.anais - anais)
+                                            - 1.0 * (other.situa - situa)
+                                            - 0.5 * (other.sexe - sexe)
+                                            - 1.0 * (other.dip6 - dip6)
+                                            - 1.0 * (other.nb_enf - nb_enf),                                      
+                                           orderby=id)  
+                - show('nb parent non match', sum(pere3 and not (lien3 >0)))
+                - show('nb enfant non match', sum(enfant3 and not (lien3 >0))) 
+
+            data: 
+                - show('nb parent ini', sum(PARENT))
+                - show('nb parent match', sum(PARENT and (lien1>0)))
+                - show('nb parent non match', sum(PARENT and (lien1<=0)))
+                
+                - show('nb enfant ini', sum(ENFANT))
+                - show('nb enfant match', sum(ENFANT and (lien1>0)))
+                - show('nb enfant non match', sum(ENFANT and (lien1<=0)))
+
+            links: 
+            # condition ENFANT and (lien1 >0) = "on cherche un parent"
+            # condition l1.mere >0            =  "on a trouvé un parent"
+                - link_mere : if(ENFANT and (lien1 >0), 
+                                    if( l1.mere >0, l1.mere,link_mere),  
+                                    link_mere)
+                - link_mere : if(ENFANT and (lien2 >0), 
+                                    if( l2.mere >0, l2.mere,link_mere),
+                                    link_mere)       
+                # étape inutile car pas de mère en étape 3, mais si on change c'est déjà écrit
+                # - link_mere : if(ENFANT and (lien3 >0), 
+                                    # if( l3.mere >0, l3.mere,link_mere),
+                                    # link_mere)   
+                - link_pere : if(ENFANT and (lien1 >0), 
+                                    if( l1.pere >0, l1.pere,link_pere),
+                                    link_pere)
+                # étape inutile et fausse !! car pas de père en étape 2, mais si on change c'est déjà écrit
+                # - link_pere : if(ENFANT and (lien2 >0), 
+                                    # if( l2.pere >0, l2.pere,link_pere),
+                                    # link_pere)                   
+                - link_pere : if(ENFANT and (lien3 >0), 
+                                    if( l3.pere >0, l3.pere,link_pere),
+                                    link_pere)                                      
+
+            save: 
+                # csv([]’period’, ’average income’, fname=’avg_income.csv’)
+                #- show(dump(id_origin, link_pere, link_mere, filter=ENFANT))
+                - csv(dump(id_origin, link_pere, link_mere, filter=ENFANT), fname='match_score.csv')
+                
+                                    
+simulation:
+
+    init:
+        #- person: [anais, anaisgroup, dump_info, show_demography , marrianais]
+        - person: [union1,union2,union3, data,links,save]
+        # - person: [union3]
+    processes:
+        - person: [rien]
+
+    input:
+        file: lien.h5
+    output:
+        file: match_score.h5
+
+    # first simulated period
+    init_period: 2009
+    periods: 0

@@ -2,8 +2,8 @@
 # Local configuration file
 ##########################
 
-til_base_model/tests/output/*.csv
-til_base_model/tests/output/*.h5
+til_france/tests/output/*.csv
+til_france/tests/output/*.h5
 
 
 ##########################

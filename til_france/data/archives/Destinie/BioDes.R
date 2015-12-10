@@ -1,0 +1,8 @@
+load("C:/TaxIPP-Life/Til/data/Destinie/Import/BiosDestinie.RData")
+ls() #returns a list of all the objects you just loaded (and anything else in your environment)
+write.csv2(chomind, file="C:/TaxIPP-Life/Til/data/Destinie/Import/chomind.csv", sep =",", row.names = TRUE)
+write.csv2(conjoint, file="C:/TaxIPP-Life/Til/data/Destinie/Import/conjoint.csv", sep =",", row.names = TRUE)
+write.csv2(enf, file="C:/TaxIPP-Life/Til/data/Destinie/Import/enf.csv", sep =",", row.names = TRUE)
+write.csv2(salaire, file="C:/TaxIPP-Life/Til/data/Destinie/Import/salaire.csv", sep =",", row.names = TRUE)
+write.csv2(salrefchom, file="C:/TaxIPP-Life/Til/data/Destinie/Import/salrefchom.csv", sep =",", row.names = TRUE)
+write.csv2(statut, file="C:/TaxIPP-Life/Til/data/Destinie/Import/statut.csv", sep =",", row.names = TRUE)

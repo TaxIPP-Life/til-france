@@ -1,5 +1,5 @@
 IGNORE_OPT=--ignore-files=''
-TESTS_DIR=til_base_model/tests
+TESTS_DIR=til_france/tests
 
 all: flake8 test
 
@@ -25,4 +25,4 @@ test-ci: check-syntax-errors
 	nosetests $(TESTS_DIR) --exe --with-doctest
 
 test-with-coverage:
-	nosetests $(TESTS_DIR) $(IGNORE_OPT) --exe --stop --with-coverage --cover-package=til_base_model --cover-erase --cover-branches --cover-html
+	nosetests $(TESTS_DIR) $(IGNORE_OPT) --exe --stop --with-coverage --cover-package=til_france --cover-erase --cover-branches --cover-html

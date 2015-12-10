@@ -1,0 +1,609 @@
+
+Bad key "axes.prop_cycle" on line 2 in
+/usr/share/matplotlib/mpl-data/stylelib/seaborn-dark-palette.mplstyle.
+You probably need to get an updated matplotlibrc file from
+http://matplotlib.sf.net/_static/matplotlibrc or from the matplotlib source
+distribution
+
+Bad key "axes.prop_cycle" on line 2 in
+/usr/share/matplotlib/mpl-data/stylelib/seaborn-bright.mplstyle.
+You probably need to get an updated matplotlibrc file from
+http://matplotlib.sf.net/_static/matplotlibrc or from the matplotlib source
+distribution
+
+Bad key "axes.prop_cycle" on line 2 in
+/usr/share/matplotlib/mpl-data/stylelib/seaborn-muted.mplstyle.
+You probably need to get an updated matplotlibrc file from
+http://matplotlib.sf.net/_static/matplotlibrc or from the matplotlib source
+distribution
+
+Bad key "axes.prop_cycle" on line 11 in
+/usr/share/matplotlib/mpl-data/stylelib/dark_background.mplstyle.
+You probably need to get an updated matplotlibrc file from
+http://matplotlib.sf.net/_static/matplotlibrc or from the matplotlib source
+distribution
+
+Bad key "axes.prop_cycle" on line 2 in
+/usr/share/matplotlib/mpl-data/stylelib/seaborn-pastel.mplstyle.
+You probably need to get an updated matplotlibrc file from
+http://matplotlib.sf.net/_static/matplotlibrc or from the matplotlib source
+distribution
+
+Bad key "axes.prop_cycle" on line 15 in
+/usr/share/matplotlib/mpl-data/stylelib/grayscale.mplstyle.
+You probably need to get an updated matplotlibrc file from
+http://matplotlib.sf.net/_static/matplotlibrc or from the matplotlib source
+distribution
+
+Bad key "axes.prop_cycle" on line 20 in
+/usr/share/matplotlib/mpl-data/stylelib/bmh.mplstyle.
+You probably need to get an updated matplotlibrc file from
+http://matplotlib.sf.net/_static/matplotlibrc or from the matplotlib source
+distribution
+
+Bad key "axes.spines.right" on line 210 in
+/usr/share/matplotlib/mpl-data/stylelib/classic.mplstyle.
+You probably need to get an updated matplotlibrc file from
+http://matplotlib.sf.net/_static/matplotlibrc or from the matplotlib source
+distribution
+
+Bad key "boxplot.flierprops.linewidth" on line 321 in
+/usr/share/matplotlib/mpl-data/stylelib/classic.mplstyle.
+You probably need to get an updated matplotlibrc file from
+http://matplotlib.sf.net/_static/matplotlibrc or from the matplotlib source
+distribution
+
+Bad key "contour.corner_mask" on line 306 in
+/usr/share/matplotlib/mpl-data/stylelib/classic.mplstyle.
+You probably need to get an updated matplotlibrc file from
+http://matplotlib.sf.net/_static/matplotlibrc or from the matplotlib source
+distribution
+
+Bad key "boxplot.vertical" on line 339 in
+/usr/share/matplotlib/mpl-data/stylelib/classic.mplstyle.
+You probably need to get an updated matplotlibrc file from
+http://matplotlib.sf.net/_static/matplotlibrc or from the matplotlib source
+distribution
+
+Bad key "boxplot.meanprops.color" on line 327 in
+/usr/share/matplotlib/mpl-data/stylelib/classic.mplstyle.
+You probably need to get an updated matplotlibrc file from
+http://matplotlib.sf.net/_static/matplotlibrc or from the matplotlib source
+distribution
+
+Bad key "boxplot.bootstrap" on line 312 in
+/usr/share/matplotlib/mpl-data/stylelib/classic.mplstyle.
+You probably need to get an updated matplotlibrc file from
+http://matplotlib.sf.net/_static/matplotlibrc or from the matplotlib source
+distribution
+
+Bad key "ytick.minor.visible" on line 230 in
+/usr/share/matplotlib/mpl-data/stylelib/classic.mplstyle.
+You probably need to get an updated matplotlibrc file from
+http://matplotlib.sf.net/_static/matplotlibrc or from the matplotlib source
+distribution
+
+Bad key "boxplot.capprops.linestyle" on line 317 in
+/usr/share/matplotlib/mpl-data/stylelib/classic.mplstyle.
+You probably need to get an updated matplotlibrc file from
+http://matplotlib.sf.net/_static/matplotlibrc or from the matplotlib source
+distribution
+
+Bad key "legend.facecolor" on line 266 in
+/usr/share/matplotlib/mpl-data/stylelib/classic.mplstyle.
+You probably need to get an updated matplotlibrc file from
+http://matplotlib.sf.net/_static/matplotlibrc or from the matplotlib source
+distribution
+
+Bad key "axes.grid.axis" on line 173 in
+/usr/share/matplotlib/mpl-data/stylelib/classic.mplstyle.
+You probably need to get an updated matplotlibrc file from
+http://matplotlib.sf.net/_static/matplotlibrc or from the matplotlib source
+distribution
+
+Bad key "boxplot.patchartist" on line 334 in
+/usr/share/matplotlib/mpl-data/stylelib/classic.mplstyle.
+You probably need to get an updated matplotlibrc file from
+http://matplotlib.sf.net/_static/matplotlibrc or from the matplotlib source
+distribution
+/usr/lib/python2.7/dist-packages/matplotlib/__init__.py:1041: UserWarning: Bad val "None" on line #264
+	"legend.framealpha    : None    # opacity of of legend frame
+"
+	in file "/usr/share/matplotlib/mpl-data/stylelib/classic.mplstyle"
+	Key legend.framealpha: Could not convert "None" to float
+  (val, error_details, msg))
+
+Bad key "boxplot.meanline" on line 326 in
+/usr/share/matplotlib/mpl-data/stylelib/classic.mplstyle.
+You probably need to get an updated matplotlibrc file from
+http://matplotlib.sf.net/_static/matplotlibrc or from the matplotlib source
+distribution
+
+Bad key "boxplot.flierprops.color" on line 319 in
+/usr/share/matplotlib/mpl-data/stylelib/classic.mplstyle.
+You probably need to get an updated matplotlibrc file from
+http://matplotlib.sf.net/_static/matplotlibrc or from the matplotlib source
+distribution
+
+Bad key "axes.spines.left" on line 209 in
+/usr/share/matplotlib/mpl-data/stylelib/classic.mplstyle.
+You probably need to get an updated matplotlibrc file from
+http://matplotlib.sf.net/_static/matplotlibrc or from the matplotlib source
+distribution
+
+Bad key "boxplot.whiskerprops.linestyle" on line 341 in
+/usr/share/matplotlib/mpl-data/stylelib/classic.mplstyle.
+You probably need to get an updated matplotlibrc file from
+http://matplotlib.sf.net/_static/matplotlibrc or from the matplotlib source
+distribution
+
+Bad key "boxplot.capprops.color" on line 316 in
+/usr/share/matplotlib/mpl-data/stylelib/classic.mplstyle.
+You probably need to get an updated matplotlibrc file from
+http://matplotlib.sf.net/_static/matplotlibrc or from the matplotlib source
+distribution
+
+Bad key "boxplot.medianprops.linestyle" on line 331 in
+/usr/share/matplotlib/mpl-data/stylelib/classic.mplstyle.
+You probably need to get an updated matplotlibrc file from
+http://matplotlib.sf.net/_static/matplotlibrc or from the matplotlib source
+distribution
+
+Bad key "boxplot.flierprops.markeredgecolor" on line 323 in
+/usr/share/matplotlib/mpl-data/stylelib/classic.mplstyle.
+You probably need to get an updated matplotlibrc file from
+http://matplotlib.sf.net/_static/matplotlibrc or from the matplotlib source
+distribution
+
+Bad key "axes.spines.top" on line 211 in
+/usr/share/matplotlib/mpl-data/stylelib/classic.mplstyle.
+You probably need to get an updated matplotlibrc file from
+http://matplotlib.sf.net/_static/matplotlibrc or from the matplotlib source
+distribution
+
+Bad key "legend.edgecolor" on line 267 in
+/usr/share/matplotlib/mpl-data/stylelib/classic.mplstyle.
+You probably need to get an updated matplotlibrc file from
+http://matplotlib.sf.net/_static/matplotlibrc or from the matplotlib source
+distribution
+
+Bad key "axes.spines.bottom" on line 208 in
+/usr/share/matplotlib/mpl-data/stylelib/classic.mplstyle.
+You probably need to get an updated matplotlibrc file from
+http://matplotlib.sf.net/_static/matplotlibrc or from the matplotlib source
+distribution
+
+Bad key "axes.prop_cycle" on line 201 in
+/usr/share/matplotlib/mpl-data/stylelib/classic.mplstyle.
+You probably need to get an updated matplotlibrc file from
+http://matplotlib.sf.net/_static/matplotlibrc or from the matplotlib source
+distribution
+
+Bad key "boxplot.whiskerprops.linewidth" on line 342 in
+/usr/share/matplotlib/mpl-data/stylelib/classic.mplstyle.
+You probably need to get an updated matplotlibrc file from
+http://matplotlib.sf.net/_static/matplotlibrc or from the matplotlib source
+distribution
+
+Bad key "boxplot.medianprops.linewidth" on line 332 in
+/usr/share/matplotlib/mpl-data/stylelib/classic.mplstyle.
+You probably need to get an updated matplotlibrc file from
+http://matplotlib.sf.net/_static/matplotlibrc or from the matplotlib source
+distribution
+
+Bad key "boxplot.showmeans" on line 338 in
+/usr/share/matplotlib/mpl-data/stylelib/classic.mplstyle.
+You probably need to get an updated matplotlibrc file from
+http://matplotlib.sf.net/_static/matplotlibrc or from the matplotlib source
+distribution
+
+Bad key "boxplot.meanprops.linestyle" on line 328 in
+/usr/share/matplotlib/mpl-data/stylelib/classic.mplstyle.
+You probably need to get an updated matplotlibrc file from
+http://matplotlib.sf.net/_static/matplotlibrc or from the matplotlib source
+distribution
+
+Bad key "boxplot.capprops.linewidth" on line 318 in
+/usr/share/matplotlib/mpl-data/stylelib/classic.mplstyle.
+You probably need to get an updated matplotlibrc file from
+http://matplotlib.sf.net/_static/matplotlibrc or from the matplotlib source
+distribution
+
+Bad key "boxplot.boxprops.linewidth" on line 315 in
+/usr/share/matplotlib/mpl-data/stylelib/classic.mplstyle.
+You probably need to get an updated matplotlibrc file from
+http://matplotlib.sf.net/_static/matplotlibrc or from the matplotlib source
+distribution
+
+Bad key "animation.html" on line 492 in
+/usr/share/matplotlib/mpl-data/stylelib/classic.mplstyle.
+You probably need to get an updated matplotlibrc file from
+http://matplotlib.sf.net/_static/matplotlibrc or from the matplotlib source
+distribution
+
+Bad key "boxplot.showcaps" on line 336 in
+/usr/share/matplotlib/mpl-data/stylelib/classic.mplstyle.
+You probably need to get an updated matplotlibrc file from
+http://matplotlib.sf.net/_static/matplotlibrc or from the matplotlib source
+distribution
+
+Bad key "boxplot.meanprops.linewidth" on line 329 in
+/usr/share/matplotlib/mpl-data/stylelib/classic.mplstyle.
+You probably need to get an updated matplotlibrc file from
+http://matplotlib.sf.net/_static/matplotlibrc or from the matplotlib source
+distribution
+
+Bad key "figure.titlesize" on line 273 in
+/usr/share/matplotlib/mpl-data/stylelib/classic.mplstyle.
+You probably need to get an updated matplotlibrc file from
+http://matplotlib.sf.net/_static/matplotlibrc or from the matplotlib source
+distribution
+
+Bad key "xtick.minor.visible" on line 219 in
+/usr/share/matplotlib/mpl-data/stylelib/classic.mplstyle.
+You probably need to get an updated matplotlibrc file from
+http://matplotlib.sf.net/_static/matplotlibrc or from the matplotlib source
+distribution
+
+Bad key "boxplot.boxprops.color" on line 313 in
+/usr/share/matplotlib/mpl-data/stylelib/classic.mplstyle.
+You probably need to get an updated matplotlibrc file from
+http://matplotlib.sf.net/_static/matplotlibrc or from the matplotlib source
+distribution
+
+Bad key "boxplot.flierprops.markerfacecolor" on line 324 in
+/usr/share/matplotlib/mpl-data/stylelib/classic.mplstyle.
+You probably need to get an updated matplotlibrc file from
+http://matplotlib.sf.net/_static/matplotlibrc or from the matplotlib source
+distribution
+
+Bad key "boxplot.notch" on line 333 in
+/usr/share/matplotlib/mpl-data/stylelib/classic.mplstyle.
+You probably need to get an updated matplotlibrc file from
+http://matplotlib.sf.net/_static/matplotlibrc or from the matplotlib source
+distribution
+
+Bad key "boxplot.boxprops.linestyle" on line 314 in
+/usr/share/matplotlib/mpl-data/stylelib/classic.mplstyle.
+You probably need to get an updated matplotlibrc file from
+http://matplotlib.sf.net/_static/matplotlibrc or from the matplotlib source
+distribution
+
+Bad key "figure.titleweight" on line 274 in
+/usr/share/matplotlib/mpl-data/stylelib/classic.mplstyle.
+You probably need to get an updated matplotlibrc file from
+http://matplotlib.sf.net/_static/matplotlibrc or from the matplotlib source
+distribution
+
+Bad key "markers.fillstyle" on line 20 in
+/usr/share/matplotlib/mpl-data/stylelib/classic.mplstyle.
+You probably need to get an updated matplotlibrc file from
+http://matplotlib.sf.net/_static/matplotlibrc or from the matplotlib source
+distribution
+
+Bad key "axes.labelpad" on line 177 in
+/usr/share/matplotlib/mpl-data/stylelib/classic.mplstyle.
+You probably need to get an updated matplotlibrc file from
+http://matplotlib.sf.net/_static/matplotlibrc or from the matplotlib source
+distribution
+
+Bad key "boxplot.flierprops.marker" on line 322 in
+/usr/share/matplotlib/mpl-data/stylelib/classic.mplstyle.
+You probably need to get an updated matplotlibrc file from
+http://matplotlib.sf.net/_static/matplotlibrc or from the matplotlib source
+distribution
+
+Bad key "boxplot.medianprops.color" on line 330 in
+/usr/share/matplotlib/mpl-data/stylelib/classic.mplstyle.
+You probably need to get an updated matplotlibrc file from
+http://matplotlib.sf.net/_static/matplotlibrc or from the matplotlib source
+distribution
+
+Bad key "boxplot.showfliers" on line 337 in
+/usr/share/matplotlib/mpl-data/stylelib/classic.mplstyle.
+You probably need to get an updated matplotlibrc file from
+http://matplotlib.sf.net/_static/matplotlibrc or from the matplotlib source
+distribution
+
+Bad key "boxplot.flierprops.markersize" on line 325 in
+/usr/share/matplotlib/mpl-data/stylelib/classic.mplstyle.
+You probably need to get an updated matplotlibrc file from
+http://matplotlib.sf.net/_static/matplotlibrc or from the matplotlib source
+distribution
+
+Bad key "boxplot.whiskerprops.color" on line 340 in
+/usr/share/matplotlib/mpl-data/stylelib/classic.mplstyle.
+You probably need to get an updated matplotlibrc file from
+http://matplotlib.sf.net/_static/matplotlibrc or from the matplotlib source
+distribution
+
+Bad key "boxplot.flierprops.linestyle" on line 320 in
+/usr/share/matplotlib/mpl-data/stylelib/classic.mplstyle.
+You probably need to get an updated matplotlibrc file from
+http://matplotlib.sf.net/_static/matplotlibrc or from the matplotlib source
+distribution
+
+Bad key "boxplot.whiskers" on line 343 in
+/usr/share/matplotlib/mpl-data/stylelib/classic.mplstyle.
+You probably need to get an updated matplotlibrc file from
+http://matplotlib.sf.net/_static/matplotlibrc or from the matplotlib source
+distribution
+
+Bad key "errorbar.capsize" on line 309 in
+/usr/share/matplotlib/mpl-data/stylelib/classic.mplstyle.
+You probably need to get an updated matplotlibrc file from
+http://matplotlib.sf.net/_static/matplotlibrc or from the matplotlib source
+distribution
+
+Bad key "image.composite_image" on line 302 in
+/usr/share/matplotlib/mpl-data/stylelib/classic.mplstyle.
+You probably need to get an updated matplotlibrc file from
+http://matplotlib.sf.net/_static/matplotlibrc or from the matplotlib source
+distribution
+
+Bad key "boxplot.showbox" on line 335 in
+/usr/share/matplotlib/mpl-data/stylelib/classic.mplstyle.
+You probably need to get an updated matplotlibrc file from
+http://matplotlib.sf.net/_static/matplotlibrc or from the matplotlib source
+distribution
+
+Bad key "axes.prop_cycle" on line 9 in
+/usr/share/matplotlib/mpl-data/stylelib/fivethirtyeight.mplstyle.
+You probably need to get an updated matplotlibrc file from
+http://matplotlib.sf.net/_static/matplotlibrc or from the matplotlib source
+distribution
+
+Bad key "axes.prop_cycle" on line 2 in
+/usr/share/matplotlib/mpl-data/stylelib/seaborn-colorblind.mplstyle.
+You probably need to get an updated matplotlibrc file from
+http://matplotlib.sf.net/_static/matplotlibrc or from the matplotlib source
+distribution
+
+Bad key "axes.prop_cycle" on line 19 in
+/usr/share/matplotlib/mpl-data/stylelib/ggplot.mplstyle.
+You probably need to get an updated matplotlibrc file from
+http://matplotlib.sf.net/_static/matplotlibrc or from the matplotlib source
+distribution
+
+Bad key "axes.prop_cycle" on line 2 in
+/usr/share/matplotlib/mpl-data/stylelib/seaborn-deep.mplstyle.
+You probably need to get an updated matplotlibrc file from
+http://matplotlib.sf.net/_static/matplotlibrc or from the matplotlib source
+distribution
+/usr/lib/python2.7/dist-packages/matplotlib/__init__.py:1314: UserWarning:  This call to matplotlib.use() has no effect
+because the backend has already been chosen;
+matplotlib.use() must be called *before* pylab, matplotlib.pyplot,
+or matplotlib.backends is imported for the first time.
+
+  warnings.warn(_use_error_msg)
+importing: '/home/benjello/openfisca/Til-BaseModel/til_france/_Jobs/companies.yml'
+importing: '/home/benjello/openfisca/Til-BaseModel/til_france/_Wealth/save.yml'
+importing: '/home/benjello/openfisca/Til-BaseModel/til_france/_Consumption/conso.yml'
+importing: '/home/benjello/openfisca/Til-BaseModel/til_france/_House/moving.yml'
+importing: '/home/benjello/openfisca/Til-BaseModel/til_france/_Educ/youth.yml'
+importing: '/home/benjello/openfisca/Til-BaseModel/til_france/_Dependance/dependance.yml'
+importing: '/home/benjello/openfisca/Til-BaseModel/til_france/_Demo/_divorce/divorce.yml'
+importing: '/home/benjello/openfisca/Til-BaseModel/til_france/_Demo/_union/union.yml'
+importing: '/home/benjello/openfisca/Til-BaseModel/til_france/_Demo/_death/death.yml'
+importing: '/home/benjello/openfisca/Til-BaseModel/til_france/_Demo/_migration/migration.yml'
+importing: '/home/benjello/openfisca/Til-BaseModel/til_france/_Demo/_birth/birth.yml'
+importing: '/home/benjello/openfisca/Til-BaseModel/til_france/_Work/income2.yml'
+importing: '/home/benjello/openfisca/Til-BaseModel/til_france/_Work/work_PensIPP.yml'
+importing: '/home/benjello/openfisca/Til-BaseModel/til_france/_Foyer_fiscal/foyers_fiscaux.yml'
+importing: '/home/benjello/openfisca/Til-BaseModel/til_france/_House/menage.yml'
+importing: '/home/benjello/openfisca/Til-BaseModel/til_france/_Individu/generation.yml'
+importing: '/home/benjello/openfisca/Til-BaseModel/til_france/_Individu/register.yml'
+importing: '/home/benjello/openfisca/Til-BaseModel/til_france/_Individu/individu.yml'
+year
+init_period
+200901
+ - reading /home/benjello/data/til/input/parameters/dependance/dependance_prevalence_2010.csv
+2
+reading data from /home/benjello/data/til/input/Patrimoine_next_metro_200.h5 ...
+ * indexing tables
+    - foyers_fiscaux ... done (0.10 second elapsed).
+    - register ... done (0.18 second elapsed).
+    - companies ... done (0.08 second elapsed).
+    - generation ... done (0 ms elapsed).
+    - menages ... done (0.08 second elapsed).
+    - individus ... done (0.22 second elapsed).
+ * copying tables
+foyers_fiscaux ...
+ * copying table...
+done (3 ms elapsed).
+ * building array for first simulated period... done (0.02 second elapsed).
+register ...
+ * copying table...
+done (0.01 second elapsed).
+ * building array for first simulated period... done (0.03 second elapsed).
+companies ...
+ * copying table...
+done (1 ms elapsed).
+ * building array for first simulated period... done (1 ms elapsed).
+generation ...
+ * copying table...
+done (2 ms elapsed).
+ * building array for first simulated period... done (0 ms elapsed).
+menages ...
+ * copying table...
+done (0.01 second elapsed).
+ * building array for first simulated period... done (0.02 second elapsed).
+individus ...
+ * copying table...
+done (0.01 second elapsed).
+ * building array for first simulated period... done (0.25 second elapsed).
+done.
+
+=====================
+ starting simulation
+=====================
+simulated period are going to be:  [200901, 201001, 201101]
+200901
+200901
+1
+
+period 200901
+  * companies: 138734 individuals
+  * foyers_fiscaux: 170949 individuals
+  * generation: 121 individuals
+  * individus: 316747 individuals
+  * menages: 138734 individuals
+  * register: 316747 individuals
+- 1/20 init_weight_men ... periodicity: 1
+
+    * wprm done.
+done.
+- 2/20 init_region_id ... periodicity: 1
+
+    * region_id done.
+done.
+- 3/20 init_rent ... periodicity: 1
+
+    * rent done.
+done.
+- 4/20 init_value ... periodicity: 1
+
+    * value done.
+done.
+- 5/20 init_wealth ... periodicity: 1
+
+    * wealth done.
+done.
+- 6/20 init_owner ... periodicity: 1
+
+    * owner done.
+done.
+- 7/20 men_composition ... periodicity: 1
+
+    * nb_individus done.
+    * nb_children done.
+    * nb_children_af done.
+    * nb_adultes done.
+    * empty done.
+    * test_pref done.
+    * nombre de quimen 
+test_pref | nb_individus |       |       |       |      |      |     |     |    |    |    |    |    |       
+          |            1 |     2 |     3 |     4 |    5 |    6 |   7 |   8 |  9 | 10 | 11 | 12 /usr/lib/python2.7/dist-packages/numpy/core/_methods.py:83: RuntimeWarning: Degrees of freedom <= 0 for slice
+  warnings.warn("Degrees of freedom <= 0 for slice", RuntimeWarning)
+| 15 |  total
+        1 |        46131 | 46235 | 19906 | 17389 | 6588 | 1895 | 342 | 126 | 81 | 29 |  9 |  1 |  2 | 138734
+    total |        46131 | 46235 | 19906 | 17389 | 6588 | 1895 | 342 | 126 | 81 | 29 |  9 |  1 |  2 | 138734
+ done.
+    * separ done.
+    * nombre probleme de pref 138734 done.
+    * nombre separ 0 done.
+    * candidat done.
+    * pref done.
+    * done.
+    * uc done.
+    * liv_std done.
+done.
+- 8/20 init_weight_ind ... periodicity: 1
+
+    * wprm_init done.
+    * month done.
+    * age done.
+    * wprm_init done.
+done.
+- 9/20 init_couple ... periodicity: 1
+
+    * assertion ok done.
+    * dur_in_couple done.
+    * assertion ok done.
+    * dur_out_couple done.
+done.
+- 10/20 init_education_level ... periodicity: 1
+
+    * workstate done.
+    * temp_pere done.
+    * temp_mere done.
+    * findet done.
+    * findet done.
+    * education_level done.
+done.
+- 11/20 init_productivity ... periodicity: 1
+
+    * dur_rest_ARE done.
+    * productivity done.
+    * mincer done.
+    * productivity done.
+    * productivity done.
+done.
+- 12/20 mortality_rates ... periodicity: 1
+
+    * year done.
+    * qm_male done.
+    * qm_female done.
+    * qm_male_1997 done.
+    * qm_female_1997 done.
+done.
+- 13/20 init_dependance ... periodicity: 1
+
+    * MU done.
+    * qm done.
+    * qm1997 done.
+    * lq done.
+    * etudes done.
+    * enf_2_3 done.
+    * enf_4 done.
+    * being_dependant_score done.
+    * being_dependant_score done.
+    * being_dependant_score done.
+    * being_dependant_score done.
+    * being_dependant done.
+    * age_category done.
+    * Number of initial being dependant before alignment 
+being_dependant | data_origin |      |       
+                |           0 |    1 |  total
+          False |      306882 |  383 | 307265
+           True |        7283 | 2199 |   9482
+          total |      314165 | 2582 | 316747
+ done.
+    * being_dependant  5610/74046 done.
+    * Number of initial being dependant after alignment 
+being_dependant | data_origin |      |       
+                |           0 |    1 |  total
+          False |      310753 |  384 | 311137
+           True |        3412 | 2198 |   5610
+          total |      314165 | 2582 | 316747
+ done.
+    * Number of initial being dependant after alignment by sex 
+sexe | being_dependant | data_origin |      |       
+     |                 |           0 |    1 |  total
+   0 |           False |      151813 |  115 | 151928
+   0 |            True |        1086 |  496 |   1582
+   1 |           False |      158940 |  269 | 159209
+   1 |            True |        2326 | 1702 |   4028
+     |           total |      314165 | 2582 | 316747
+ done.
+    * Number of initial male dependant aligned 1582 done.
+    * Number of initial female dependant aligned 4028 done.
+    * assertion Traceback (most recent call last):
+  File "til_france/tests/test_til.py", line 12, in <module>
+    simulation.run()
+  File "/home/benjello/openfisca/Til/til/simulation.py", line 668, in run
+    self.entities, init=True)
+  File "/home/benjello/openfisca/Til/til/simulation.py", line 575, in simulate_period
+    elapsed, _ = gettime(process.run_guarded, eval_ctx)
+  File "/home/benjello/openfisca/liam2/liam2/utils.py", line 208, in gettime
+    res = func(*args, **kwargs)
+  File "/home/benjello/openfisca/liam2/liam2/process.py", line 344, in run_guarded
+    self.code.run_guarded(context)
+  File "/home/benjello/openfisca/liam2/liam2/process.py", line 151, in run_guarded
+    utils.timed(v.run_guarded, context)
+  File "/home/benjello/openfisca/liam2/liam2/utils.py", line 213, in timed
+    elapsed, res = gettime(func, *args, **kwargs)
+  File "/home/benjello/openfisca/liam2/liam2/utils.py", line 208, in gettime
+    res = func(*args, **kwargs)
+  File "/home/benjello/openfisca/liam2/liam2/process.py", line 28, in run_guarded
+    self.run(context)
+  File "/home/benjello/openfisca/liam2/liam2/process.py", line 50, in run
+    value = expr_eval(self.expr, context)
+  File "/home/benjello/openfisca/liam2/liam2/expr.py", line 201, in expr_eval
+    return expr.evaluate(context)
+  File "/home/benjello/openfisca/liam2/liam2/expr.py", line 857, in evaluate
+    return self.compute(context, *args, **kwargs)
+  File "/home/benjello/openfisca/liam2/liam2/actions.py", line 161, in compute
+    raise AssertionError(failure)
+AssertionError: False is not True
+Closing remaining open files:/home/benjello/data/til/input/Patrimoine_next_metro_200.h5...done/home/benjello/data/til/input/Patrimoine_next_metro_200.h5...done

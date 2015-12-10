@@ -1,0 +1,18 @@
+# this is an "import" file. To use it press F5 in liam2 environment, or run
+# the following command in a console: 
+# INSTALL PATH\liam2 import demo_import.yml
+
+output: C:\Myliam2\Patrimoine\Import\simple2009.h5
+#globals:
+#    periodic:
+#        path: data\person_sta.csv
+
+
+entities:
+    person:
+        path: C:\Myliam2\Patrimoine\Import\person2009.csv
+
+    menage: 
+        path: C:\Myliam2\Patrimoine\Import\menage2009.csv
+
+
