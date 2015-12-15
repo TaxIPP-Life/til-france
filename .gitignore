@@ -1,10 +1,11 @@
 ##########################
-# Local configuration file
+# Local files
 ##########################
 
 til_france/tests/output/*.csv
 til_france/tests/output/*.h5
-
+docs/_book
+docs/node_modules
 
 ##########################
 # Local configuration file
