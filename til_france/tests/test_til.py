@@ -5,7 +5,7 @@ from til_france.plot.dependance import plot_dependance_csv
 from til_france.plot.population import plot_population2, population_diagnostic, plot_ratio_demographique
 
 simulation = create_til_simulation(
-    capitalized_name = 'Patrimoine_next_metro_200',
+    input_name = 'patrimoine',
     output_name_suffix = 'test_institutions',
     uniform_weight = 200
     )

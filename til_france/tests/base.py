@@ -32,25 +32,27 @@ til_france_path = os.path.join(
     )
 
 
-def create_til_simulation(capitalized_name = None, output_name_suffix = 'til_output', uniform_weight = None):
-    assert capitalized_name is not None
+def create_til_simulation(input_name = None, output_name_suffix = 'til_output', uniform_weight = None):
+    assert input_name is not None
     config = Config()
-    name = capitalized_name.lower()
+    name = input_name.lower()
 
     input_dir = config.get('til', 'input_dir')
-    input_file = '{}.h5'.format(capitalized_name)
+    input_file = '{}_{}.h5'.format(input_name, uniform_weight)
 
     assertion_message = '''
-Input file path should be {}.
-You should run DataTil and check that the input path is correctly set in your config_local.ini'''.format(
+Input file path is set to be {}.
+Did you correctly create this file using DataTil ?
+You should also check that the input path is correctly set in your config_local.ini'''.format(
         os.path.join(input_dir, input_file))
+
     assert os.path.exists(os.path.join(input_dir, input_file)), assertion_message
 
     output_dir = os.path.join(config.get('til', 'output_dir'), name)
     if not os.path.exists(output_dir):
         os.mkdir(output_dir)
 
-    console_file = os.path.join(til_france_path, 'console.yml')
+    console_file = os.path.join(til_france_path, 'model', 'console.yml')
     simulation = TilSimulation.from_yaml(
         console_file,
         input_dir = input_dir,

@@ -8,7 +8,7 @@ entities:
                 # Roux (jusque 2002)
                 - mincer : 7.6 + 0.08 * findet + 0.04 * xpr - 0.0006 * xpr * xpr
                 - productivity: if(
-                    salaire_imposable>0,
+                    salaire_imposable > 0,
                     salaire_imposable - mincer,
                     productivity
                     )

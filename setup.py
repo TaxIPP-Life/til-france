@@ -55,7 +55,7 @@ setup(
     keywords = 'benefit microsimulation social tax life-cycle',
     license = 'http://www.fsf.org/licensing/licenses/agpl-3.0.html',
     long_description = '\n'.join(doc_lines[2:]),
-    url = 'https://github.com/TaxIPP-Life/Til-France',
+    url = 'https://github.com/TaxIPP-Life/til-france',
     install_requires = [
         'numpy',
         ],

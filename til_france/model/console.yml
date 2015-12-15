@@ -62,7 +62,7 @@ simulation:
     # vous et pref,
     # plus tard, quand le code le permettra, on changera ce vous directement dans l'étape au niveau individus
     # - individus: [age, dump_info, show_demography , marriage]
-        # - register: [rien]
+        # - register: [rien]
         - generation: [education]
         - generation: [mortality_rates]
         - individus: [ageing]
@@ -99,9 +99,7 @@ simulation:
         # - register: [alive]
         # - register: [sum_indiv]
         - individus: [stat_period]
-    # final_stat: True
-    # input:
-    #   file: Patrimoine_1300.h5
+
     output:
        file: simul.h5
 
@@ -110,10 +108,10 @@ simulation:
 
     skip_shows: False
     timings: False
-    # time_scale: 'year0'
+    # time_scale: 'year0'
     # retro: True
 
     start_period: 2010  #01
     # first simulated period is start_period + 1  TODO: a bit ugly !
 
-    periods: 10
+    periods: 2
