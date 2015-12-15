@@ -1,5 +1,8 @@
 entities:
     individus:
+        fields:
+            - migrant: {type: bool, initialdata: false, default: false}
+
         processes:
             migration:
                 # note : There is only immigration in the Insee prevision

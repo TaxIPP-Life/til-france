@@ -6,7 +6,6 @@ entities:
             - age: {type: int, initialdata: false}
             - sexe: int
             - wprm_init: {type: int, initialdata: false}
-            - migrant: {type: bool, initialdata: false, default: false}
             - naiss: {type: int, initialdata: false, default: 0}
             - data_origin: int
             # O: patrimoine, 1: handicap santé instittutions
@@ -24,16 +23,7 @@ entities:
             - mere: int
             - partner: int
             - tuteur: int
-            - dur_in_couple: {type: float, initialdata: false, default 0}
-            - dur_out_couple: {type: int, initialdata: false, default 0}
-            - civilstate: {type: int, initialdata: false}
             # MARRIED: 1, SINGLE: 2, DIVORCED: 3, WIDOW: 4, PACS: 5
-
-        # education
-            - education_level: {type: int, initialdata: false, default: 10}
-            - findet: int  # âge de fin d'études
-            # 1: in work, 2: unemployed including old-age unemployed,
-            # 3: in education, 4: retired, 5: other inactive
 
         # work
             - workstate: int

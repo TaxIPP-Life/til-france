@@ -12,7 +12,7 @@ entities:
                     align = 'parameters/population/Hyp_fecondite.csv'
                     )
                 # le niveau d'études de l'enfant est pré-determinée
-                - annee: trunc(period / 100)
+                - annee: period
                 - temp_pere: if(
                     partner > 0,
                     l_partner.findet +

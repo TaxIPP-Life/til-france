@@ -3,24 +3,24 @@
 
 
 import:
-    - _Individu/individu.yml
-    - _Individu/register.yml
-    - _Individu/generation.yml
-    - _House/menage.yml
-    - _Foyer_fiscal/foyers_fiscaux.yml
-    - _Work/work_PensIPP.yml  # work0, work_pensIPP
-    - _Work/income2.yml
-    - _Demo/_birth/birth.yml
-    - _Demo/_migration/migration.yml
-    - _Demo/_death/death.yml
-    - _Demo/_union/union.yml
-    - _Demo/_divorce/divorce.yml
-    - _Dependance/dependance.yml
-    - _Educ/youth.yml
-    - _House/moving.yml
-    - _Consumption/conso.yml
-    - _Wealth/save.yml
-    - _Jobs/companies.yml
+    - individus/individus.yml
+    - individus/register.yml
+    - individus/generation.yml
+    - logement/menages.yml
+    - foyers_fiscaux/foyers_fiscaux.yml
+    - revenus/work_PensIPP.yml  # work0, work_pensIPP
+    - revenus/income2.yml
+    - demographie/naissance.yml
+    - demographie/migration.yml
+    - demographie/deces.yml
+    - demographie/union.yml
+    - demographie/divorce.yml
+    - dependance/dependance.yml
+    - education/education.yml
+    - logement/moving.yml
+    - consommation/consommation.yml
+    - patrimoine/epargne.yml
+    - entreprises/entreprises.yml
 
 globals:
     # periodic:

@@ -1,5 +1,10 @@
 entities:
     individus:
+        fields:
+            - dur_in_couple: {type: float, initialdata: false, default 0}
+            - dur_out_couple: {type: int, initialdata: false, default 0}
+            - civilstate: {type: int, initialdata: false}
+
         processes:
             init_couple:
                 - assertEqual(count(partner > -1) , count(l_partner.partner > -1))
