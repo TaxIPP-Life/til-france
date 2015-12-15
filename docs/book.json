@@ -1,0 +1,16 @@
+{
+  "gitbook": "2.x.x",
+  "plugins": [
+    "edit-link",
+    "github"
+  ],
+  "pluginsConfig": {
+    "edit-link": {
+      "base": "https://github.com/TaxIPP-Life/til-france/tree/master",
+      "label": "Edit This Page"
+    },
+    "github": {
+      "url": "https://github.com/TaxIPP-Life/til-france"
+    }
+  }
+}
