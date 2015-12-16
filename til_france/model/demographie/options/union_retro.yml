@@ -51,7 +51,7 @@ entities:
                                      logit_score(-0.25 + 0.09 *(dur_out_couple==0) - 0.05* (age-dur_out_couple)  ),
                                      logit_score( 0.33 - 0.10 *(dur_out_couple==0) - 0.08* (age-dur_out_couple) -0.57* ISWIDOW +0.41*(nb_children_ind==0)) ),
                                  to_couple)
-                - to_couple2: align_abs(to_couple, method = "sidewalk", periodicity_given="year")
+                - to_couple2: align_abs(to_couple, method = "sidewalk")
 
                 - known:    not ISMARRIED and (forrupt == period2)
                 - to_couple2: if(known,True,to_couple2)

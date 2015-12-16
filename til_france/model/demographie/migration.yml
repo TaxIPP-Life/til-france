@@ -6,7 +6,7 @@ entities:
         processes:
             migration:
                 # note : There is only immigration in the Insee prevision
-                # TODO: deal with emmigration and people leaving the country
+                # TODO: deal with emigration and people leaving the country
                 # TODO: create home and families.
                 # TODO: associate a carrier (in longitudinal)
                 # - select: 1
@@ -24,7 +24,8 @@ entities:
                     align = 'parameters/population/hyp_soldemigF_custom.csv'
                     )
                 - select: select_men or select_women
-                - new('individus', filter = select,
+                - new('individus',
+                    filter = select,
                     age = age,
                     age_en_mois = age_en_mois,
                     partner = UNSET,

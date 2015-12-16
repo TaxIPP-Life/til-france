@@ -3,7 +3,7 @@ entities:
     processes:
       divorce :
         - agediff: if(ISFEMALE and INCOUPLE, age - l_partner.age, 0)
-        - children_couple: invl_mere.count(target_filter=(pere==l_mere.partner) )
+        - children_couple: invl_mere.count(target_filter = (pere == l_mere.partner) )
         - other_children: invl_mere.count() - children_couple
         # TODO: séparer rupture et divorce, séparer ruputre de gens en couple et divorce
         - proba_divorce: if(
@@ -14,7 +14,7 @@ entities:
               ),
             0
             )
-        - divorce: align_abs(proba_divorce, need = sum(proba_divorce), filter = ISFEMALE and INCOUPLE and (dur_in_couple > 0))  #  ,method ="sidewalk", periodicity_given="year")
+        - divorce: align_abs(proba_divorce, need = sum(proba_divorce), filter = ISFEMALE and INCOUPLE and (dur_in_couple > 0), method ="sidewalk")
         # - divorce1: align_abs(proba_divorce, 10+sum(proba_divorce), filter = ISFEMALE and INCOUPLE and (dur_in_couple > 0), method ="sidewalk")
         # - show('nb divorce 1', sum(divorce1), 10+sum(proba_divorce))
         # break link to partner
