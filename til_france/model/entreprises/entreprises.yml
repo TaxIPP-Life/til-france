@@ -1,13 +1,13 @@
 entities:
-    companies:
-        fields:
-            # period and id are implicit
-            - sector:  {type: int, initialdata: false}
-            - size:    {type: int, initialdata: false}
+  # TODO rename companies to entreprise and change data generation too
+  companies:
+    fields:
+      - secteur:  {type: int, initialdata: false}
+      - size:    {type: int, initialdata: false}
 
-        links:
-            individus: {type: one2many, target: individus, field: Cie}
+    links:
+      individus: {type: one2many, target: individus, field: Cie}
 
-        processes:
-            init_size:
-                - size: choice([0, 1, 2, 3], [0.1, 0.2, 0.3, 0.4])
+    processes:
+      init_size:
+        - size: choice([0, 1, 2, 3], [0.1, 0.2, 0.3, 0.4])

@@ -1,9 +1,8 @@
 entities:
-    # yes, household level seems better
-    menages:
-        processes:
-            consumption :
-                - house_inc: individus.sum(salaire_imposable+ rsti + choi) - rent
-                # ajouter les autres revenus quand on les auras tous
-                # retirer rent pour les proprietaires
-                - conso: 0.7 * house_inc
+  menages:
+    processes:
+      consumption :
+        - house_inc: individus.sum(salaire_imposable+ rsti + choi) - rent
+        # ajouter les autres revenus quand on les auras tous
+        # retirer rent pour les proprietaires
+        - conso: 0.7 * house_inc

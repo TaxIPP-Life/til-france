@@ -1,8 +1,13 @@
 entities:
   individus:
+    fields:
+      - xpr: int # experience name to avoid confusion with function exp
+      - anc: int
+      - workstate: int
+
     processes:
       # le programme est pense pour faire tourner d'abord entree chomage et ensuite entree_emploi
-      outwork:
+      emploi_sortie:
         - xpr: xpr + 1
         - anc: anc + 1
         # proba_entree_chomage <- 0.025
@@ -11,7 +16,7 @@ entities:
         - xpr: if(unemp, 1, xpr)
         - anc: if(unemp, 1, anc)
 
-      inwork:
+      emploi_entree:
         - to_work: align(0.0, filter = ISUNEMPLOYED, proportions = 0.025)
         # choix entrepreneur, public, prive
         - type_act: if(

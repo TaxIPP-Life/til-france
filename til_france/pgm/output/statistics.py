@@ -42,7 +42,7 @@ table[ent] = simul[str(base)]
 table[ent] = table[ent].rename(columns={'men': 'idmen', 'idfoy': 'idfoy', 'id': 'noi'})
 
 # liste des donnees temporaire que l on peut supprimer
-# anc, expr, education_level, nb_children_ind, dur_separated, dur_in_couple, agegroup_civilstate, agegroup_work
+# anc, expr, education_niveau, nb_children_ind, dur_separated, dur_in_couple, agegroup_civilstate, agegroup_work
 # quifoy, idfoy, quimen, idmen, wpr;_init    
 
 # get years
@@ -61,7 +61,7 @@ res_size = len(ids)
 #    sum_values[ind,1:] = x
 #    sum_values[ind,0] = ind
 list2drop = ['wprm_init','age','idmen','idfoy','quifoy', 'pere','mere','conj','dur_in_couple','dur_out_couple',
-             'education_level','productivity','xpr','anc']
+             'education_niveau','productivity','xpr','anc']
 list2keep = ['sexe','noi','findet','civilstate','workstate','salaire_imposable','rsti','choi']
 #tab = table[ent].drop(list2drop, axis=1)
 tab = table['ind'][list2keep]

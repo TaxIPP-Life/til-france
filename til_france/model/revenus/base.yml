@@ -1,6 +1,0 @@
-entities:
-  individus:
-    fields:
-      - workstate: int
-      - salaire_imposable: {type: float, default: 0.0}
-      - productivity: {type: float, initialdata: false}

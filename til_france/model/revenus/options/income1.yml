@@ -7,7 +7,7 @@ entities:
     individus:
         processes:
 
-            init_productivity:
+            productivity_initialization:
                 - productivity: 1
                 # destinie (1991)
                 - mincer : if(ISMALE,

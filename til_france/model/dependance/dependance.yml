@@ -1,241 +1,245 @@
 entities:
-    individus:
-        processes:
-            init_dependance:
-                - MU: .85
-                - qm: if(
-                    ISMALE,
-                    individu2generation.qm_male,
-                    individu2generation.qm_female
-                    )
-                - qm1997: if(
-                    ISMALE,
-                    individu2generation.qm_male_1997,
-                    individu2generation.qm_female_1997
-                    )
-                - lq: log((MU * qm + (1 - MU) * qm1997)) / (1 - (MU * qm + (1 - MU) * qm1997))
-                - etudes: (education_level > individu2generation.education_level)
-                - enf_2_3: if(
-                    ISMALE,
-                    invl_pere.count() >= 2 and invl_pere.count() <= 3,
-                    invl_mere.count() >= 2 and invl_mere.count() <= 3
-                    )
-                - enf_4: if(
-                    ISMALE,
-                    invl_pere.count() >= 4,
-                    invl_mere.count() >= 4
-                    )
-                - being_dependant_score: if(
-                    data_origin == 1,
-                    if(dependance_level >= 1, 1, -1),
-                    -1
-                    )
-                - being_dependant_score: if(
-                    ISMALE and (age >= 60) and data_origin != 1,
-                    logit_score(0.478 + 1.055 * lq - 0.591 * etudes),
-                    being_dependant_score
-                    )
-                - being_dependant_score: if(
-                    ISFEMALE and (age >= 60) and (age < 80) and data_origin != 1,
-                    logit_score(-0.099 + 0.686 * lq - 0.695 * etudes - 0.646 * enf_2_3),
-                    being_dependant_score
-                    )
-                - being_dependant_score: if(
-                    ISFEMALE and (age >= 80) and data_origin != 1,
-                    logit_score(1.500 + 1.189 * lq - 0.232 * etudes - 0.473 * enf_4),
-                    being_dependant_score
-                    )
-                - being_dependant: being_dependant_score > uniform()
-                - age_category: if(
-                    age >= 60,
-                    min(trunc(age / 5) - 12 + 1, 6),
-                    0
-                    )
-                - show(groupby(being_dependant, data_origin))
-                - show('Number of initial being dependant before alignment', groupby(being_dependant, data_origin))
-                - being_dependant: align_abs(
-                    being_dependant_score, need = 'parameters/dependance/dependance_prevalence_2010.csv',
-                    filter = (age_category >= 1)
-                    )
-                - show('Number of initial being dependant after alignment', groupby(being_dependant, data_origin))
-                - show('Number of initial being dependant after alignment by sex', groupby(sexe, being_dependant, data_origin))
-                - show('Number of initial male dependant aligned', count(being_dependant and ISMALE))
-                - show('Number of initial female dependant aligned', count(being_dependant and ISFEMALE))
-                - being_very_dependant_score: if(
-                    data_origin == 1,
-                    if(dependance_level >= 2, 1, -1),
-                    -1
-                    )
-                - being_very_dependant_score: if(
-                    ISMALE and being_dependant and data_origin != 1,
-                    logit_score(0.434 + .368 * lq - 0.516 * etudes),
-                    being_very_dependant_score
-                    )
-                - being_very_dependant_score: if(
-                    ISFEMALE and being_dependant and data_origin != 1,
-                    logit_score(0.194 + .150 * lq),
-                    being_very_dependant_score
-                    )
-                - dependance_level: if(
-                    being_dependant,
-                    if(being_very_dependant_score > uniform(), 2, 1),
-                    0
-                    )
-                - dependance_anciennete: if(
-                    ISDEPENDANT,
-                    1,
-                    -1
-                    )
-                # TODO: add a sensible distribution of dependance anciennete FIXME
-                - show('Number of initial dependance_level 0', count(dependance_level == 0))
-                - show('Number of initial dependance_level 1', count(dependance_level == 1))
-                - show('Number of initial dependance_level 2', count(dependance_level == 2))
-                - show('Number of initial people', count())
-                - csv('period', period, 'dependance', groupby(
-                    age, sexe, expr = count((dependance_level == 1) or (dependance_level == 2))
-                    ),
-                    fname = 'dependance.csv',
-                    mode = 'a'
-                    )
-                - csv('period', period, 'dependance', groupby(
-                    age, data_origin, expr = count((dependance_level == 1) or (dependance_level == 2))
-                    ),
-                    fname = 'dependance2.csv',
-                    mode = 'a'
-                    )
-                - assertTrue(all(dependance_level == 0, filter = (age < 60)))
+  individus:
+    fields:
+      # dependance 0 non dependant, 1: moyennement dependant, 2: fortement dependant
+      - dependance_level: {type: int, initialdata: true}
+      - dependance_anciennete: {type: int, initialdata: false, default: 0}
+    processes:
+      init_dependance:
+        - MU: .85
+        - qm: if(
+            ISMALE,
+            individu2generation.qm_male,
+            individu2generation.qm_female
+            )
+        - qm1997: if(
+            ISMALE,
+            individu2generation.qm_male_1997,
+            individu2generation.qm_female_1997
+            )
+        - lq: log((MU * qm + (1 - MU) * qm1997)) / (1 - (MU * qm + (1 - MU) * qm1997))
+        - etudes: (education_niveau > individu2generation.education_niveau)
+        - enf_2_3: if(
+            ISMALE,
+            invl_pere.count() >= 2 and invl_pere.count() <= 3,
+            invl_mere.count() >= 2 and invl_mere.count() <= 3
+            )
+        - enf_4: if(
+            ISMALE,
+            invl_pere.count() >= 4,
+            invl_mere.count() >= 4
+            )
+        - being_dependant_score: if(
+            data_origin == 1,
+            if(dependance_level >= 1, 1, -1),
+            -1
+            )
+        - being_dependant_score: if(
+            ISMALE and (age >= 60) and data_origin != 1,
+            logit_score(0.478 + 1.055 * lq - 0.591 * etudes),
+            being_dependant_score
+            )
+        - being_dependant_score: if(
+            ISFEMALE and (age >= 60) and (age < 80) and data_origin != 1,
+            logit_score(-0.099 + 0.686 * lq - 0.695 * etudes - 0.646 * enf_2_3),
+            being_dependant_score
+            )
+        - being_dependant_score: if(
+            ISFEMALE and (age >= 80) and data_origin != 1,
+            logit_score(1.500 + 1.189 * lq - 0.232 * etudes - 0.473 * enf_4),
+            being_dependant_score
+            )
+        - being_dependant: being_dependant_score > uniform()
+        - age_category: if(
+            age >= 60,
+            min(trunc(age / 5) - 12 + 1, 6),
+            0
+            )
+        - show(groupby(being_dependant, data_origin))
+        - show('Number of initial being dependant before alignment', groupby(being_dependant, data_origin))
+        - being_dependant: align_abs(
+            being_dependant_score, need = 'parameters/dependance/dependance_prevalence_2010.csv',
+            filter = (age_category >= 1)
+            )
+        - show('Number of initial being dependant after alignment', groupby(being_dependant, data_origin))
+        - show('Number of initial being dependant after alignment by sex', groupby(sexe, being_dependant, data_origin))
+        - show('Number of initial male dependant aligned', count(being_dependant and ISMALE))
+        - show('Number of initial female dependant aligned', count(being_dependant and ISFEMALE))
+        - being_very_dependant_score: if(
+            data_origin == 1,
+            if(dependance_level >= 2, 1, -1),
+            -1
+            )
+        - being_very_dependant_score: if(
+            ISMALE and being_dependant and data_origin != 1,
+            logit_score(0.434 + .368 * lq - 0.516 * etudes),
+            being_very_dependant_score
+            )
+        - being_very_dependant_score: if(
+            ISFEMALE and being_dependant and data_origin != 1,
+            logit_score(0.194 + .150 * lq),
+            being_very_dependant_score
+            )
+        - dependance_level: if(
+            being_dependant,
+            if(being_very_dependant_score > uniform(), 2, 1),
+            0
+            )
+        - dependance_anciennete: if(
+            ISDEPENDANT,
+            1,
+            -1
+            )
+        # TODO: add a sensible distribution of dependance anciennete FIXME
+        - show('Number of initial dependance_level 0', count(dependance_level == 0))
+        - show('Number of initial dependance_level 1', count(dependance_level == 1))
+        - show('Number of initial dependance_level 2', count(dependance_level == 2))
+        - show('Number of initial people', count())
+        - csv('period', period, 'dependance', groupby(
+            age, sexe, expr = count((dependance_level == 1) or (dependance_level == 2))
+            ),
+            fname = 'dependance.csv',
+            mode = 'a'
+            )
+        - csv('period', period, 'dependance', groupby(
+            age, data_origin, expr = count((dependance_level == 1) or (dependance_level == 2))
+            ),
+            fname = 'dependance2.csv',
+            mode = 'a'
+            )
+        - assertTrue(all(dependance_level == 0, filter = (age < 60)))
 
-            dependance:
-                - dependance_level: if(
-                    dependance_level >= 0,
-                    dependance_level,
-                    0
-                    )
-                - MU: .85
-                - qm: if(
-                    ISMALE,
-                    individu2generation.qm_male,
-                    individu2generation.qm_female
-                    )
-                - qm1997: if(
-                    ISMALE,
-                    individu2generation.qm_male_1997,
-                    individu2generation.qm_female_1997
-                    )
-                - lq: log((MU * qm + (1 - MU) * qm1997)) / (1 - (MU * qm + (1 - MU) * qm1997))
-                - etudes: (education_level > individu2generation.education_level)
-                - enf_2_3: if(
-                    ISMALE,
-                    invl_pere.count() >= 2 and invl_pere.count() <= 3,
-                    invl_mere.count() >= 2 and invl_mere.count() <= 3
-                    )
-                # From Marbot and Roy following Duée-Rebillard
-                # Becoming dependant
-                - assertTrue(all(dependance_level == 0, filter = (age < 60)))
-                - show('Nombre de dependants total', count(ISDEPENDANT > 0))
-                - show('Nombre de dependants legers', count(dependance_level == 1))
-                - show('Nombre de dependants lourds', count(dependance_level == 2))
-                - dependance_anciennete: if(
-                    ISDEPENDANT,
-                    dependance_anciennete + 1,
-                    -1
-                    )
-                - becoming_dependant_score: -1
-                - becoming_dependant_score: if(
-                    ISMALE and (age >= 60) and (age < 75) and (not ISDEPENDANT),
-                    logit_score(
-                        1.109 + 1.445 * lq - 0.484 * etudes
-                        ),
-                    becoming_dependant_score
-                    )
-                - becoming_dependant_score: if(
-                    ISMALE and (age >= 60) and (age >= 75) and (not ISDEPENDANT),
-                    logit_score(
-                        .878 + 1.416 * lq - 1.095 * etudes
-                        ),
-                    becoming_dependant_score
-                    )
-                - becoming_dependant_score: if(
-                    ISFEMALE and (age >= 60) and (age < 80) and (not ISDEPENDANT),
-                    logit_score(
-                        .845 + 1.070 * lq - 0.455 * enf_2_3,
-                        ),
-                    becoming_dependant_score
-                    )
-                - becoming_dependant_score: if(
-                    ISFEMALE and (age >= 60) and (age >= 80) and (not ISDEPENDANT),
-                    logit_score(
-                        .665 + 1.166 * lq,
-                        ),
-                    becoming_dependant_score
-                    )
-                - assertTrue(all(becoming_dependant_score == -1, filter = (age < 60)))
-                - dependants: dependance_prevalence_all_years[period - 2009] / 200  # 200 is the threshold
-                - need: dependants - count(ISDEPENDANT)
-                - show('Amount ow newly deppendants people needed', need)
-                - becoming_dependant: align_abs(
-                    becoming_dependant_score, need = need, filter = becoming_dependant_score >=0
-                    )
-                - show('Amount ow newly deppendants people selected', count(becoming_dependant))
-                - dependance_anciennete: if(
-                    becoming_dependant,
-                    0,
-                    dependance_anciennete
-                    )
-                - dependance_level: if(
-                    becoming_dependant and ISMALE and (age < 75),
-                    choice([1, 2], [1 - .174, .174]),
-                    dependance_level
-                    )
-                - assertTrue(all(dependance_level == 0, filter = (age < 60)))
-                - dependance_level: if(
-                    becoming_dependant and ISMALE and (age >= 75),
-                    choice([1, 2], [1 - .325, .325]),
-                    dependance_level
-                    )
-                - assertTrue(all(dependance_level == 0, filter = (age < 60)))
-                - dependance_level: if(
-                    becoming_dependant and ISFEMALE and (age < 80),
-                    choice([1, 2], [1 - .211, .211]),
-                    dependance_level
-                    )
-                - assertTrue(all(dependance_level == 0, filter = (age < 60)))
-                - dependance_level: if(
-                    becoming_dependant and ISFEMALE and (age >= 80),
-                    choice([1, 2], [1 - .275, .275]),
-                    dependance_level
-                    )
-                # Transiiton GIRE_3_3 vers GIR_1_2
-                - anc1: dependance_anciennete == 1  # anciennete d'un an dans la dependance
-                - becoming_gir_1_2: logit_regr(
-                    -.277 + 0.512 * lq + .731 * anc1,
-                    filter = ISMALE and ISGIR_3_4
-                    )
-                - becoming_gir_1_2: logit_regr(
-                    .570 + 0.579 * lq,
-                    filter = ISFEMALE and ISGIR_3_4
-                    )
-                - dependance_level: if(
-                    ISDEPENDANT,
-                    if(becoming_gir_1_2, 2, 1),
-                    dependance_level
-                    )
-                - assertTrue(all(dependance_level == 0, filter = (age < 60)))
-                - show('Number of initial dependance_level 0', count(dependance_level == 0))
-                - show('Number of initial dependance_level 1', count(dependance_level == 1))
-                - show('Number of initial dependance_level 2', count(dependance_level == 2))
-                - show('Number of initial people', count())
-                - csv('period', period, 'dependance', groupby(
-                    age, sexe, expr = count((dependance_level == 1) or (dependance_level == 2))
-                    ),
-                    fname = 'dependance.csv',
-                    mode = 'a'
-                    )
-                - csv('period', period, 'dependance', groupby(
-                    age, data_origin, expr = count((dependance_level == 1) or (dependance_level == 2))
-                    ),
-                    fname = 'dependance2.csv',
-                    mode = 'a'
-                    )
+      dependance:
+        - dependance_level: if(
+            dependance_level >= 0,
+            dependance_level,
+            0
+            )
+        - MU: .85
+        - qm: if(
+            ISMALE,
+            individu2generation.qm_male,
+            individu2generation.qm_female
+            )
+        - qm1997: if(
+            ISMALE,
+            individu2generation.qm_male_1997,
+            individu2generation.qm_female_1997
+            )
+        - lq: log((MU * qm + (1 - MU) * qm1997)) / (1 - (MU * qm + (1 - MU) * qm1997))
+        - etudes: (education_niveau > individu2generation.education_niveau)
+        - enf_2_3: if(
+            ISMALE,
+            invl_pere.count() >= 2 and invl_pere.count() <= 3,
+            invl_mere.count() >= 2 and invl_mere.count() <= 3
+            )
+        # From Marbot and Roy following Duée-Rebillard
+        # Becoming dependant
+        - assertTrue(all(dependance_level == 0, filter = (age < 60)))
+        - show('Nombre de dependants total', count(ISDEPENDANT > 0))
+        - show('Nombre de dependants legers', count(dependance_level == 1))
+        - show('Nombre de dependants lourds', count(dependance_level == 2))
+        - dependance_anciennete: if(
+            ISDEPENDANT,
+            dependance_anciennete + 1,
+            -1
+            )
+        - becoming_dependant_score: -1
+        - becoming_dependant_score: if(
+            ISMALE and (age >= 60) and (age < 75) and (not ISDEPENDANT),
+            logit_score(
+                1.109 + 1.445 * lq - 0.484 * etudes
+                ),
+            becoming_dependant_score
+            )
+        - becoming_dependant_score: if(
+            ISMALE and (age >= 60) and (age >= 75) and (not ISDEPENDANT),
+            logit_score(
+                .878 + 1.416 * lq - 1.095 * etudes
+                ),
+            becoming_dependant_score
+            )
+        - becoming_dependant_score: if(
+            ISFEMALE and (age >= 60) and (age < 80) and (not ISDEPENDANT),
+            logit_score(
+                .845 + 1.070 * lq - 0.455 * enf_2_3,
+                ),
+            becoming_dependant_score
+            )
+        - becoming_dependant_score: if(
+            ISFEMALE and (age >= 60) and (age >= 80) and (not ISDEPENDANT),
+            logit_score(
+                .665 + 1.166 * lq,
+                ),
+            becoming_dependant_score
+            )
+        - assertTrue(all(becoming_dependant_score == -1, filter = (age < 60)))
+        - dependants: dependance_prevalence_all_years[period - 2009] / 200  # 200 is the threshold
+        - need: dependants - count(ISDEPENDANT)
+        - show('Amount ow newly deppendants people needed', need)
+        - becoming_dependant: align_abs(
+            becoming_dependant_score, need = need, filter = becoming_dependant_score >=0
+            )
+        - show('Amount ow newly deppendants people selected', count(becoming_dependant))
+        - dependance_anciennete: if(
+            becoming_dependant,
+            0,
+            dependance_anciennete
+            )
+        - dependance_level: if(
+            becoming_dependant and ISMALE and (age < 75),
+            choice([1, 2], [1 - .174, .174]),
+            dependance_level
+            )
+        - assertTrue(all(dependance_level == 0, filter = (age < 60)))
+        - dependance_level: if(
+            becoming_dependant and ISMALE and (age >= 75),
+            choice([1, 2], [1 - .325, .325]),
+            dependance_level
+            )
+        - assertTrue(all(dependance_level == 0, filter = (age < 60)))
+        - dependance_level: if(
+            becoming_dependant and ISFEMALE and (age < 80),
+            choice([1, 2], [1 - .211, .211]),
+            dependance_level
+            )
+        - assertTrue(all(dependance_level == 0, filter = (age < 60)))
+        - dependance_level: if(
+            becoming_dependant and ISFEMALE and (age >= 80),
+            choice([1, 2], [1 - .275, .275]),
+            dependance_level
+            )
+        # Transiiton GIRE_3_3 vers GIR_1_2
+        - anc1: dependance_anciennete == 1  # anciennete d'un an dans la dependance
+        - becoming_gir_1_2: logit_regr(
+            -.277 + 0.512 * lq + .731 * anc1,
+            filter = ISMALE and ISGIR_3_4
+            )
+        - becoming_gir_1_2: logit_regr(
+            .570 + 0.579 * lq,
+            filter = ISFEMALE and ISGIR_3_4
+            )
+        - dependance_level: if(
+            ISDEPENDANT,
+            if(becoming_gir_1_2, 2, 1),
+            dependance_level
+            )
+        - assertTrue(all(dependance_level == 0, filter = (age < 60)))
+        - show('Number of initial dependance_level 0', count(dependance_level == 0))
+        - show('Number of initial dependance_level 1', count(dependance_level == 1))
+        - show('Number of initial dependance_level 2', count(dependance_level == 2))
+        - show('Number of initial people', count())
+        - csv('period', period, 'dependance', groupby(
+            age, sexe, expr = count((dependance_level == 1) or (dependance_level == 2))
+            ),
+            fname = 'dependance.csv',
+            mode = 'a'
+            )
+        - csv('period', period, 'dependance', groupby(
+            age, data_origin, expr = count((dependance_level == 1) or (dependance_level == 2))
+            ),
+            fname = 'dependance2.csv',
+            mode = 'a'
+            )
 
-                # Devenir dependant (voir http://insee.fr/fr/publications-et-services/docs_doc_travail/g2012-10.pdf)
+        # Devenir dependant (voir http://insee.fr/fr/publications-et-services/docs_doc_travail/g2012-10.pdf)

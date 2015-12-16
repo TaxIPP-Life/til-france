@@ -1,5 +1,9 @@
 entities:
   individus:
+    fields:
+      - salaire_imposable: {type: float, default: 0.0}
+      - productivity: {type: float, initialdata: false}
+
     processes:
       productivity_initialization:
         - productivity: 0

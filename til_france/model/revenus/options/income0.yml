@@ -2,7 +2,7 @@ entities:
     individus:
         processes:
 
-            init_productivity:
+            productivity_initialization:
                 - productivity: 0
                 # destinie (1991)
                 # Roux (jusque 2002)

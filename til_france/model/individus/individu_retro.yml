@@ -1,171 +1,171 @@
 entities:
-    individus
-        fields:
-        # individusl intrinseq
-            - age:    int
-            - age_en_mois:     {type: int, initialdata: false}
-            - sexe:   int
-            - wprm_init: {type: int, initialdata: false}
+  individus
+    fields:
+    # individusl intrinseq
+        - age:    int
+        - age_en_mois:     {type: int, initialdata: false}
+        - sexe:   int
+        - wprm_init: {type: int, initialdata: false}
 
-        # retro (pourrait aller dans registre
+    # retro (pourrait aller dans registre
 
-            - jequit: int
-            - anfinetu: int
-            - anarriv: int
-            - emmenag: int
-            - foran: int
-            - forcjvie: int
-            - forcoupv: int
-            - forens: int
-            - formarie: int
-            - formcoupc: int
-            - forrupt: int
-            - forruptv: int
-            - forseul: int
+        - jequit: int
+        - anfinetu: int
+        - anarriv: int
+        - emmenag: int
+        - foran: int
+        - forcjvie: int
+        - forcoupv: int
+        - forens: int
+        - formarie: int
+        - formcoupc: int
+        - forrupt: int
+        - forruptv: int
+        - forseul: int
 
-        # l_men
-            - idmen:    int
-            - quimen: int
+      # l_men
+          - idmen:    int
+          - quimen: int
 
-        # foyer l_foy
-            - idfoy:      int
-            - quifoy:   int
+      # foyer l_foy
+          - idfoy:      int
+          - quifoy:   int
 
-        # family
-            - pere:   int
-            - mere:   int
-            - partner: int
-            - dur_in_couple: {type: float, initialdata: false}
-            - dur_out_couple: {type: int, initialdata: false}
-            - civilstate: {type: int, initialdata: false}
+      # family
+          - pere:   int
+          - mere:   int
+          - partner: int
+          - dur_in_couple: {type: float, initialdata: false}
+          - dur_out_couple: {type: int, initialdata: false}
+          - civilstate: {type: int, initialdata: false}
 
-        # education
-            - education_level: {type: int, initialdata: false, default: 10}
-            - findet: int
-            # 1: in work, 2: unemployed including old-age unemployed,
-            # 3: in education, 4: retired, 5: other inactive
+      # education
+          - education_niveau: {type: int, initialdata: false, default: 10}
+          - findet: int
+          # 1: in work, 2: unemployed including old-age unemployed,
+          # 3: in education, 4: retired, 5: other inactive
 
-        # work
-            - workstate: int
-            - salaire_imposable: {type: float, default: 0.0}
-            - productivity: {type: float, initialdata: false}
-            - rsti: float
-            - choi: float
-            - xpr: int  # name to avoid confusion with function exp
-            - anc: int
-            - dur_rest_ARE: {type: int, initialdata: false}
+      # work
+          - workstate: int
+          - salaire_imposable: {type: float, default: 0.0}
+          - productivity: {type: float, initialdata: false}
+          - rsti: float
+          - choi: float
+          - xpr: int  # name to avoid confusion with function exp
+          - anc: int
+          - dur_rest_ARE: {type: int, initialdata: false}
 
-        # patrimoine
-            - patrimoine: {type: float, initialdata: false}
+      # patrimoine
+          - patrimoine: {type: float, initialdata: false}
 
-            # legislation
-            - salsuperbrut: {type: int, initialdata: false, default: 0}
-            - cotsoc_noncontrib: {type: int, initialdata: false}
-            - cotsal_noncontrib: {type: int, initialdata: false}
-            - cotsoc_bar: {type: int, initialdata: false}
-            - cotsoc_lib: {type: int, initialdata: false}
-            - cotpat_contrib: {type: int, initialdata: false}
-            - cotpat_noncontrib: {type: int, initialdata: false}
-            - cotsal_contrib: {type: int, initialdata: false}
-            - cotsal: {type: int, initialdata: false}
-            # - impo: {type: int, initialdata: false}
-            # - psoc: {type: int, initialdata: false}
-            # - mini: {type: int, initialdata: false}
-            # - pfam: {type: int, initialdata: false}
-            # - logt: {type: int, initialdata: false}
-
-
-
-        links:
-            l_men:      {type: many2one, target: menages,field: idmen}
-            l_foy:      {type: many2one, target: foyers_fiscaux, field: idfoy}
-            l_mere:     {type: many2one, target: individus, field: mere}  # to know alive mother
-            l_pere:     {type: many2one, target: individus, field: pere}
-            l_partner:     {type: many2one, target: individus, field: partner}
-            invl_mere:  {type: one2many, target: individus, field: mere}  # to know alive children
-            invl_pere:  {type: one2many, target: individus, field: pere}
-            pers2reg:   {type: many2one, target: register, field: id}
-
-        # possible transitions and regressions. The actual list used in the
-        # simulation must be defined below
-            homes:      {type: one2many, target: menages,field: owner}
-
-        macros:
-            MALE: 0
-            FEMALE: 1
-            ISMALE: sexe == 0
-            ISFEMALE: sexe == 1
-
-            UNSET: 0
-
-            MARRIED: 1
-            SINGLE: 2
-            DIVORCED: 3
-            WIDOW: 4
-
-            ISMARRIED: civilstate == 1
-            ISSINGLE: civilstate == 2
-            ISDIVORCED: civilstate == 3
-            ISWIDOW: civilstate == 4
-
-            INACTIVE:  1
-            UNEMPLOYED: 2
-            NON_CADRE: 3
-            CADRE:     4
-            FONCT_A:   5
-            FONCT_S:   6
-            INDEP  :   7
-            AVPF   :   8
-            PRE_RET:   9
-            RETIRED:   10
-            STUDENT:   11
-
-            ISINWORK:     (workstate == 3) or (workstate == 4) or (workstate == 5)  or (workstate == 6) or (workstate == 7)
-            WORK_PUBLIC:  (workstate == 5)  or (workstate == 6)
-            WORK_PRIVE:   (workstate == 3) or (workstate == 4)
-            WORK_INDEP:   (workstate == 7)
-            ISUNEMPLOYED: (workstate == 2)
-            ISSTUDENT:    (workstate == 11)
-            ISRETIRED:    (workstate == 10)
-            ISOTHERINACTIVE: (workstate == 1)
-
-            BEGINER: xpr == 1
-
-            # IS_LOWER_SECONDARY_EDU: education_level == 2
-            # IS_UPPER_SECONDARY_EDU: education_level == 3
-            # IS_TERTIARY_EDU: education_level == 4
-            # LOWER_SECONDARY_EDU: 2
-            # UPPER_SECONDARY_EDU: 3
-            # TERTIARY_EDU: 4
+          # legislation
+          - salsuperbrut: {type: int, initialdata: false, default: 0}
+          - cotsoc_noncontrib: {type: int, initialdata: false}
+          - cotsal_noncontrib: {type: int, initialdata: false}
+          - cotsoc_bar: {type: int, initialdata: false}
+          - cotsoc_lib: {type: int, initialdata: false}
+          - cotpat_contrib: {type: int, initialdata: false}
+          - cotpat_noncontrib: {type: int, initialdata: false}
+          - cotsal_contrib: {type: int, initialdata: false}
+          - cotsal: {type: int, initialdata: false}
+          # - impo: {type: int, initialdata: false}
+          # - psoc: {type: int, initialdata: false}
+          # - mini: {type: int, initialdata: false}
+          # - pfam: {type: int, initialdata: false}
+          # - logt: {type: int, initialdata: false}
 
 
 
+      links:
+          l_men:      {type: many2one, target: menages,field: idmen}
+          l_foy:      {type: many2one, target: foyers_fiscaux, field: idfoy}
+          l_mere:     {type: many2one, target: individus, field: mere}  # to know alive mother
+          l_pere:     {type: many2one, target: individus, field: pere}
+          l_partner:     {type: many2one, target: individus, field: partner}
+          invl_mere:  {type: one2many, target: individus, field: mere}  # to know alive children
+          invl_pere:  {type: one2many, target: individus, field: pere}
+          pers2reg:   {type: many2one, target: register, field: id}
 
-        processes:
+      # possible transitions and regressions. The actual list used in the
+      # simulation must be defined below
+          homes:      {type: one2many, target: menages,field: owner}
 
-            init_weight_ind:
-                - wprm_init: 1
-                - month: randint(0,11)
-                - age_en_mois: 12*age + month
-                # - wprm_init: permet de faire des tests
-                - wprm_init: 100*age + month
+      macros:
+          MALE: 0
+          FEMALE: 1
+          ISMALE: sexe == 0
+          ISFEMALE: sexe == 1
 
-            ageing:
-                - age_en_mois: add_time_scale(age_en_mois)
-                - age: trunc(age_en_mois/12)
-                # - wprm_init: permet de faire des tests
-                - wprm_init: lag(age_en_mois,2)
+          UNSET: 0
 
-            stat_period_ini:
-                - csv( 'period', 'population', 'naissance', 'salaire_imposable', 'rsti', 'choi','age moyen',fname='stat.csv')
-                - csv( 'period', 'inactive', 'unemployed', 'non cadre', 'cadre', 'fonct_a', 'fonct_s',
-                        'indep', 'avpf', 'pre_ret', 'retired', 'student', 'others', fname='workstate.csv')
-                - csv( 'period', 'marrie', 'celib', 'divorce', 'veuf', 'autre', fname='civilstate.csv')
-            stat_period:
-                - csv(avg(period), count(), count(age==0), sum(salaire_imposable), sum(rsti), sum(choi), avg(age), fname='stat.csv', mode='a')
-                - csv( avg(period), count(workstate==1), count(workstate==2), count(workstate==3), count(workstate==4),
-                       count(workstate==5), count(workstate==6), count(workstate==7), count(workstate==8),
-                       count(workstate==9), count(workstate==10), count(workstate==11), count(workstate < 1),
-                       fname='workstate.csv', mode='a')
-                - csv( avg(period), count(civilstate==1), count(civilstate==2), count(civilstate==3), count(civilstate==4),
-                       count(civilstate <1), fname='civilstate.csv', mode='a')
+          MARRIED: 1
+          SINGLE: 2
+          DIVORCED: 3
+          WIDOW: 4
+
+          ISMARRIED: civilstate == 1
+          ISSINGLE: civilstate == 2
+          ISDIVORCED: civilstate == 3
+          ISWIDOW: civilstate == 4
+
+          INACTIVE:  1
+          UNEMPLOYED: 2
+          NON_CADRE: 3
+          CADRE:     4
+          FONCT_A:   5
+          FONCT_S:   6
+          INDEP  :   7
+          AVPF   :   8
+          PRE_RET:   9
+          RETIRED:   10
+          STUDENT:   11
+
+          ISINWORK:     (workstate == 3) or (workstate == 4) or (workstate == 5)  or (workstate == 6) or (workstate == 7)
+          WORK_PUBLIC:  (workstate == 5)  or (workstate == 6)
+          WORK_PRIVE:   (workstate == 3) or (workstate == 4)
+          WORK_INDEP:   (workstate == 7)
+          ISUNEMPLOYED: (workstate == 2)
+          ISSTUDENT:    (workstate == 11)
+          ISRETIRED:    (workstate == 10)
+          ISOTHERINACTIVE: (workstate == 1)
+
+          BEGINER: xpr == 1
+
+          # IS_LOWER_SECONDARY_EDU: education_niveau == 2
+          # IS_UPPER_SECONDARY_EDU: education_niveau == 3
+          # IS_TERTIARY_EDU: education_niveau == 4
+          # LOWER_SECONDARY_EDU: 2
+          # UPPER_SECONDARY_EDU: 3
+          # TERTIARY_EDU: 4
+
+
+
+
+      processes:
+
+          init_weight_ind:
+              - wprm_init: 1
+              - month: randint(0,11)
+              - age_en_mois: 12*age + month
+              # - wprm_init: permet de faire des tests
+              - wprm_init: 100*age + month
+
+          ageing:
+              - age_en_mois: add_time_scale(age_en_mois)
+              - age: trunc(age_en_mois/12)
+              # - wprm_init: permet de faire des tests
+              - wprm_init: lag(age_en_mois,2)
+
+          stat_period_ini:
+              - csv( 'period', 'population', 'naissance', 'salaire_imposable', 'rsti', 'choi','age moyen',fname='stat.csv')
+              - csv( 'period', 'inactive', 'unemployed', 'non cadre', 'cadre', 'fonct_a', 'fonct_s',
+                      'indep', 'avpf', 'pre_ret', 'retired', 'student', 'others', fname='workstate.csv')
+              - csv( 'period', 'marrie', 'celib', 'divorce', 'veuf', 'autre', fname='civilstate.csv')
+          stat_period:
+              - csv(avg(period), count(), count(age==0), sum(salaire_imposable), sum(rsti), sum(choi), avg(age), fname='stat.csv', mode='a')
+              - csv( avg(period), count(workstate==1), count(workstate==2), count(workstate==3), count(workstate==4),
+                     count(workstate==5), count(workstate==6), count(workstate==7), count(workstate==8),
+                     count(workstate==9), count(workstate==10), count(workstate==11), count(workstate < 1),
+                     fname='workstate.csv', mode='a')
+              - csv( avg(period), count(civilstate==1), count(civilstate==2), count(civilstate==3), count(civilstate==4),
+                     count(civilstate <1), fname='civilstate.csv', mode='a')

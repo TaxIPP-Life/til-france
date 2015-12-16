@@ -2,12 +2,12 @@ entities:
     individus:
       fields:
         # education
-        - education_level: {type: int, initialdata: false, default: 10}
+        - education_niveau: {type: int, initialdata: false, default: 10}
         - findet: int  # âge de fin d'études
         # 1: in work, 2: unemployed including old-age unemployed,
         # 3: in education, 4: retired, 5: other inactive
       processes:
-          init_education_level:
+          education_niveau_initialisation:
             - workstate: if(workstate == 0 and age < 30, STUDENT, workstate)
             - temp_pere: if(
                 pere > 0,
@@ -35,7 +35,7 @@ entities:
                   ),
                 findet)
             # primaire, college; lycee, premier cycle du superieur, second cyle du superieur, troisieme cycle du superieur
-            - education_level: if(
+            - education_niveau: if(
                 age < findet and age > 5,
                 if(
                   age < 11,
@@ -62,7 +62,7 @@ entities:
           ineducation:
             # unemployed if left education
             - workstate: if(age > findet and ISSTUDENT, UNEMPLOYED, workstate)
-            - education_level: if(
+            - education_niveau: if(
                 age < findet and age > 5,
                 if(
                   age < 11,

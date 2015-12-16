@@ -141,14 +141,14 @@ def rename_variables(dataframe):
         poids_hsi = 'pond',
         )
 
-    result['education_level'] = 9
-    result.loc[result.dip14 // 10 == 7, 'education_level'] = 1
-    result.loc[result.dip14 // 10 == 6, 'education_level'] = 2
-    result.loc[result.dip14 // 10 == 5, 'education_level'] = 2  # BEP CAP
-    result.loc[result.dip14 // 10 == 4, 'education_level'] = 3
-    result.loc[result.dip14 // 10 == 3, 'education_level'] = 4
-    result.loc[result.dip14 // 10 == 2, 'education_level'] = 5
-    result.loc[result.dip14 // 10 == 1, 'education_level'] = 6
+    result['education_niveau'] = 9
+    result.loc[result.dip14 // 10 == 7, 'education_niveau'] = 1
+    result.loc[result.dip14 // 10 == 6, 'education_niveau'] = 2
+    result.loc[result.dip14 // 10 == 5, 'education_niveau'] = 2  # BEP CAP
+    result.loc[result.dip14 // 10 == 4, 'education_niveau'] = 3
+    result.loc[result.dip14 // 10 == 3, 'education_niveau'] = 4
+    result.loc[result.dip14 // 10 == 2, 'education_niveau'] = 5
+    result.loc[result.dip14 // 10 == 1, 'education_niveau'] = 6
 
     # Ceux qui ne connaissent pas leur eta matrimonial sont considérés célibataires
     result.loc[result.etamatri == 9, 'etamatri'] = 1
@@ -165,7 +165,7 @@ def rename_variables(dataframe):
     result.loc[result.dur_out_couple.isnull(), 'dur_out_couple'] = -1
 
     assert (result.sexe.isin([0, 1])).all()
-    assert (result.education_level.isin(range(1, 7) + [9])).all()
+    assert (result.education_niveau.isin(range(1, 7) + [9])).all()
     assert (result.civilstate.isin(range(0, 5))).all()
     # assert (result.dur_in_couple >= -1).all()
     # assert (result.dur_out_couple >= -1).all()

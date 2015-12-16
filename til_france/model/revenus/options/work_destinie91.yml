@@ -1,0 +1,8 @@
+import: travail_transitions
+
+entities:
+  individus:
+    processes:
+      retire:
+        - pension: retraite()
+        - workstate: if(age > 65, RETIRED, workstate)
