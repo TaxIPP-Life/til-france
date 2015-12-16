@@ -1,0 +1,20 @@
+entities:
+  individus:
+    processes:
+      retraite:
+        # Actualisation du nombre d'enfants par régime
+        - new_born: invl_mere.count(age_en_mois == 0) + invl_pere.count(age_en_mois == 0)
+        - nb_enf_RG: if(WORK_PRIVE, nb_enf + new_born, nb_enf)
+        - nb_enf_RSI: if(WORK_INDEP, nb_enf + new_born, nb_enf)
+        - nb_enf_FP: if(WORK_PUBLIC, nb_enf + new_born, nb_enf)
+        - nb_pac: invl_mere.count(age <= 18) + invl_pere.count(age <= 18)
+        - date_depart: -1 #pension(filter = (age_en_mois > 12 * 55), varname = 'date_depart', regime = 'all')
+        - to_be_retired: date_depart <= period and date_depart != -1 and not ISRETIRED
+
+        - start_retirement: if(to_be_retired, period, start_retirement)
+        - workstate: if(to_be_retired, RETIRED, workstate)
+
+        - new_rsti: 0 #pension(filter = (age_en_mois > 12 * 55), varname = 'pension', regime = 'all')
+        - revalo: 0
+        - rsti: if(to_be_retired, new_rsti, rsti * (1 + revalo))
+        - test: count(rsti > 0)

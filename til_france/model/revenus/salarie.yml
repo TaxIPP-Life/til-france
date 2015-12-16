@@ -1,0 +1,86 @@
+entities:
+  individus:
+    processes:
+      productivity_initialization:
+        - productivity: 0
+        # destinie (1991)
+        # Roux (jusque 2002)
+        - mincer : 7.6 + 0.08 * findet + 0.04 * xpr - 0.0006 * xpr*xpr
+        - productivity: if(salaire_imposable > 0,
+                    salaire_imposable * 0.5 - 1820 * mincer,
+                    0)
+        - productivity: if(
+            salaire_imposable <= 0,
+            normal(
+                loc = avg(productivity, filter=(salaire_imposable > 0)),
+                scale = std(productivity, filter=(salaire_imposable > 0))
+                ),
+            productivity
+            )
+
+      salaire:
+        - mincer: 0
+        # destinie (1991)
+        # demander les vrai coeff ci-dessous pour faire du non statique
+
+        - anais: period - age
+        - generation : 1 - max(0, min(1, (anais - 1935) / 35))
+        - fet: max(0, min(26 - 14, findet - 14))
+        - fer: -5 + 0.641 * fet + (1 - 0.641) / 12 * fet * fet
+            + 3.961 * generation + 0.0238 * fet * generation
+            - 0.0296 * generation * fet * fet
+        - seuil_xpr : max(6 - xpr, 0)
+        - seuil_anc : max(6 - anc, 0)
+        - mincer: if(
+            WORK_PRIVE,
+            if(ISMALE,
+              -63.90
+              + 3.13 * xpr - 0.05 * xpr * xpr - 3.86 * seuil_xpr
+              + 1.95 * anc - 0.03 * anc * anc - 4.02 * seuil_anc -58.98 * (anc == 1)
+              + 6.24 * fer
+              + 0.34 * fer * xpr -0.01 * fer * xpr * xpr + 0.53 * fer * seuil_xpr
+              + 0.43 * fer * anc -0.01 * fer *anc * anc - 0.48 * fer * seuil_anc,
+              - 66.42
+              + 1.10 * xpr - 0.02 * xpr * xpr - 2.48 * seuil_xpr
+              + 3.09 * anc - 0.04 * anc * anc - 4.70 * seuil_anc - 66.68 * (anc == 1)
+              + 6.08 * fer
+              + 0.28 * fer * xpr - 0.01 * fer * xpr * xpr - 0.34 * fer * seuil_xpr
+              + 0.20 * fer * anc + 0.00 * fer * anc * anc + 0.16 * fer * seuil_anc),
+            mincer
+            )
+        - mincer: if(
+            WORK_PUBLIC,
+            if(
+                ISMALE,
+                - 43.44
+                + 1.64 * xpr - 0.02 * xpr * xpr - 2.04 * seuil_xpr
+                + 1.21 * anc - 0.01 * anc * anc - 0.75 * seuil_anc - 17.31 * (anc == 1)
+                + 5.14 * fer
+                + 0.38 * fer * xpr + 0.00 * fer * xpr * xpr + 0.90 * fer * seuil_xpr
+                - 0.25 * fer * anc + 0.00 * fer * anc * anc + 0.00 * fer * seuil_anc,
+                - 26.92
+                + 0.44 * xpr + 0.00 * xpr * xpr + 1.21 * seuil_xpr
+                + 1.34 * anc - 0.01 * anc * anc - 0.84 * seuil_anc - 19.35 * (anc == 1)
+                + 4.08 * fer
+                + 0.26 * fer * xpr + 0.00 * fer * xpr * xpr + 0.42 * fer * seuil_xpr
+                - 0.18 * fer * anc + 0.00 * fer * anc * anc - 0.55 * fer * seuil_anc
+                ),
+            mincer
+            )
+        - mincer: if(
+            WORK_INDEP,
+            if(ISMALE, -54.88, -63.8),
+            mincer
+            )
+        #- csv(dump(),  fname='check_simul//mincer_{period}.csv')
+        # SMPT
+        - mincer: (7555 + 7593 + 7648 + 7706) * exp(mincer / 100)
+        # corr i,t
+        - miner: if(ISMALE, mincer * 1.08, mincer * 0.9)
+        # le 0.5 pour passer au brut. Oui c'est moche
+        # 15000=smic
+        - salaire_imposable: if(
+            ISINWORK,
+            max(mincer * 0.5 - productivity, 15000),
+            0
+            )

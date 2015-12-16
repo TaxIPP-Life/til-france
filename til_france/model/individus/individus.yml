@@ -27,15 +27,11 @@ entities:
 
         # work
             - workstate: int
-            - salaire_imposable: {type: float, default: 0.0}
-            - productivity: {type: float, initialdata: false}
             - rsti: float
             - tauxprime: float
             - start_retirement: {type: int, initialdata: false}
-            - choi: float
             - xpr: int # experience name to avoid confusion with function exp
             - anc: int
-            - dur_rest_ARE: {type: int, initialdata: false}
 
             # dependance 0 non dependant, 1: moyennement dependant, 2: fortement dependant
             - dependance_level: {type: int, initialdata: true}

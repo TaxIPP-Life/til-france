@@ -1,15 +1,14 @@
 # second entity, links, link methods, init, procedures, local variables,
 # dump's suffix argument, choice
 
-
 import:
     - individus/individus.yml
     - individus/register.yml
     - individus/generation.yml
     - logement/menages.yml
     - foyers_fiscaux/foyers_fiscaux.yml
-    - revenus/work_PensIPP.yml  # work0, work_pensIPP
-    - revenus/income2.yml
+    - revenus/travail_transitions.yml
+    - revenus/revenus.yml
     - demographie/naissance.yml
     - demographie/migration.yml
     - demographie/deces.yml
@@ -45,7 +44,13 @@ globals:
 simulation:
     init:
         - menages: [init_weight_men, init_region_id, init_rent, init_value, init_wealth, init_owner, men_composition]
-        - individus: [init_weight_ind, init_couple, init_education_level, init_productivity]
+        - individus: [
+          init_weight_ind,
+          init_couple,
+          init_education_level,
+          chomage_initialization,
+          productivity_initialization
+          ]
         - generation: [mortality_rates]
         - individus: [init_dependance]
         - companies: [init_size]
