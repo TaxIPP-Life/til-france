@@ -1,122 +1,131 @@
 entities:
-    individus:
-        processes:
-            divorce :
-                - agediff: if(ISFEMALE and INCOUPLE, age - l_partner.age, 0)
-                - children_couple: invl_mere.count(target_filter=(pere==l_mere.partner) )
-                - other_children: invl_mere.count() - children_couple
-                # ca marche : - show(groupby(children_couple, other_children))
-                # select females to divorce
-                # - divorce: logit_regr(-2.02-0.06*agediff-0.04*dur_in_couple
-                                       # +0.58*(children_couple==0)
-                                       # +0.21*(children_couple==1)
-                                       # +0.13*(children_couple>3)
-                                       # +0.41*(other_children>0),
-                                      # filter = ISFEMALE and INCOUPLE and (dur_in_couple > 0),
-                                      # align = 0.2)
-                #TODO: séparer rupture et divorce, séparer ruputre de gens en couple et divorce
-                - proba_divorce: if(
-                    ISFEMALE and INCOUPLE and (dur_in_couple > 0),
-                    logistic(
-                      -2.02 - 0.06 * agediff - 0.04 * dur_in_couple + 0.58 * (children_couple == 0) +
-                      0.21 * (children_couple == 1) + 0.13 * (children_couple > 3) + 0.41 * (other_children > 0)
-                      ),
-                    0
-                    )
-                - divorce: align_abs(proba_divorce, need = sum(proba_divorce), filter = ISFEMALE and INCOUPLE and (dur_in_couple > 0))  #  ,method ="sidewalk", periodicity_given="year")
-                # - divorce1: align_abs(proba_divorce, 10+sum(proba_divorce), filter = ISFEMALE and INCOUPLE and (dur_in_couple > 0), method ="sidewalk")
-                # - show('nb divorce 1', sum(divorce1), 10+sum(proba_divorce))
-                # break link to partner
-                - to_divorce: divorce or l_partner.divorce
-                ### men
-                # smallest id move out from house
-                # TODO: à améliorer en fonction de la propriété, de qui part et tout
-                # si on est chez ses parents et que c'est eux les chef, c'est à l'autre de bouger : on les retire
-                # TODO: retirer le quimen>1 ?
-                - MOVE: to_divorce and l_partner.idmen==idmen
-                # on séléctionne au plus 1
-                - NOT_MOVE: ((l_pere.idmen == idmen or l_mere.idmen == idmen) and (quimen>1))
+  individus:
+    processes:
+      divorce :
+        - agediff: if(ISFEMALE and INCOUPLE, age - l_partner.age, 0)
+        - children_couple: invl_mere.count(target_filter=(pere==l_mere.partner) )
+        - other_children: invl_mere.count() - children_couple
+        # TODO: séparer rupture et divorce, séparer ruputre de gens en couple et divorce
+        - proba_divorce: if(
+            ISFEMALE and INCOUPLE and (dur_in_couple > 0),
+            logistic(
+              -2.02 - 0.06 * agediff - 0.04 * dur_in_couple + 0.58 * (children_couple == 0) +
+              0.21 * (children_couple == 1) + 0.13 * (children_couple > 3) + 0.41 * (other_children > 0)
+              ),
+            0
+            )
+        - divorce: align_abs(proba_divorce, need = sum(proba_divorce), filter = ISFEMALE and INCOUPLE and (dur_in_couple > 0))  #  ,method ="sidewalk", periodicity_given="year")
+        # - divorce1: align_abs(proba_divorce, 10+sum(proba_divorce), filter = ISFEMALE and INCOUPLE and (dur_in_couple > 0), method ="sidewalk")
+        # - show('nb divorce 1', sum(divorce1), 10+sum(proba_divorce))
+        # break link to partner
+        - to_divorce: divorce or l_partner.divorce
+        ### men
+        # smallest id move out from house
+        # TODO: à améliorer en fonction de la propriété, de qui part et tout
+        # si on est chez ses parents et que c'est eux les chef, c'est à l'autre de bouger : on les retire
+        # TODO: retirer le quimen>1 ?
+        - MOVE: to_divorce and l_partner.idmen==idmen
+        # on séléctionne au plus 1
+        - NOT_MOVE: ((l_pere.idmen == idmen or l_mere.idmen == idmen) and (quimen>1))
 
-                - NOT_MOVE: if(l_partner.NOT_MOVE and NOT_MOVE, id < l_partner.id, NOT_MOVE)
-                - WHO_MOVE: if(l_partner.NOT_MOVE or NOT_MOVE,
-                               l_partner.NOT_MOVE,
-                               id < l_partner.id)
-                - WHO_MOVE: WHO_MOVE and MOVE
-                - assertEqual(count(WHO_MOVE), count(MOVE)/2)
-                # pour les couples homosexuels, à ce niveau là, on peut avoir deux MOVE
-                - new_men: if(WHO_MOVE,
-                            new('menages', filter=MOVE,
-                                region_id=l_men.region_id,
-                                rent=l_men.rent/1.5, pref=id),
-                            idmen)
-                - quimen: if(MOVE and quimen == 1, 0, quimen)
+        - NOT_MOVE: if(l_partner.NOT_MOVE and NOT_MOVE, id < l_partner.id, NOT_MOVE)
+        - WHO_MOVE: if(l_partner.NOT_MOVE or NOT_MOVE,
+                       l_partner.NOT_MOVE,
+                       id < l_partner.id)
+        - WHO_MOVE: WHO_MOVE and MOVE
+        - assertEqual(count(WHO_MOVE), count(MOVE)/2)
+        # pour les couples homosexuels, à ce niveau là, on peut avoir deux MOVE
+        - new_men: if(
+            WHO_MOVE,
+            new(
+              'menages',
+              filter = MOVE,
+              region_id = l_men.region_id,
+              rent = l_men.rent / 1.5,
+              pref = id
+              ),
+            idmen
+            )
+        - quimen: if(MOVE and quimen == 1, 0, quimen)
+        # enfants -> restent avec leur mère
+        - new_men: if(
+            l_mere.MOVE and (l_mere.idmen == idmen) and (new_men == idmen),
+            l_mere.new_men,
+            if(
+              l_pere.MOVE and (l_pere.idmen == idmen) and (new_men == idmen),
+              l_pere.new_men,
+              new_men
+              )
+            )
+        # les autres restent mais pourquoi ??...
 
-                # enfants -> restent avec leur mère
-                - new_men: if(l_mere.MOVE and  (l_mere.idmen==idmen) and (new_men==idmen),
-                                l_mere.new_men,
-                                if(l_pere.MOVE and  (l_pere.idmen==idmen) and (new_men==idmen),
-                                    l_pere.new_men,
-                                new_men))
-                # les autres restent mais pourquoi ??...
+        ###foy
+        # biggest move out from foyers_fiscaux
+        # on ajoute condition sur l_partner, pour ne pas appliquer aux couples non mariés
+        - MOVE_foy: to_divorce and l_partner.idfoy==idfoy
+        # on séléctionne au plus 1
+        - NOT_MOVE_foy: ((l_pere.idfoy == idfoy or l_mere.idfoy == idfoy) and (quifoy>1))
 
-                ###foy
-                # biggest move out from foyers_fiscaux
-                # on ajoute condition sur l_partner, pour ne pas appliquer aux couples non mariés
-                - MOVE_foy: to_divorce and l_partner.idfoy==idfoy
-                # on séléctionne au plus 1
-                - NOT_MOVE_foy: ((l_pere.idfoy == idfoy or l_mere.idfoy == idfoy) and (quifoy>1))
+        - NOT_MOVE_foy: if(l_partner.NOT_MOVE_foy and NOT_MOVE_foy, id < l_partner.id, NOT_MOVE_foy)
+        - WHO_MOVE_foy: if(
+            l_partner.NOT_MOVE_foy or NOT_MOVE_foy,
+            l_partner.NOT_MOVE_foy,
+           id < l_partner.id
+           )
+        - WHO_MOVE_foy: WHO_MOVE_foy and MOVE_foy
+        - assertEqual(count(WHO_MOVE_foy), count(MOVE_foy) / 2)
+         # - csv(dump(id, age, sexe, l_partner.id, l_partner.age,
+                   # l_partner.sexe, idfoy, filter=justcoupled),
+              # fname='check_simul//individu_{period}.csv')
+        - new_foy: if(
+            WHO_MOVE,
+            new(
+              'foyers_fiscaux',
+               filter = MOVE ,
+               pond = l_foy.pond,
+               vous = id),
+            idfoy
+            )
+        - quifoy: if(MOVE and quifoy==1, 0, quifoy)
+        # plus tard changer le vous ici directement
 
-                - NOT_MOVE_foy: if(l_partner.NOT_MOVE_foy and NOT_MOVE_foy, id < l_partner.id, NOT_MOVE_foy)
-                - WHO_MOVE_foy: if(l_partner.NOT_MOVE_foy or NOT_MOVE_foy,
-                               l_partner.NOT_MOVE_foy,
-                               id < l_partner.id)
-                - WHO_MOVE_foy: WHO_MOVE_foy and MOVE_foy
-                - assertEqual(count(WHO_MOVE_foy), count(MOVE_foy)/2)
-                 # - csv(dump(id, age, sexe, l_partner.id, l_partner.age,
-                           # l_partner.sexe, idfoy, filter=justcoupled),
-                      # fname='check_simul//individu_{period}.csv')
-                - new_foy: if(WHO_MOVE,
-                                new('foyers_fiscaux', filter=MOVE ,
-                                     pond=l_foy.pond, vous= id),
-                                idfoy)
-                - quifoy: if(MOVE and quifoy==1, 0, quifoy)
-                # plus tard changer le vous ici directement
+        # enfant
+        # children go with....?? HYPOTHESIS
+        # priority to fater...
+        #TODO: do it randomly (but test if the couple are parents and not a second marriage)
+        - new_foy: if(
+            l_pere.MOVE and (l_pere.idfoy==idfoy) and (new_foy==idfoy),
+            l_pere.new_foy,
+            if(
+              l_mere.MOVE and (l_mere.idfoy==idfoy) and (new_foy==idfoy),
+              l_mere.new_foy,
+              new_foy
+              )
+            )
+        # les autres pac restent mais pourquoi ??...
+        - idmen: new_men
+        - idfoy: new_foy
+        - civilstate: if(to_divorce and LEGAL_UNION, DIVORCED, civilstate)
+        - partner: if(to_divorce, UNSET, partner)
+        - dur_in_couple: if(not INCOUPLE, 0, dur_in_couple)
+        - dur_out_couple: if(not INCOUPLE, dur_out_couple + 1, 0)
+        # note : dur_in_couple is incremented in union
 
-                # enfant
-                # children go with....?? HYPOTHESIS
-                # priority to fater...
-                #TODO: do it randomly (but test if the couple are parents and not a second marriage)
-                - new_foy: if(l_pere.MOVE and (l_pere.idfoy==idfoy) and (new_foy==idfoy),
-                                    l_pere.new_foy,
-                                    if(l_mere.MOVE and (l_mere.idfoy==idfoy) and (new_foy==idfoy),
-                                         l_mere.new_foy,
-                                         new_foy))
+        # remplacera les etapes d'actualisation menage et foyers_fiscaux quand fonctionnel
+        # - l_men.set(pref = individus.max(id,quimen==0)
+        # - l_foy.set(vous = in_foyers_fiscaux.max(id,quifoy==0)
 
-                # les autres pac restent mais pourquoi ??...
-                - idmen: new_men
-                - idfoy: new_foy
+        # - l_men.pref: if(quimen==0, id, l_men.pref)
+        # - l_foy.vous: if(quifoy==0, id, l_foy.vous)
 
-                - civilstate: if(to_divorce and LEGAL_UNION, DIVORCED, civilstate)
-                - partner: if(to_divorce, UNSET, partner)
-                - dur_in_couple: if(not INCOUPLE, 0, dur_in_couple)
-                - dur_out_couple: if(not INCOUPLE, dur_out_couple + 1, 0)
-                # note : dur_in_couple is incremented in union
-
-                # remplacera les etapes d'actualisation menage et foyers_fiscaux quand fonctionnel
-                # - l_men.set(pref = individus.max(id,quimen==0)
-                # - l_foy.set(vous = in_foyers_fiscaux.max(id,quifoy==0)
-
-                # - l_men.pref: if(quimen==0, id, l_men.pref)
-                # - l_foy.vous: if(quifoy==0, id, l_foy.vous)
-
-                - assertEqual(max(l_men.get(individus.count(quimen==0))),1)
-                - assertTrue(min(idmen)>=0)
-                - assertEqual(max(l_foy.get(in_foyers_fiscaux.count(quifoy==0))),1)
-                - assertTrue(min(idfoy)>=0)
+        - assertEqual(max(l_men.get(individus.count(quimen==0))),1)
+        - assertTrue(min(idmen)>=0)
+        - assertEqual(max(l_foy.get(in_foyers_fiscaux.count(quifoy==0))),1)
+        - assertTrue(min(idfoy)>=0)
 
 
-            dump_info:
-              - csv(dump(id, age, sexe, idmen, l_men.nb_individus, l_mere.age, l_partner.age), suffix='info')
+      dump_info:
+        - csv(dump(id, age, sexe, idmen, l_men.nb_individus, l_mere.age, l_partner.age), suffix='info')
 
-            civilstate_changes:
-              - show(groupby(civilstate, lag(civilstate)))
+      civilstate_changes:
+        - show(groupby(civilstate, lag(civilstate)))
