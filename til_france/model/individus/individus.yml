@@ -61,7 +61,7 @@ entities:
         l_tuteur: {type: many2one, target: individus, field: tuteur}
         invl_mere: {type: one2many, target: individus, field: mere}
         invl_pere: {type: one2many, target: individus, field: pere}
-        pers2reg: {type: many2one, target: register, field: id}
+        individus2registre: {type: many2one, target: register, field: id}
         individu2generation: {type: many2one, target: generation, field: age}
 
     # possible transitions and regressions. The actual list used in the
@@ -114,9 +114,9 @@ entities:
 
         BEGINER: xpr == 1
 
-        ISDEPENDANT: (dependance_level == 1) or (dependance_level == 2)
-        ISGIR_1_2: (dependance_level == 2)
-        ISGIR_3_4: (dependance_level == 1)
+        ISDEPENDANT: (dependance_niveau == 1) or (dependance_niveau == 2)
+        ISGIR_1_2: (dependance_niveau == 2)
+        ISGIR_3_4: (dependance_niveau == 1)
 
         # TODO: add others
         ORDINARY_HOUSE: (idmen > 9)

@@ -73,7 +73,7 @@ You should run DataTil and check that the input path is correctly set in your co
 
 
 def test_panel():
-    variable_name = 'dependance_level'
+    variable_name = 'dependance_niveau'
     simulation = get_simulation(
         capitalized_name = 'Patrimoine_next_metro_200',
         output_name_suffix = 'test_institutions',
@@ -109,5 +109,5 @@ if __name__ == '__main__':
         output_name_suffix = 'test_institutions',
         uniform_weight = 200
         )
-    dependance_level = simulation.get_variable(['dependance_level'])
+    dependance_niveau = simulation.get_variable(['dependance_niveau'])
     data_origin = simulation.get_variable(['data_origin'])

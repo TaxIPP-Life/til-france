@@ -22,19 +22,19 @@ entities:
           - dead: if(
               ISMALE,
               logit_regr(
-                (dependance_level == 0) +
-                (dependance_level == 1) * (
+                (dependance_niveau == 0) +
+                (dependance_niveau == 1) * (
                   (dependance_anciennete >= 10) * (1.510 + 1.228 * lq) +
                   (dependance_anciennete < 10) * (.634 + .454 * lq)
                   ) +
-                (dependance_level == 2) * (1.815 + .752 * lq + .987 * (dependance_anciennete == 1)
+                (dependance_niveau == 2) * (1.815 + .752 * lq + .987 * (dependance_anciennete == 1)
                   ),
                 align='parameters/population/hyp_mortaliteH.csv'
                 ),
               logit_regr(
-                (dependance_level == 0) +
-                (dependance_level == 1) * (.241 + .319 * lq - .079 * dependance_anciennete) +
-                (dependance_level == 2) * (
+                (dependance_niveau == 0) +
+                (dependance_niveau == 1) * (.241 + .319 * lq - .079 * dependance_anciennete) +
+                (dependance_niveau == 2) * (
                   (dependance_anciennete >= 10) * (2.306 + 1.059 * lq) +
                   (dependance_anciennete < 10) * (.695 + .390 * lq + .244 * (dependance_anciennete == 1))
                   )
@@ -52,7 +52,7 @@ entities:
           - show('Number of male death', count(dead and ISMALE))
           - show('Number of female death', count(dead and ISFEMALE))
           - show('Number of deaths', count(dead))
-          - show('Number of dependant deaths', count(dead and (dependance_level > 0)))
+          - show('Number of dependant deaths', count(dead and (dependance_niveau > 0)))
           - show('Avg age of dead women', avg(age, filter=dead and ISFEMALE))
           - show('Widows', sum(ISWIDOW))
 

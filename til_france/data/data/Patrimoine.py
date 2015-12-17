@@ -185,8 +185,8 @@ class Patrimoine(DataTil):
         individus['findet'] = individus['findet'] - individus['anais']
         # tauxprime
         individus['tauxprime'] = 0
-        # dependance_level
-        individus['dependance_level'] = -1
+        # dependance_niveau
+        individus['dependance_niveau'] = -1
 
         # Individus en institutions
         individus_institutions['id'] = range(
@@ -202,7 +202,7 @@ class Patrimoine(DataTil):
         individus_institutions['workstate'] = 1  # inactif
         individus_institutions['period'] = self.survey_date
         individus_institutions['civilstate'] = 2  # on les forces à célibataires TODO leur attirbuer un partner
-        individus_institutions['dependance_level'] = (
+        individus_institutions['dependance_niveau'] = (
             2 * individus_institutions['rgir'].isin([1, 2]) + 1 * individus_institutions['rgir'].isin([3, 4])
             ) + 0
         log.info(u'Ajout de {} individus en institution aux {} individus initiaux'.format(
@@ -401,7 +401,7 @@ class Patrimoine(DataTil):
             famille = ['couple', 'lienpref', 'enf', 'civilstate', 'pacs', 'grandpar', 'per1e', 'mer1e', 'enfant']
             jobmarket = ['statut', 'situa', 'workstate', 'preret', 'classif', 'cs42']
             info_parent = ['jepnais', 'jemnais', 'jemprof']
-            dependance = ['data_origin', 'dependance_level']
+            dependance = ['data_origin', 'dependance_niveau']
             carriere = [x for x in all if x[:2] == 'cy' and x not in ['cyder', 'cysubj']] + \
                 ['jeactif', 'anfinetu', 'prodep']
             revenus = ["zsalaires_i", "zchomage_i", "zpenalir_i", "zretraites_i", "cyder", "duree"]

@@ -2,7 +2,7 @@ entities:
   individus:
     fields:
       # dependance 0 non dependant, 1: moyennement dependant, 2: fortement dependant
-      - dependance_level: {type: int, initialdata: true}
+      - dependance_niveau: {type: int, initialdata: true}
       - dependance_anciennete: {type: int, initialdata: false, default: 0}
     processes:
       init_dependance:
@@ -31,7 +31,7 @@ entities:
             )
         - being_dependant_score: if(
             data_origin == 1,
-            if(dependance_level >= 1, 1, -1),
+            if(dependance_niveau >= 1, 1, -1),
             -1
             )
         - being_dependant_score: if(
@@ -67,7 +67,7 @@ entities:
         - show('Number of initial female dependant aligned', count(being_dependant and ISFEMALE))
         - being_very_dependant_score: if(
             data_origin == 1,
-            if(dependance_level >= 2, 1, -1),
+            if(dependance_niveau >= 2, 1, -1),
             -1
             )
         - being_very_dependant_score: if(
@@ -80,7 +80,7 @@ entities:
             logit_score(0.194 + .150 * lq),
             being_very_dependant_score
             )
-        - dependance_level: if(
+        - dependance_niveau: if(
             being_dependant,
             if(being_very_dependant_score > uniform(), 2, 1),
             0
@@ -91,28 +91,28 @@ entities:
             -1
             )
         # TODO: add a sensible distribution of dependance anciennete FIXME
-        - show('Number of initial dependance_level 0', count(dependance_level == 0))
-        - show('Number of initial dependance_level 1', count(dependance_level == 1))
-        - show('Number of initial dependance_level 2', count(dependance_level == 2))
+        - show('Number of initial dependance_niveau 0', count(dependance_niveau == 0))
+        - show('Number of initial dependance_niveau 1', count(dependance_niveau == 1))
+        - show('Number of initial dependance_niveau 2', count(dependance_niveau == 2))
         - show('Number of initial people', count())
         - csv('period', period, 'dependance', groupby(
-            age, sexe, expr = count((dependance_level == 1) or (dependance_level == 2))
+            age, sexe, expr = count((dependance_niveau == 1) or (dependance_niveau == 2))
             ),
             fname = 'dependance.csv',
             mode = 'a'
             )
         - csv('period', period, 'dependance', groupby(
-            age, data_origin, expr = count((dependance_level == 1) or (dependance_level == 2))
+            age, data_origin, expr = count((dependance_niveau == 1) or (dependance_niveau == 2))
             ),
             fname = 'dependance2.csv',
             mode = 'a'
             )
-        - assertTrue(all(dependance_level == 0, filter = (age < 60)))
+        - assertTrue(all(dependance_niveau == 0, filter = (age < 60)))
 
       dependance:
-        - dependance_level: if(
-            dependance_level >= 0,
-            dependance_level,
+        - dependance_niveau: if(
+            dependance_niveau >= 0,
+            dependance_niveau,
             0
             )
         - MU: .85
@@ -135,10 +135,10 @@ entities:
             )
         # From Marbot and Roy following Duée-Rebillard
         # Becoming dependant
-        - assertTrue(all(dependance_level == 0, filter = (age < 60)))
+        - assertTrue(all(dependance_niveau == 0, filter = (age < 60)))
         - show('Nombre de dependants total', count(ISDEPENDANT > 0))
-        - show('Nombre de dependants legers', count(dependance_level == 1))
-        - show('Nombre de dependants lourds', count(dependance_level == 2))
+        - show('Nombre de dependants legers', count(dependance_niveau == 1))
+        - show('Nombre de dependants lourds', count(dependance_niveau == 2))
         - dependance_anciennete: if(
             ISDEPENDANT,
             dependance_anciennete + 1,
@@ -186,28 +186,28 @@ entities:
             0,
             dependance_anciennete
             )
-        - dependance_level: if(
+        - dependance_niveau: if(
             becoming_dependant and ISMALE and (age < 75),
             choice([1, 2], [1 - .174, .174]),
-            dependance_level
+            dependance_niveau
             )
-        - assertTrue(all(dependance_level == 0, filter = (age < 60)))
-        - dependance_level: if(
+        - assertTrue(all(dependance_niveau == 0, filter = (age < 60)))
+        - dependance_niveau: if(
             becoming_dependant and ISMALE and (age >= 75),
             choice([1, 2], [1 - .325, .325]),
-            dependance_level
+            dependance_niveau
             )
-        - assertTrue(all(dependance_level == 0, filter = (age < 60)))
-        - dependance_level: if(
+        - assertTrue(all(dependance_niveau == 0, filter = (age < 60)))
+        - dependance_niveau: if(
             becoming_dependant and ISFEMALE and (age < 80),
             choice([1, 2], [1 - .211, .211]),
-            dependance_level
+            dependance_niveau
             )
-        - assertTrue(all(dependance_level == 0, filter = (age < 60)))
-        - dependance_level: if(
+        - assertTrue(all(dependance_niveau == 0, filter = (age < 60)))
+        - dependance_niveau: if(
             becoming_dependant and ISFEMALE and (age >= 80),
             choice([1, 2], [1 - .275, .275]),
-            dependance_level
+            dependance_niveau
             )
         # Transiiton GIRE_3_3 vers GIR_1_2
         - anc1: dependance_anciennete == 1  # anciennete d'un an dans la dependance
@@ -219,24 +219,24 @@ entities:
             .570 + 0.579 * lq,
             filter = ISFEMALE and ISGIR_3_4
             )
-        - dependance_level: if(
+        - dependance_niveau: if(
             ISDEPENDANT,
             if(becoming_gir_1_2, 2, 1),
-            dependance_level
+            dependance_niveau
             )
-        - assertTrue(all(dependance_level == 0, filter = (age < 60)))
-        - show('Number of initial dependance_level 0', count(dependance_level == 0))
-        - show('Number of initial dependance_level 1', count(dependance_level == 1))
-        - show('Number of initial dependance_level 2', count(dependance_level == 2))
+        - assertTrue(all(dependance_niveau == 0, filter = (age < 60)))
+        - show('Number of initial dependance_niveau 0', count(dependance_niveau == 0))
+        - show('Number of initial dependance_niveau 1', count(dependance_niveau == 1))
+        - show('Number of initial dependance_niveau 2', count(dependance_niveau == 2))
         - show('Number of initial people', count())
         - csv('period', period, 'dependance', groupby(
-            age, sexe, expr = count((dependance_level == 1) or (dependance_level == 2))
+            age, sexe, expr = count((dependance_niveau == 1) or (dependance_niveau == 2))
             ),
             fname = 'dependance.csv',
             mode = 'a'
             )
         - csv('period', period, 'dependance', groupby(
-            age, data_origin, expr = count((dependance_level == 1) or (dependance_level == 2))
+            age, data_origin, expr = count((dependance_niveau == 1) or (dependance_niveau == 2))
             ),
             fname = 'dependance2.csv',
             mode = 'a'

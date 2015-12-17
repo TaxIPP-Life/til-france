@@ -38,7 +38,7 @@ variables_til = {
             'civilstate',
             'findet',
             'data_origin',
-            'dependance_level',
+            'dependance_niveau',
             'idfoy',
             'idmen',
             'mere',
@@ -74,7 +74,7 @@ variables_til = {
             'anc',
             'civilstate',
             'data_origin',
-            'dependance_level',
+            'dependance_niveau',
             'deces'
             'findet',
             'idfoy',
