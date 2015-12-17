@@ -162,17 +162,17 @@ entities:
           ############# Inheritance ###########
           # source: http://droit-finances.commentcamarche.net/contents/1000-succession-heritage-et-heritiers
           # if children....
-          - pers2reg.vivant: if(dead, False, pers2reg.vivant)
+          - individus2registre.vivant: if(dead, False, individus2registre.vivant)
 
-          - nb_rang1: pers2reg.get(reg_inv_pere.count(vivant) + reg_inv_mere.count(vivant))
+          - nb_rang1: individus2registre.get(reg_inv_pere.count(vivant) + reg_inv_mere.count(vivant))
           # la ligne du dessus revient a : - rang1 : invl_pere.count() + invl_mere.count()
           # mais avec les vivant updater et donc gere les cas de deces simultane a priori
-          #  pers2reg.herit_potentiel: not pere.vivant and
+          #  individus2registre.herit_potentiel: not pere.vivant and
 
           #get : rang1
           #       rang2 = not rang + count(reg_inv_pere.count(vivant) + reg_inv_mere.count(vivant) >0 )
           #       rang3 =
-          - nb_rang2: pers2reg.get(
+          - nb_rang2: individus2registre.get(
               reg_inv_pere.count(
                 not vivant and (
                   reg_inv_pere.count(vivant) + reg_inv_mere.count(vivant) > 0
@@ -184,7 +184,7 @@ entities:
                   )
                 )
               )
-          - nb_rang3: pers2reg.get(
+          - nb_rang3: individus2registre.get(
               reg_inv_pere.count(
                 not vivant and
                 not (
@@ -221,16 +221,16 @@ entities:
               if(nb_part_herit > 0, patrimoine * 3 / 4, 0),
               patrimoine
               )
-          - pers2reg.heritage: if(
+          - individus2registre.heritage: if(
               dead and nb_part_herit > 0,
-              pers2reg.heritage + patrimoine / nb_part_herit,
-              pers2reg.heritage
+              individus2registre.heritage + patrimoine / nb_part_herit,
+              individus2registre.heritage
               )
           # apres on fait une etape dans le registre
-          - pers2reg.heritage_asc: if(
+          - individus2registre.heritage_asc: if(
               dead and nb_part_herit == 0,
-              pers2reg.heritage_asc + patrimoine,
-              pers2reg.heritage_asc
+              individus2registre.heritage_asc + patrimoine,
+              individus2registre.heritage_asc
               )
           # Suppression du decéde
           # enregistrement dans le registre et elimination de la table individus
@@ -239,7 +239,7 @@ entities:
           - partner: if(l_partner.dead, UNSET, partner)
           - mere: if(l_mere.dead, UNSET, mere)
           - pere: if(l_pere.dead, UNSET, pere)
-          - pers2reg.deces: if(dead, period, pers2reg.deces)
+          - individus2registre.deces: if(dead, period, individus2registre.deces)
           - csv(
               period, count(dead),
               fname = 'deaths.csv', mode = 'a'
