@@ -29,7 +29,7 @@ entities:
       - rsti: float
       - tauxprime: float
       - start_retirement: {type: int, initialdata: false}
-      
+
     # legislation
       - salsuperbrut: {type: int, initialdata: false, default: 0}
       - cotsoc_noncontrib: {type: int, initialdata: false}
@@ -113,10 +113,6 @@ entities:
         ISOTHERINACTIVE: (workstate == 1)
 
         BEGINER: xpr == 1
-
-        ISDEPENDANT: (dependance_niveau == 1) or (dependance_niveau == 2)
-        ISGIR_1_2: (dependance_niveau == 2)
-        ISGIR_3_4: (dependance_niveau == 1)
 
         # TODO: add others
         ORDINARY_HOUSE: (idmen > 9)

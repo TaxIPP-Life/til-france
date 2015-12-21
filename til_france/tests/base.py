@@ -32,7 +32,7 @@ til_france_path = os.path.join(
     )
 
 
-def create_til_simulation(input_name = None, output_name_suffix = 'til_output', uniform_weight = None):
+def create_til_simulation(input_name = None, option = None, output_name_suffix = 'output', uniform_weight = None):
     assert input_name is not None
     config = Config()
     name = input_name.lower()
@@ -52,7 +52,13 @@ You should also check that the input path is correctly set in your config_local.
     if not os.path.exists(output_dir):
         os.mkdir(output_dir)
 
-    console_file = os.path.join(til_france_path, 'model', 'console.yml')
+    if option:
+        assert isinstance(option, str)
+        console_relative_path = os.path.join('options', 'console_{}.yml'.format(option))
+    else:
+        console_relative_path = os.path.join('standard', 'console.yml')
+
+    console_file = os.path.join(til_france_path, 'model', console_relative_path)
     simulation = TilSimulation.from_yaml(
         console_file,
         input_dir = input_dir,

@@ -1,15 +1,21 @@
+globals:
+  mortality_rate_male:
+    type: float
+  mortality_rate_female:
+    type: float
+  mortality_rate_male_1997:
+    type: float
+  mortality_rate_female_1997:
+    type: float
+
 entities:
   generation:
     fields:
       - education_niveau: {type: float, initialdata: 0}
-      - age: {type: int, initialdata: False}
       - qm_male: {type: float, initialdata: False}
       - qm_female: {type: float, initialdata: False}
       - qm_male_1997: {type: float, initialdata: False}
       - qm_female_1997: {type: float, initialdata: False}
-
-    links:
-      generation2individus: {type: one2many, target: individus, field: age}
 
     processes:
       education:
@@ -19,3 +25,8 @@ entities:
         - qm_female: mortality_rate_female[0:121, period - 2007]
         - qm_male_1997: mortality_rate_male_1997
         - qm_female_1997: mortality_rate_female_1997
+      mise_a_jour:
+        - education()
+        - mortality_rates()
+      options_initialisation:
+        - mortality_rates()

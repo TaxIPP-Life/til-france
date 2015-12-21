@@ -6,6 +6,7 @@ from til_france.plot.population import plot_population2, population_diagnostic, 
 
 simulation = create_til_simulation(
     input_name = 'patrimoine',
+    option = 'dependance',
     output_name_suffix = 'test_institutions',
     uniform_weight = 200
     )

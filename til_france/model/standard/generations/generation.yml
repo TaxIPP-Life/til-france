@@ -1,0 +1,15 @@
+entities:
+  generation:
+    fields:
+      - age: {type: int, initialdata: False}
+    links:
+      generation2individus: {type: one2many, target: individus, field: age}
+    processes:
+      mise_a_jour:
+        - 0
+      options_initialisation:
+        - 0
+
+  individus:
+    links:
+      individu2generation: {type: many2one, target: generation, field: age}

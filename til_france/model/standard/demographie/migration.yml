@@ -32,7 +32,7 @@ entities:
                     civilstate = SINGLE,
                     workstate = workstate,
                     sexe = sexe,
-                    productivity = productivity,
+                    productivite = productivite,
                     salaire_imposable = salaire_imposable,
                     rsti = 0,
                     choi = 0,

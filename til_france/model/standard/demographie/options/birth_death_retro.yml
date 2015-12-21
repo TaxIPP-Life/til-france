@@ -7,7 +7,7 @@ entities:
                 - show('Number of born this period is', count(birth))
 
 
-            death:
+            deces_selection:
                 - dead: forruptv == trunc(period/100)
                 - show('Number of re-birth', count(dead))
                 - new('individus', filter=dead,

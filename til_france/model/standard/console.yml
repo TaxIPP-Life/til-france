@@ -1,0 +1,97 @@
+# second entity, links, link methods, init, procedures, local variables,
+# dump's suffix argument, choice
+
+import:
+  - individus/individus.yml
+  - individus/register.yml
+  - generations/generation.yml
+  - logement/menages.yml
+  - foyers_fiscaux/foyers_fiscaux.yml
+  - revenus/revenus.yml
+  - demographie/naissance.yml
+  - demographie/migration.yml
+  - demographie/vieillissement.yml
+  - demographie/union.yml
+  - demographie/divorce.yml
+  - education/education.yml
+  - logement/moving.yml
+  - consommation/consommation.yml
+  - patrimoine/epargne.yml
+  - entreprises/entreprises.yml
+
+
+simulation:
+  init:
+    - menages: [init_weight_men, init_region_id, init_rent, init_value, init_wealth, init_owner, men_composition]
+    - individus: [
+      init_weight_ind,
+      init_couple,
+      education_niveau_initialisation,
+      chomage_initialisation,
+      productivite_initialisation
+      ]
+    - generation: [options_initialisation]
+    - individus: [options_initialisation]
+    - companies: [init_size]
+    - foyers_fiscaux: [cases, empty_declar]
+    - register: [init_reg]
+    # - legislation: [2009]
+    - register: [sum_indiv]
+    - individus: [stat_period_ini, stat_period]
+
+  processes:
+  # apres chaque étape qui modifie les ménages,
+  # on fait tourner une moulinette sur foyers_fiscaux et menages,pour s'assurer qu'on a les bons
+  # vous et pref,
+  # plus tard, quand le code le permettra, on changera ce vous directement dans l'étape au niveau individus
+  # - individus: [age, dump_info, show_demography , marriage]
+    # - register: [rien]
+    - generation: [mise_a_jour]
+    - individus: [vieillissement]
+    - individus: [migration]
+    - individus: [check]
+    - individus: [independance]
+    - individus: [check]
+    - individus: [birth]
+    - individus: [check]
+    - menages: [men_composition]
+    - foyers_fiscaux: [cases, empty_declar]
+    - individus: [into_couple]
+    - individus: [move_together]
+    - individus: [check]
+    - individus: [legal_union]
+    - individus: [check]
+    # - register: [sum_indiv]
+    - menages: [men_composition]
+    - foyers_fiscaux: [cases]
+    - foyers_fiscaux: [empty_declar]
+    - individus: [divorce]
+    - individus: [check]
+    - menages: [men_composition]
+    - foyers_fiscaux: [cases, empty_declar]
+    - individus: [ineducation, emploi_sortie, emploi_entree, retire, chomage, salaire , retraite
+        # dump_all
+        ]
+    - individus: [check]
+    - menages: [init_value, consumption, saving]
+    # - companies: [rien]
+    - legislation: [2009] #[annee leg] = année de départ de la simulation
+    # - register: [alive]
+    # - register: [sum_indiv]
+    - individus: [stat_period]
+
+  output:
+    file: simul.h5
+
+  assertions: raise       # raise (default), xarn, skip
+  skip_shows: False
+  logging:                # optional
+    timings: True       # optional
+    level: functions    # optional
+
+  random_seed: 12345       # optional
+
+  start_period: 2010  #01
+  # first simulated period is start_period + 1  TODO: a bit ugly !
+
+  periods: 2

@@ -2,15 +2,15 @@ entities:
     individus:
         processes:
 
-            productivity_initialization:
-                - productivity: 0
+            productivite_initialisation:
+                - productivite: 0
                 # destinie (1991)
                 # Roux (jusque 2002)
                 - mincer : 7.6 + 0.08 * findet + 0.04 * xpr - 0.0006 * xpr * xpr
-                - productivity: if(
+                - productivite: if(
                     salaire_imposable > 0,
                     salaire_imposable - mincer,
-                    productivity
+                    productivite
                     )
 
             chomage:
@@ -94,7 +94,7 @@ entities:
                     mincer)
                 - mincer: exp(mincer / 100)
 
-                - salaire_imposable: if(ISINWORK, mincer + productivity, 0)
+                - salaire_imposable: if(ISINWORK, mincer + productivite, 0)
 
             rev_cap:
                 - capital_inc: l_men.wealth * 0.1 * (quimen==1)

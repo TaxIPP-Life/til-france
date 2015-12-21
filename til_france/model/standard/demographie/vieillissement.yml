@@ -1,0 +1,9 @@
+import:
+  - deces.yml
+
+entities:
+  individus:
+    processes:
+      vieillissement:
+        - ageing()
+        - deces()

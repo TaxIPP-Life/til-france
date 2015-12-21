@@ -199,7 +199,7 @@ entities:
         # autres, qui ne sont pas a new_idfoy == idfoy parce que leur parent est reste
         # penser aux petits enfants
         - new_idfoy: if(
-            (quifoy > 1) and (new_idfoy==idfoy),
+            (quifoy > 1) and (new_idfoy == idfoy),
             l_foy.l_vous.new_idfoy,
             new_idfoy
             )

@@ -5,7 +5,7 @@ entities:
       - dur_rest_ARE: {type: int, initialdata: false}
 
     processes:
-      chomage_initialization:
+      chomage_initialisation:
         - dur_rest_ARE: 2 * (choi > 0)
 
       chomage:

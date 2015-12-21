@@ -1,5 +1,5 @@
 import:
-  - travail_transitions.yml
+  - travail_transition.yml
   - chomage.yml
   - retraite.yml
   - capital.yml

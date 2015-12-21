@@ -1,0 +1,15 @@
+# second entity, links, link methods, init, procedures, local variables,
+# dump's suffix argument, choice
+
+import:
+   - ../standard/console.yml
+   - generations/generation.yml
+   # dependance
+   - dependance/deces_dependance.yml
+   - dependance/dependance_transition.yml
+
+entities:
+  individus:
+    processes:
+      options_initialisation:
+        - dependance_initialisation()

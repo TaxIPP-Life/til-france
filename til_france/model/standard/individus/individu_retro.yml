@@ -48,7 +48,7 @@ entities:
       # work
           - workstate: int
           - salaire_imposable: {type: float, default: 0.0}
-          - productivity: {type: float, initialdata: false}
+          - productivite: {type: float, initialdata: false}
           - rsti: float
           - choi: float
           - xpr: int  # name to avoid confusion with function exp

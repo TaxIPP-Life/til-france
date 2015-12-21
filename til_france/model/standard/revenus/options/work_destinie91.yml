@@ -1,4 +1,4 @@
-import: travail_transitions
+import: travail_transition
 
 entities:
   individus:

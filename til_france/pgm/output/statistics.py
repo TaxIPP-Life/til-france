@@ -61,7 +61,7 @@ res_size = len(ids)
 #    sum_values[ind,1:] = x
 #    sum_values[ind,0] = ind
 list2drop = ['wprm_init','age','idmen','idfoy','quifoy', 'pere','mere','conj','dur_in_couple','dur_out_couple',
-             'education_niveau','productivity','xpr','anc']
+             'education_niveau','productivite','xpr','anc']
 list2keep = ['sexe','noi','findet','civilstate','workstate','salaire_imposable','rsti','choi']
 #tab = table[ent].drop(list2drop, axis=1)
 tab = table['ind'][list2keep]

@@ -1,11 +1,29 @@
+globals:
+  # periodic:
+  #     path: param\demo\dependance_prevalence_all_years.csv
+  #     fields:
+  #         # PERIOD is implicit
+  #         - DEPENDANTS: float
+
+  # periodic do not work
+  dependance_prevalence_all_years:
+    type: float
+
+
 entities:
   individus:
     fields:
-      # dependance 0 non dependant, 1: moyennement dependant, 2: fortement dependant
+      # dependance_niveau: 0 non dependant, 1: moyennement dependant, 2: fortement dependant
       - dependance_niveau: {type: int, initialdata: true}
       - dependance_anciennete: {type: int, initialdata: false, default: 0}
+
+    macros:
+        ISDEPENDANT: (dependance_niveau == 1) or (dependance_niveau == 2)
+        ISGIR_1_2: (dependance_niveau == 2)
+        ISGIR_3_4: (dependance_niveau == 1)
+
     processes:
-      init_dependance:
+      dependance_initialisation:
         - MU: .85
         - qm: if(
             ISMALE,

@@ -2,24 +2,24 @@ entities:
   individus:
     fields:
       - salaire_imposable: {type: float, default: 0.0}
-      - productivity: {type: float, initialdata: false}
+      - productivite: {type: float, initialdata: false}
 
     processes:
-      productivity_initialization:
-        - productivity: 0
+      productivite_initialisation:
+        - productivite: 0
         # destinie (1991)
         # Roux (jusque 2002)
         - mincer : 7.6 + 0.08 * findet + 0.04 * xpr - 0.0006 * xpr*xpr
-        - productivity: if(salaire_imposable > 0,
+        - productivite: if(salaire_imposable > 0,
                     salaire_imposable * 0.5 - 1820 * mincer,
                     0)
-        - productivity: if(
+        - productivite: if(
             salaire_imposable <= 0,
             normal(
-                loc = avg(productivity, filter=(salaire_imposable > 0)),
-                scale = std(productivity, filter=(salaire_imposable > 0))
+                loc = avg(productivite, filter=(salaire_imposable > 0)),
+                scale = std(productivite, filter=(salaire_imposable > 0))
                 ),
-            productivity
+            productivite
             )
 
       salaire:
@@ -85,6 +85,6 @@ entities:
         # 15000=smic
         - salaire_imposable: if(
             ISINWORK,
-            max(mincer * 0.5 - productivity, 15000),
+            max(mincer * 0.5 - productivite, 15000),
             0
             )

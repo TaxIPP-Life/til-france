@@ -7,8 +7,8 @@ entities:
     individus:
         processes:
 
-            productivity_initialization:
-                - productivity: 1
+            productivite_initialisation:
+                - productivite: 1
                 # destinie (1991)
                 - mincer : if(ISMALE,
                                 9.772+0.094*findet
@@ -17,12 +17,12 @@ entities:
                                 +0.053*xpr-0.00068*xpr*xpr)
                 # 1/1.7 pour passer au net et  1.04 pour passer a 2009
                 - mincer : 1.04/1.7*exp(mincer)
-                - productivity: if(salaire_imposable> 0,
+                - productivite: if(salaire_imposable> 0,
                             salaire_imposable / mincer,
-                            productivity)
-                - productivity: if( salaire_imposable >0,
-                            productivity,
-                            avg(productivity, salaire_imposable > 0))
+                            productivite)
+                - productivite: if( salaire_imposable >0,
+                            productivite,
+                            avg(productivite, salaire_imposable > 0))
 
 
             salaire:
@@ -37,4 +37,4 @@ entities:
                 # 1/1.7 pour passer au net et  1.04 pour passer a 2009
                 - mincer : 1.04/1.7*exp(mincer)
 
-                - salaire_imposable:  if( ISINWORK, round(mincer * productivity),0)
+                - salaire_imposable:  if( ISINWORK, round(mincer * productivite),0)
