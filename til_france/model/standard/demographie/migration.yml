@@ -9,9 +9,6 @@ entities:
                 # TODO: deal with emigration and people leaving the country
                 # TODO: create home and families.
                 # TODO: associate a carrier (in longitudinal)
-                # - select: 1
-                # - select_men: align_abs(select, need='param/demo/hyp_soldemigH.csv', filter=ISMALE)
-                # - select_women: align_abs(select, need='param/demo/hyp_soldemigF.csv', filter=ISFEMALE)
                 - migrant: false
                 - select_men: logit_regr(
                     0.0,
