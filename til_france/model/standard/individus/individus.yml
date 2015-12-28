@@ -30,22 +30,6 @@ entities:
       - tauxprime: float
       - start_retirement: {type: int, initialdata: false}
 
-    # legislation
-      - salsuperbrut: {type: int, initialdata: false, default: 0}
-      - cotsoc_noncontrib: {type: int, initialdata: false}
-      - cotsal_noncontrib: {type: int, initialdata: false}
-      - cotsoc_bar: {type: int, initialdata: false}
-      - cotsoc_lib: {type: int, initialdata: false}
-      - cotpat_contrib: {type: int, initialdata: false}
-      - cotpat_noncontrib: {type: int, initialdata: false}
-      - cotsal_contrib: {type: int, initialdata: false}
-      - cotsal: {type: int, initialdata: false}
-      # - impo: {type: int, initialdata: false}
-      # - psoc: {type: int, initialdata: false}
-      # - mini: {type: int, initialdata: false}
-      # - pfam: {type: int, initialdata: false}
-      # - logt: {type: int, initialdata: false}
-
   # legislation retraite
       - nb_enf: {type: int, initialdata: false, default: 0}
       - nb_enf_RG: {type: int, initialdata: false, default: 0}
@@ -61,7 +45,6 @@ entities:
       l_tuteur: {type: many2one, target: individus, field: tuteur}
       invl_mere: {type: one2many, target: individus, field: mere}
       invl_pere: {type: one2many, target: individus, field: pere}
-      individus2registre: {type: many2one, target: register, field: id}
 
       # possible transitions and regressions. The actual list used in the
       # simulation must be defined below
