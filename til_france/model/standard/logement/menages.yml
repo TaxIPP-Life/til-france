@@ -1,90 +1,87 @@
 entities:
-    menages:
-        fields:
-            # period and id are implicit
-            - nb_individus:  {type: int, initialdata: false}
-            - nb_children: {type: int, initialdata: false}
-            - nb_children_af: {type: int, initialdata: false}
-            - nb_adultes: {type: int, initialdata: false}
-            - region_id:   {type: int, initialdata: false}
-            - rent:        {type: float, initialdata: false}
-            - value:        {type: float, initialdata: false}
-            - conso:        {type: float, initialdata: false}
-            - wealth:       {type: float, initialdata: false}
-            - liv_std:       {type: float, initialdata: false}
-            - owner:       {type: int, initialdata: false}
-            - wprm:       {type: int, initialdata: false}
-            - pref: int
+  menages:
+    fields:
+      # period and id are implicit
+      - nb_individus: {type: int, initialdata: false}
+      - nb_children: {type: int, initialdata: false}
+      - nb_children_af: {type: int, initialdata: false}
+      - nb_adultes: {type: int, initialdata: false}
+      - region_id: {type: int, initialdata: false}
+      - rent: {type: float, initialdata: false}
+      - value: {type: float, initialdata: false}
+      - conso: {type: float, initialdata: false}
+      - niveau_de_vie: {type: float, initialdata: false}
+      - owner: {type: int, initialdata: false}
+      - wprm: {type: int, initialdata: false}
+      - pref: int
 
-            # legislation
-            - decile: {type: int, initialdata: false}
-            - decile_net: {type: int, initialdata: false}
-            - pauvre60: {type: bool, initialdata: false}
-            - revdisp: {type: float, initialdata: false}
-            - revnet: {type: float, initialdata: false}
-            - revini: {type: float, initialdata: false}
-            - typ_men: {type: float, initialdata: false}
-            - uc:       {type: float, initialdata: false}
+      # legislation
+      - decile: {type: int, initialdata: false}
+      - decile_net: {type: int, initialdata: false}
+      - pauvre60: {type: bool, initialdata: false}
+      - revdisp: {type: float, initialdata: false}
+      - revnet: {type: float, initialdata: false}
+      - revini: {type: float, initialdata: false}
+      - typ_men: {type: float, initialdata: false}
+      - uc: {type: float, initialdata: false}
 
-            # legislation menage
-            - aah: {type: int, initialdata: false}
-            - caah: {type: int, initialdata: false}
-            - aeeh: {type: int, initialdata: false}
-            - aefa: {type: int, initialdata: false}
-            - af: {type: int, initialdata: false}
-            - cf: {type: int, initialdata: false}
-            - paje: {type: int, initialdata: false}
-            - al: {type: int, initialdata: false}
-            - alf: {type: int, initialdata: false}
-            - als: {type: int, initialdata: false}
-            - apl: {type: int, initialdata: false}
-            - ars: {type: int, initialdata: false}
-            - asf: {type: int, initialdata: false}
-            - api: {type: int, initialdata: false}
-            - apje: {type: int, initialdata: false}
-            - asi: {type: int, initialdata: false}
-            - aspa: {type: int, initialdata: false}
-            - rmi: {type: int, initialdata: false}
-            - rsa: {type: int, initialdata: false}
+      # legislation menage
+      - aah: {type: int, initialdata: false}
+      - caah: {type: int, initialdata: false}
+      - aeeh: {type: int, initialdata: false}
+      - aefa: {type: int, initialdata: false}
+      - af: {type: int, initialdata: false}
+      - cf: {type: int, initialdata: false}
+      - paje: {type: int, initialdata: false}
+      - al: {type: int, initialdata: false}
+      - alf: {type: int, initialdata: false}
+      - als: {type: int, initialdata: false}
+      - apl: {type: int, initialdata: false}
+      - ars: {type: int, initialdata: false}
+      - asf: {type: int, initialdata: false}
+      - api: {type: int, initialdata: false}
+      - apje: {type: int, initialdata: false}
+      - asi: {type: int, initialdata: false}
+      - aspa: {type: int, initialdata: false}
+      - rmi: {type: int, initialdata: false}
+      - rsa: {type: int, initialdata: false}
 
+    links:
+      individus: {type: one2many, target: individus, field: idmen}
+      l_pref: {type: many2one, target: individus, field: pref}
+      landlord: {type: many2one, target: individus, field: owner}
 
-        links:
-            individus:  {type: one2many, target: individus, field: idmen}
-            l_pref:    {type: many2one, target: individus, field: pref}
-            landlord: {type: many2one, target: individus, field: owner}
+    processes:
+      init_region_id:
+        - region_id: choice([0, 1, 2, 3], [0.1, 0.2, 0.3, 0.4])
+      init_rent:
+        - rent: 1000 * (individus.count() - individus.count(age < 18) * 1.5 + individus.count(age < 18) * 0.6)
+      init_value:
+        - value: 100000
+      init_owner:
+        - owner: id + choice([0, 1, 2, 3], [0.1, 0.2, 0.3, 0.4])
+        # It's clear it's not serious for now
+      init_weight_men:
+        - wprm: 1
 
-        processes:
-            init_region_id:
-                - region_id: choice([0, 1, 2, 3], [0.1, 0.2, 0.3, 0.4])
-            init_rent:
-                - rent: 1000 *( individus.count() - individus.count(age < 18) * 1.5 + individus.count(age < 18) * 0.6)
-            init_value:
-                - value: 100000
-            init_owner:
-                - owner: id + choice([0, 1, 2, 3], [0.1, 0.2, 0.3, 0.4])
-                # It's clear it's not serious for now
-            init_weight_men:
-                - wprm: 1
+      men_composition:
+        - nb_individus: individus.count()
+        - nb_children: individus.count(age < 18 and quimen > 1)
+        - nb_children_af: individus.count(age < 20 and quimen > 1)
+        - nb_adultes: individus.count(quimen < 2)
+        - menage_vide: (nb_individus == 0)
 
-            men_composition:
-                - nb_individus: individus.count()
-                - show(count())
-                - show(count() > 0)
-                - assertTrue(count() > 0)
-                - nb_children: individus.count(age < 18  and quimen > 1)
-                - nb_children_af: individus.count(age < 20 and quimen > 1)
-                - nb_adultes: individus.count(quimen <2)
-                - empty: (nb_individus==0)
-
-                - test_pref: individus.count(quimen==0)
-                - show('nombre de quimen', groupby(test_pref, nb_individus))
-                - separ: l_pref.idmen != id
-                - show('nombre probleme de pref', count(l_pref.idmen != 0))
-                - show('nombre separ', count(separ))
-                - candidat: individus.min(id, quimen == 0)
-                - pref: if(separ and individus.count(quimen==0) == 1,
-                    individus.min(id, quimen==0),
-                    pref)
-                - remove(empty)
-                - uc: 0.5 + 0.5 * individus.count(age >= 14) +  0.3 * individus.count(age < 14)
-                - liv_std:  individus.sum(salaire_imposable + rsti + choi) / uc
+        - test_pref: individus.count(quimen == 0)
+        - show('nombre de quimen', groupby(test_pref, nb_individus))
+        - separ: l_pref.idmen != id
+        - show('nombre probleme de pref', count(l_pref.idmen != 0))
+        - show('nombre separ', count(separ))
+        - candidat: individus.min(id, quimen == 0)
+        - pref: if(
+            separ and individus.count(quimen == 0) == 1,
+            individus.min(id, quimen == 0),
+            pref
+            )
+        - remove(menage_vide)
+        - uc: 0.5 + 0.5 * individus.count(age >= 14) +  0.3 * individus.count(age < 14)
+        - niveau_de_vie:  individus.sum(salaire_imposable + rsti + choi) / uc

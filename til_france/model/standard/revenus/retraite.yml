@@ -1,5 +1,12 @@
 entities:
   individus:
+    fields:
+        # legislation retraite
+      - nb_enf: {type: int, initialdata: false, default: 0}
+      - nb_enf_RG: {type: int, initialdata: false, default: 0}
+      - nb_enf_RSI: {type: int, initialdata: false, default: 0}
+      - nb_enf_FP: {type: int, initialdata: false, default: 0}
+
     processes:
       retraite:
         # Actualisation du nombre d'enfants par régime

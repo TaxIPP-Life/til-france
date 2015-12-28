@@ -30,12 +30,6 @@ entities:
       - tauxprime: float
       - start_retirement: {type: int, initialdata: false}
 
-  # legislation retraite
-      - nb_enf: {type: int, initialdata: false, default: 0}
-      - nb_enf_RG: {type: int, initialdata: false, default: 0}
-      - nb_enf_RSI: {type: int, initialdata: false, default: 0}
-      - nb_enf_FP: {type: int, initialdata: false, default: 0}
-
     links:
       l_men: {type: many2one, target: menages,field: idmen}
       l_foy: {type: many2one, target: foyers_fiscaux, field: idfoy}
@@ -73,28 +67,6 @@ entities:
       LEGAL_CELIB: civilstate == 2 or civilstate == 3 or civilstate == 4
       INCOUPLE: (partner > -1)
 
-      INACTIVE:  1
-      UNEMPLOYED: 2
-      NON_CADRE: 3
-      CADRE: 4
-      FONCT_A: 5
-      FONCT_S: 6
-      INDEP  : 7
-      AVPF   : 8
-      PRE_RET: 9
-      RETIRED: 10
-      STUDENT: 11
-
-      ISINWORK: (workstate == 3) or (workstate == 4) or (workstate == 5)  or (workstate == 6) or (workstate == 7)
-      WORK_PUBLIC: (workstate == 5)  or (workstate == 6)
-      WORK_PRIVE: (workstate == 3) or (workstate == 4)
-      WORK_INDEP: (workstate == 7)
-      ISUNEMPLOYED: (workstate == 2)
-      ISSTUDENT: (workstate == 11)
-      ISRETIRED: (workstate == 10)
-      ISOTHERINACTIVE: (workstate == 1)
-
-      BEGINER: xpr == 1
       # TODO: add others
       ORDINARY_HOUSE: (idmen > 9)
       DASS: 1

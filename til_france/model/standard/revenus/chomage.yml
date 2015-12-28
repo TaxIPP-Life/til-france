@@ -45,11 +45,16 @@ entities:
         # prolongation
         - prolong: (age > 61) and (duration(choi > 0) >= 1) # and d'atres truc
         # TODO: a completer quand on aura la fonction qui va bien (voir google group liam)
-        - dur_rest_ARE: if(prolong and (dur_rest_ARE == 1),
-                            2,
-                            dur_rest_ARE)
-        - dur_rest_ARE: if((dur_rest_ARE > 0), dur_rest_ARE - 1, 0)
-
+        - dur_rest_ARE: if(
+            prolong and (dur_rest_ARE == 1),
+            2,
+            dur_rest_ARE
+            )
+        - dur_rest_ARE: if(
+            dur_rest_ARE > 0,
+            dur_rest_ARE - 1,
+            0
+            )
         ####### Montant de l'ARE
         # TODO: ajoute quotite quand dans le modele
         # TODO: parametres et bonne valeur

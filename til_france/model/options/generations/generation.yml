@@ -7,6 +7,10 @@ globals:
     type: float
   mortality_rate_female_1997:
     type: float
+  # mortality_rate_male2:
+  #   path:
+  #   type: float
+
 
 entities:
   generation:

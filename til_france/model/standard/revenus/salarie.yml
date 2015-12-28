@@ -9,10 +9,12 @@ entities:
         - productivite: 0
         # destinie (1991)
         # Roux (jusque 2002)
-        - mincer : 7.6 + 0.08 * findet + 0.04 * xpr - 0.0006 * xpr*xpr
-        - productivite: if(salaire_imposable > 0,
-                    salaire_imposable * 0.5 - 1820 * mincer,
-                    0)
+        - mincer : 7.6 + 0.08 * findet + 0.04 * xpr - 0.0006 * xpr * xpr
+        - productivite: if(
+            salaire_imposable > 0,
+            salaire_imposable * 0.5 - 1820 * mincer,
+            0
+            )
         - productivite: if(
             salaire_imposable <= 0,
             normal(

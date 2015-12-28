@@ -1,7 +1,9 @@
 entities:
-    menages:
-        processes:
-            init_wealth:
-                - wealth: 0
-            saving:
-                - wealth:  wealth + individus.sum(salaire_imposable + choi + rsti) - (rent + conso)
+  menages:
+    fields:
+      - wealth: {type: float, initialdata: false}
+    processes:
+      init_wealth:
+        - wealth: 0
+      saving:
+        - wealth: wealth + individus.sum(salaire_imposable + choi + rsti) - (rent + conso)

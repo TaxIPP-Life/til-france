@@ -57,8 +57,6 @@ def build_prevalence_all_years(hdf5_file_path = None, csv_file_path = None):
     df.columns = ['year', 'dependants_optimiste', 'DEPENDANTS', 'dependants_pessimiste']
     df.set_index('year', inplace = True)
     data = df.reindex(index = range(2010, 2061)).interpolate(method='polynomial', order = 6)
-    # On passe en année pleine
-    # data.index = [int(str(year - 1) + "01") for year in data.index]
     data.index = [int(str(year - 1)) for year in data.index]
     data.index.name = "PERIOD"
 
