@@ -172,19 +172,19 @@ def rename_variables(dataframe):
     return result
 
 
-def expand_data(dataframe, threshold):
-    low_weight_dataframe = dataframe.query('pond < @threshold')
+def expand_data(dataframe, weight_threshold):
+    low_weight_dataframe = dataframe.query('pond < @weight_threshold')
     weights_of_random_picks = low_weight_dataframe.pond.sum()
-    number_of_picks = weights_of_random_picks // threshold
+    number_of_picks = weights_of_random_picks // weight_threshold
     log.info('Extracting {} from {} observations with weights lower than {} representing {} individuals'.format(
         number_of_picks,
         low_weight_dataframe.pond.count(),
-        threshold,
+        weight_threshold,
         weights_of_random_picks
         ))
     sample = low_weight_dataframe.sample(n = number_of_picks, weights = 'pond', random_state = 12345)
-    sample.pond = 200
-    return dataframe.query('pond >= @threshold').append(sample)
+    sample.pond = weight_threshold
+    return dataframe.query('pond >= @weight_threshold').append(sample)
 
 
 def save(dataframe):
@@ -213,27 +213,8 @@ if __name__ == "__main__":
     assert dataframe.age.notnull().all()
 
     numpy.random.seed(12345)
-    threshold = 200
-    final_dataframe = expand_data(dataframe, threshold)
+    weight_threshold = 200
+    final_dataframe = expand_data(dataframe, weight_threshold)
     final_dataframe.loc[final_dataframe.rgir <= 0, 'rgir'] = 0
     final_dataframe.loc[final_dataframe.rgir >= 6, 'rgir'] = 6
-
     save(final_dataframe)
-
-
-
-#age_en_mois
-#migrant
-#naiss
-#partner
-#tuteur
-#dur_in_couple
-#dur_out_couple
-## etatmatri for civilstate  # MARRIED: 1, SINGLE: 2, DIVORCED: 3, WIDOW: 4, PACS: 5
-#
-## education
-#
-#findet
-#
-#
-#

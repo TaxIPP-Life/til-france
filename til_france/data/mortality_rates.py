@@ -30,7 +30,7 @@ import logging
 import os
 import pandas
 import pkg_resources
-import tables
+
 
 from liam2.importer import array_to_disk_array
 
@@ -38,8 +38,7 @@ from liam2.importer import array_to_disk_array
 log = logging.getLogger(__name__)
 
 
-def add_mortality_rates(simulation_file_name = None):
-    assert simulation_file_name is not None
+def add_mortality_rates(globals_node):
     path_model = os.path.join(
         pkg_resources.get_distribution('Til-France').location,
         'til_france',
@@ -83,17 +82,7 @@ def add_mortality_rates(simulation_file_name = None):
     male_1997_array = male_1997['mortality_rate_male_1997'].values
     female_1997_array = female_1997['mortality_rate_female_1997'].values
 
-    h5file = tables.open_file(os.path.join(path_model, simulation_file_name), mode="r+")
-    try:
-        globals_node = h5file.create_group("/", 'globals')
-        log.info("Creating node globals")
-    except:
-        log.info("Reinitializing node globals")
-        h5file.remove_node("/globals", recursive= True)
-        globals_node = h5file.create_group("/", 'globals')
-
     array_to_disk_array(globals_node, 'mortality_rate_male', male_array)
     array_to_disk_array(globals_node, 'mortality_rate_female', female_array)
     array_to_disk_array(globals_node, 'mortality_rate_male_1997', male_1997_array)
     array_to_disk_array(globals_node, 'mortality_rate_female_1997', female_1997_array)
-    h5file.close()

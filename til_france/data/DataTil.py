@@ -113,7 +113,7 @@ class DataTil(object):
         self.time_data_frame_by_name = {}  # past, futur
         self.longitudinal = {}
         self.child_out_of_house = None
-        self.threshold = None
+        self.weight_threshold = None
 
         # TODO: Faire une fonction qui chexk où on en est, si les précédent on bien été fait, etc.
         self.done = []
@@ -321,14 +321,14 @@ class DataTil(object):
         raise NotImplementedError()
 
 
-    def expand_data(self, threshold=150, nb_ligne=None):
+    def expand_data(self, weight_threshold=150, nb_ligne=None):
         # TODO: add future and past
         u'''
         Note: ne doit pas tourner après lien parent_enfant
         Cependant child_out_of_house doit déjà avoir été créé car on s'en sert pour la réplication
         '''
-        self.threshold = threshold
-        if threshold != 0 and nb_ligne is not None:
+        self.weight_threshold = weight_threshold
+        if weight_threshold != 0 and nb_ligne is not None:
             raise Exception(
             "On ne peut pas à la fois avoir un nombre de ligne désiré et une valeur qui va determiner le nombre de ligne"
             )
@@ -352,7 +352,7 @@ class DataTil(object):
                 u" domicile des parents sur leur déclaration, il faut faire l'extension et la "
                 u" fermeture de l'échantillon d'abord. Pareil pour les couples. ")
         min_pond = min(menages['pond'])
-        target_pond = float(max(min_pond, threshold))
+        target_pond = float(max(min_pond, weight_threshold))
 
         # 1 - Réhaussement des pondérations inférieures à la pondération cible
         menages.loc[menages.pond < target_pond, 'pond'] = target_pond
@@ -655,10 +655,10 @@ class DataTil(object):
     def _output_name(self, extension='.h5'):
         config = Config()
         path_liam_input_data = config.get('til', 'input_dir')
-        if self.threshold is None:
+        if self.weight_threshold is None:
             name = self.name + extension
         else:
-            name = self.name + '_next_metro_' + str(self.threshold) + extension
+            name = self.name + '_next_metro_' + str(self.weight_threshold) + extension
         return os.path.join(path_liam_input_data, name)
 
     def store_to_liam(self):
@@ -678,7 +678,7 @@ class DataTil(object):
             if entity is not None:
                 entity = entity.fillna(-1)
                 entity.sort_index(axis = 1, inplace = True)
-                ent_table = entity.to_records(index=False)
+                ent_table = entity.to_records(index = False)
                 dtypes = ent_table.dtype
                 final_name = of_name_to_til[entity_name]
                 table = h5file.createTable(entity_node, final_name, dtypes, title="%s table" % final_name)
@@ -724,8 +724,30 @@ class DataTil(object):
                     table.flush()
 
         h5file.close()
-
         log.info("Saved entities in file {}".format(path))
+
+        # Globals
+        h5file = tables.openFile(path, mode="r+")
+        try:
+            log.info("Creating node globals")
+            globals_node = h5file.create_group("/", 'globals')
+        except:
+            log.info("Reinitializing node globals")
+            h5file.remove_node("/globals", recursive= True)
+            globals_node = h5file.create_group("/", 'globals')
+
+        log.info('Adding unfiorm_weight in node globals of file {}".format(path)')
+        from liam2.importer import array_to_disk_array
+        array_to_disk_array(globals_node, 'uniform_weight', np.array(float(self.weight_threshold)))
+
+        log.info("Adding mortality rates in node globals of file {}".format(path))
+        add_mortality_rates(globals_node)
+        log.info("Added prevalence rates in node globals of file {}".format(path))
+        from til_france.targets.dependance import build_prevalence_all_years
+        build_prevalence_all_years(globals_node)
+        log.info("Added dependance prevalence rates in node globals of file {}".format(path))
+        h5file.close()
+
         # 3 - table longitudinal
         # Note: on conserve le format pandas ici
         store = HDFStore(path)
@@ -733,12 +755,7 @@ class DataTil(object):
             table['id'] = table.index
             store.append('longitudinal/' + varname, table)
         store.close()
-        log.info("Adding mortality rates in node globals of file {}".format(path))
-        add_mortality_rates(path)
-        log.info("Added mortality rates in node globals of file {}".format(path))
-        from til_france.targets.dependance import build_prevalence_all_years
-        build_prevalence_all_years(hdf5_file_path = path)
-        log.info("Added dependance prevalence rates in node globals of file {}".format(path))
+
 
     def store(self):
         path = self._output_name()

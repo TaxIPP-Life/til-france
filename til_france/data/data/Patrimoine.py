@@ -1004,7 +1004,7 @@ def test_build():
     # data.corrections()
     data.partner()
     data.enfants()
-    data.expand_data(threshold = 200)
+    data.expand_data(weight_threshold = 200)
 
     data.creation_child_out_of_house()
     data.matching_par_enf()

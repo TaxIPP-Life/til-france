@@ -24,7 +24,6 @@ import numpy
 import os
 import pandas
 
-import tables
 
 
 from til_france.tests.base import line_prepender, til_france_path
@@ -50,8 +49,8 @@ def build_prevalence_2010():
     line_prepender(csv_file_path, 'age_category')
 
 
-def build_prevalence_all_years(hdf5_file_path = None, csv_file_path = None):
-    assert hdf5_file_path or csv_file_path
+def build_prevalence_all_years(globals_node = None, csv_file_path = None):
+    assert globals_node or csv_file_path
     df = pandas.read_excel(drees_excel_file_path, sheetname ='Tab6A', header = 3, parse_cols = 'B:E', skip_footer = 3)
     # "Au 1er janvier"
     df.columns = ['year', 'dependants_optimiste', 'DEPENDANTS', 'dependants_pessimiste']
@@ -60,11 +59,8 @@ def build_prevalence_all_years(hdf5_file_path = None, csv_file_path = None):
     data.index = [int(str(year - 1)) for year in data.index]
     data.index.name = "PERIOD"
 
-    if hdf5_file_path:
-        h5file = tables.open_file(hdf5_file_path, mode="a")
-        globals_node = h5file.getNode('/globals')
+    if globals_node:
         array_to_disk_array(globals_node, 'dependance_prevalence_all_years', data.DEPENDANTS.values)
-        h5file.close()
     elif csv_file_path:
         csv_file_path = os.path.join(til_france_path, 'param', 'demo', 'dependance_prevalence_all_years.csv')
         data = data.reset_index()[['PERIOD', 'DEPENDANTS']]

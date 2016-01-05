@@ -19,6 +19,9 @@ import:
   - patrimoine/epargne.yml
   - entreprises/entreprises.yml
 
+globals:
+  uniform_weight:
+    type: float
 
 simulation:
   init:

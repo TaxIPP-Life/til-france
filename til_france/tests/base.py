@@ -65,10 +65,9 @@ You should also check that the input path is correctly set in your config_local.
         input_file = input_file,
         output_dir = output_dir,
         output_file = '{}_{}.h5'.format(name, output_name_suffix),
+        uniform_weight = uniform_weight,
         # tax_benefit_system = 'tax_benefit_system',  # Add the OpenFisca TaxBenfitSystem to use
         )
-    if uniform_weight:
-        simulation.uniform_weight = uniform_weight
 
     return simulation
 
