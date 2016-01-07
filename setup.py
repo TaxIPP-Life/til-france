@@ -59,7 +59,7 @@ setup(
     install_requires = [
         'numpy',
         'pandas',
-        'til-core'
+#        'til-core'
         ],
     packages = find_packages(),
     zip_safe = False,
