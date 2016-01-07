@@ -58,6 +58,9 @@ setup(
     url = 'https://github.com/TaxIPP-Life/til-france',
     install_requires = [
         'numpy',
+        'pandas',
+        'shutil',
+        'til-core'
         ],
     packages = find_packages(),
     zip_safe = False,

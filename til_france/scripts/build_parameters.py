@@ -40,7 +40,6 @@ def main():
         os.makedirs(parameters_dir)
     run_all(input_dir = input_dir, uniform_weight = args.weight)
 
-    # TODO: add input_dir argument, write test using temporary input_dir argument
 
 if __name__ == "__main__":
     sys.exit(main())
