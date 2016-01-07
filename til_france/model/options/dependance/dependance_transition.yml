@@ -13,7 +13,7 @@ globals:
 entities:
   individus:
     fields:
-      # dependance_niveau: 0 non dependant, 1: moyennement dependant, 2: fortement dependant
+      # dependance_niveau: 0 non dependant, 1: moyennement dependant, 2: fortement dependant
       - dependance_niveau: {type: int, initialdata: true}
       - dependance_anciennete: {type: int, initialdata: false, default: 0}
 
@@ -75,6 +75,7 @@ entities:
             )
         - show(groupby(being_dependant, data_origin))
         - show('Number of initial being dependant before alignment', groupby(being_dependant, data_origin))
+        # TODO parameters/dependance/dependance_prevalence_2010.csv depends on weight
         - being_dependant: align_abs(
             being_dependant_score, need = 'parameters/dependance/dependance_prevalence_2010.csv',
             filter = (age_category >= 1)
@@ -108,7 +109,7 @@ entities:
             1,
             -1
             )
-        # TODO: add a sensible distribution of dependance anciennete FIXME
+        # TODO: add a sensible distribution of dependance anciennete FIXME
         - show('Number of initial dependance_niveau 0', count(dependance_niveau == 0))
         - show('Number of initial dependance_niveau 1', count(dependance_niveau == 1))
         - show('Number of initial dependance_niveau 2', count(dependance_niveau == 2))
@@ -151,8 +152,8 @@ entities:
             invl_pere.count() >= 2 and invl_pere.count() <= 3,
             invl_mere.count() >= 2 and invl_mere.count() <= 3
             )
-        # From Marbot and Roy following Duée-Rebillard
-        # Becoming dependant
+        # From Marbot and Roy following Duée-Rebillard
+        # Becoming dependant
         - assertTrue(all(dependance_niveau == 0, filter = (age < 60)))
         - show('Nombre de dependants total', count(ISDEPENDANT > 0))
         - show('Nombre de dependants legers', count(dependance_niveau == 1))
@@ -192,7 +193,7 @@ entities:
             becoming_dependant_score
             )
         - assertTrue(all(becoming_dependant_score == -1, filter = (age < 60)))
-        - dependants: dependance_prevalence_all_years[period - 2009] / uniform_weight  # 200 is the weight_threshold
+        - dependants: dependance_prevalence_all_years[period - 2009] / uniform_weight  # 200 is the weight_threshold
         - need: dependants - count(ISDEPENDANT)
         - show('Amount ow newly deppendants people needed', need)
         - becoming_dependant: align_abs(
@@ -260,4 +261,4 @@ entities:
             mode = 'a'
             )
 
-        # Devenir dependant (voir http://insee.fr/fr/publications-et-services/docs_doc_travail/g2012-10.pdf)
+        # Devenir dependant (voir http://insee.fr/fr/publications-et-services/docs_doc_travail/g2012-10.pdf)

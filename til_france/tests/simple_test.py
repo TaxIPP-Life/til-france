@@ -7,8 +7,8 @@ import pkg_resources
 import pandas
 
 
-from til_france.config import Config
 from liam2.simulation import Simulation
+import openfisca_france_data
 
 
 path_model = os.path.join(
@@ -16,7 +16,7 @@ path_model = os.path.join(
     'til_france',
     )
 
-import openfisca_france_data
+
 TaxBenefitSystem = openfisca_france_data.init_country()
 
 
@@ -85,7 +85,7 @@ def test_variables():
     patrimoine_store = pandas.HDFStore(os.path.join(path_model, 'Patrimoine_1500.h5'))
     openfisca_store = pandas.HDFStore(os.path.join(path_model, 'toto.h5'))
 
-    entities = [('person', 'individus), ('declar', 'foyers_fiscaux'), ('menages', 'menages']
+    entities = [('person', 'individus'), ('declar', 'foyers_fiscaux'), ('menages', 'menages')]
     for patrimoine_entity, openfisca_entity in entities:
         print patrimoine_entity, openfisca_entity
         patrimoine_columns = patrimoine_store['/entities/{}'.format(patrimoine_entity)]
