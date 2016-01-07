@@ -1,4 +1,4 @@
-IGNORE_OPT=--ignore-files=''
+IGNORE_OPT=--ignore-files='(simple_test.py|test_destinie.py|test_input_patrimoine_data.py)'
 TESTS_DIR=til_france/tests
 
 all: flake8 test
@@ -19,10 +19,10 @@ flake8: clean-pyc
 	flake8
 
 test: check-syntax-errors
-	nosetests $(TESTS_DIR) --exe --stop --with-doctest
+	nosetests $(TESTS_DIR) $(IGNORE_OPT) --exe --stop --with-doctest
 
 test-ci: check-syntax-errors
-	nosetests $(TESTS_DIR) --exe --with-doctest
+	nosetests $(TESTS_DIR) $(IGNORE_OPT) --exe --with-doctest
 
 test-with-coverage:
 	nosetests $(TESTS_DIR) $(IGNORE_OPT) --exe --stop --with-coverage --cover-package=til_france --cover-erase --cover-branches --cover-html
