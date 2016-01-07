@@ -59,7 +59,6 @@ setup(
     install_requires = [
         'numpy',
         'pandas',
-        'shutil',
         'til-core'
         ],
     packages = find_packages(),
