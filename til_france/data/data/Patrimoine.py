@@ -1,13 +1,6 @@
 ﻿# -*- coding:utf-8 -*-
 
 
-'''
-Created on 2 août 2013
-
-@author: a.eidelman
-
-'''
-
 import os
 import sys
 
@@ -17,20 +10,18 @@ import numpy as np
 from pandas import concat, DataFrame, merge, read_csv, read_hdf, Series
 
 from openfisca_core.calmar import calmar
-from til_france.targets.population import get_data_frame_insee
 
-# Importation des classes/librairies/tables nécessaires à l'importation des données de l'enquête Patrimoine
+
 from til_core.config import Config
-
-from til_france.data.DataTil import DataTil
 from til_core.data.utils.matching import Matching
 from til_core.data.utils.misc import recode, minimal_dtype
+from til_france.data.DataTil import DataTil
+from til_france.targets.population import get_data_frame_insee
 
 
 log = logging.getLogger(__name__)
 
 
-# Patrimoine est définie comme une classe fille de DataTil
 class Patrimoine(DataTil):
 
     def __init__(self):
