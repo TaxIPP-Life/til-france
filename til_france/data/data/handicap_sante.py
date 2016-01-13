@@ -13,7 +13,7 @@ import patsy
 import pkg_resources
 import statsmodels.api as sm
 
-from til_france.config import Config
+from til_core.config import Config
 
 from openfisca_survey_manager.survey_collections import SurveyCollection
 
