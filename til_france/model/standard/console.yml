@@ -20,8 +20,10 @@ import:
   - entreprises/entreprises.yml
 
 globals:
+  weight: 200
   uniform_weight:
     type: float
+
 
 simulation:
   init:
