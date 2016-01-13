@@ -668,6 +668,8 @@ class DataTil(object):
         Appelle des fonctions de Liam2
         '''
         path = self._output_name()
+        if not os.path.exists(os.path.dirname(path)):
+            os.makedirs(os.path.dirname(path))
         h5file = tables.openFile(path, mode="w")
 
         entity_node = h5file.createGroup("/", "entities", "Entities")
