@@ -1,0 +1,29 @@
+# This is a LIAM2 import file. To use it, press F5 if you are using the editor
+# bundled with LIAM2, otherwise run the following command in a console:
+# [BUNDLEPATH]\liam2\main import demo_import.yml
+output: demo.h5
+
+globals:
+    periodic:
+        path: input/globals_transposed.csv
+        transposed: True
+
+entities:
+    individus:
+        path: input/inidividus.csv
+        # if fields are not specified, they are all imported
+        fields:
+            # period and id are implicit
+            - age:           int
+            - sexe:        bool
+
+
+        # if you want to keep your csv files intact but you use different names
+        # in your simulation that in the csv files, you can specify name changes
+        # here. The format is: "newname: oldname"
+        # oldnames:
+        #     sex: sexe
+
+        # if you want to invert the value of some boolean fields (True -> False
+        # and False -> True), add them to the "invert" list below.
+        # invert: [list, of, boolean, fields, to, invert]

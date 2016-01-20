@@ -58,7 +58,7 @@ entities:
                 quifoy = 0,
                 dur_in_couple = 0
                 )
-                # select = 2
+                # select = 2
                 # naiss = naiss
 
 
@@ -85,6 +85,6 @@ simulation:
   random_seed: 12345       # optional
 
   start_period: 2010  #01
-  # first simulated period is start_period + 1  TODO: a bit ugly !
+  # first simulated period is start_period + 1
 
   periods: 7
