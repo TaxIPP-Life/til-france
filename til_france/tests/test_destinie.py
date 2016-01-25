@@ -11,6 +11,5 @@ simulation.run()
 # population_diagnostic_data_frame = population_diagnostic(simulation)
 
 
-#plot_population2(simulation)
-#plot_csv(simulation)
-
+# plot_population2(simulation)
+# plot_csv(simulation)

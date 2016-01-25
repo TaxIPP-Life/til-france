@@ -1,11 +1,11 @@
 # This is a LIAM2 import file. To use it, press F5 if you are using the editor
 # bundled with LIAM2, otherwise run the following command in a console:
 # [BUNDLEPATH]\liam2\main import demo_import.yml
-output: demo.h5
+output: input/demo.h5
 
 entities:
     individus:
-        path: /home/benjello/openfisca/Til-BaseModel/til_france/tests/demographic_model/input/individus.csv
+        path: input/individus.csv
         # if fields are not specified, they are all imported
         fields:
             # period and id are implicit

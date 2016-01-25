@@ -7,12 +7,12 @@
 # In this case, we define only one 'person' entity, but LIAM2 can work with any
 # kind of entity and any number of them.
 entities:
-    person:
+    individus:
         fields:
             # All entities have two implicit integer fields: period and id.
             # You do not need to define them.
             - age:    int
-            - gender: bool
+            - sexe: bool
 
         # Here is a list of defined functions for this entity. The actual list
         # of functions that will be executed in the simulation and in which
@@ -30,10 +30,10 @@ simulation:
     # individuals, then the second process, etc.). The same function may
     # appear several times in this list.
     processes:
-        - person: [ageing]
+        - individus: [ageing]
 
     input:
-        file: demo.h5
+        file: input/demo.h5
     output:
         # all output files will be in the output subdirectory (this path is
         # relative to the path of the simulation file). This is optional.
