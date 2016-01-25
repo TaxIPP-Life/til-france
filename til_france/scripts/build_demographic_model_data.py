@@ -48,7 +48,9 @@ def build_dataframe(year = 2010, weight_threshold = 200):
         dataframe['sexe'] = sexe_value
         dataframe_by_gender[gender] = dataframe
 
-    return pandas.concat(dataframe_by_gender.values(), ignore_index = True).reset_index()
+    result = pandas.concat(dataframe_by_gender.values(), ignore_index = True)
+    result.index.name = 'id'
+    return result
 
 
 def main():

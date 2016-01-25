@@ -3,20 +3,14 @@
 # [BUNDLEPATH]\liam2\main import demo_import.yml
 output: demo.h5
 
-globals:
-    periodic:
-        path: input/globals_transposed.csv
-        transposed: True
-
 entities:
     individus:
-        path: input/inidividus.csv
+        path: /home/benjello/openfisca/Til-BaseModel/til_france/tests/demographic_model/input/individus.csv
         # if fields are not specified, they are all imported
         fields:
             # period and id are implicit
-            - age:           int
-            - sexe:        bool
-
+            - age: int
+            - sexe: bool
 
         # if you want to keep your csv files intact but you use different names
         # in your simulation that in the csv files, you can specify name changes
