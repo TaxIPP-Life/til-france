@@ -200,11 +200,12 @@ def plot_population2(simulation):
         relative_diff = (
             data_frame_simulation - data_frame_insee[data_frame_simulation.columns]
             ) / data_frame_insee[data_frame_simulation.columns]
-        plt.figure()
         ax = relative_diff.T.plot(title = gender)
         fig = ax.get_figure()
         fig.savefig(os.path.join(figures_directory, 'population_rel_diff_{}.png'.format(gender)))
-        del ax, fig
+        plt.draw()
+
+    del ax, fig
 
     for gender in ['total', 'male', 'female']:
         data_frame_insee_total = get_data_frame_insee(gender).sum()
@@ -214,15 +215,15 @@ def plot_population2(simulation):
         data_frame_simulation_total = data_frame_simulation.sum()
 
         data_frame_insee_total = data_frame_insee_total.loc[data_frame_simulation_total.index].copy()
-
         plt.figure()
-        ax = data_frame_insee_total.plot(label = 'insee', style = 'b-')
-        data_frame_simulation_total.plot(label = 'til', style = 'r-', ax = ax)
+        ax = data_frame_insee_total.plot(label = 'insee', style = 'b-', title = gender)
+        ax2 = data_frame_simulation_total.plot(label = 'til', style = 'r-', ax = ax)
         ax.legend()
         fig = ax.get_figure()
         fig.savefig(os.path.join(figures_directory, 'population_{}.png'.format(gender)))
-        del ax, fig
+        plt.draw()
 
+    del ax2, ax, fig
 
 def plot_ratio_demographique(simulation):
     figures_directory = create_or_get_figures_directory(simulation)
@@ -242,7 +243,7 @@ def plot_ratio_demographique(simulation):
     ratio_60 = panel_simulation['total'].groupby(separate, axis = 0).sum()
     ratio_60 = ratio_60.loc['retired', :]/ratio_60.loc['active', :]
     ratio_60.index.name = None
-    plt.figure()
+    # plt.figure()
     ax = ratio_60.plot(
         color = ipp_colors['ipp_blue'],
         title = u'Ratio démographique',

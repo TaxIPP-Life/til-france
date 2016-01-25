@@ -7,15 +7,15 @@ entities:
         - other_children: invl_mere.count() - children_couple
         # TODO: séparer rupture et divorce, séparer ruputre de gens en couple et divorce
         - proba_divorce: if(
-            ISFEMALE and INCOUPLE and (dur_in_couple > 0),
+            ISFEMALE and INCOUPLE and (duree_en_couple > 0),
             logistic(
-              -2.02 - 0.06 * agediff - 0.04 * dur_in_couple + 0.58 * (children_couple == 0) +
+              -2.02 - 0.06 * agediff - 0.04 * duree_en_couple + 0.58 * (children_couple == 0) +
               0.21 * (children_couple == 1) + 0.13 * (children_couple > 3) + 0.41 * (other_children > 0)
               ),
             0
             )
-        - divorce: align_abs(proba_divorce, need = sum(proba_divorce), filter = ISFEMALE and INCOUPLE and (dur_in_couple > 0), method ="sidewalk")
-        # - divorce1: align_abs(proba_divorce, 10+sum(proba_divorce), filter = ISFEMALE and INCOUPLE and (dur_in_couple > 0), method ="sidewalk")
+        - divorce: align_abs(proba_divorce, need = sum(proba_divorce), filter = ISFEMALE and INCOUPLE and (duree_en_couple > 0), method ="sidewalk")
+        # - divorce1: align_abs(proba_divorce, 10+sum(proba_divorce), filter = ISFEMALE and INCOUPLE and (duree_en_couple > 0), method ="sidewalk")
         # - show('nb divorce 1', sum(divorce1), 10+sum(proba_divorce))
         # break link to partner
         - to_divorce: divorce or l_partner.divorce
@@ -107,9 +107,9 @@ entities:
         - idfoy: new_foy
         - civilstate: if(to_divorce and LEGAL_UNION, DIVORCED, civilstate)
         - partner: if(to_divorce, UNSET, partner)
-        - dur_in_couple: if(not INCOUPLE, 0, dur_in_couple)
-        - dur_out_couple: if(not INCOUPLE, dur_out_couple + 1, 0)
-        # note : dur_in_couple is incremented in union
+        - duree_en_couple: if(not INCOUPLE, 0, duree_en_couple)
+        - duree_hors_couple: if(not INCOUPLE, duree_hors_couple + 1, 0)
+        # note : duree_en_couple is incremented in union
 
         # remplacera les etapes d'actualisation menage et foyers_fiscaux quand fonctionnel
         # - l_men.set(pref = individus.max(id,quimen==0)

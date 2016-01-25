@@ -56,7 +56,7 @@ entities:
                 migrant = True,
                 quimen = 0,
                 quifoy = 0,
-                dur_in_couple = 0
+                duree_en_couple = 0
                 )
                 # select = 2
                 # naiss = naiss

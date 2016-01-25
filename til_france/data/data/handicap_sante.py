@@ -158,17 +158,17 @@ def rename_variables(dataframe):
     # TODO traiter ceux pour qui cdatse, cdatco = 9999 qui ne savent pas
     # Pour l'instant on met à -1
 
-    result['dur_in_couple'] = 2009 - result['cdatco']
-    result.loc[result.dur_in_couple.isnull(), 'dur_in_couple'] = -1
+    result['duree_en_couple'] = 2009 - result['cdatco']
+    result.loc[result.duree_en_couple.isnull(), 'duree_en_couple'] = -1
 
-    result['dur_out_couple'] = 2009 - result.cdatse
-    result.loc[result.dur_out_couple.isnull(), 'dur_out_couple'] = -1
+    result['duree_hors_couple'] = 2009 - result.cdatse
+    result.loc[result.duree_hors_couple.isnull(), 'duree_hors_couple'] = -1
 
     assert (result.sexe.isin([0, 1])).all()
     assert (result.education_niveau.isin(range(1, 7) + [9])).all()
     assert (result.civilstate.isin(range(0, 5))).all()
-    # assert (result.dur_in_couple >= -1).all()
-    # assert (result.dur_out_couple >= -1).all()
+    # assert (result.duree_en_couple >= -1).all()
+    # assert (result.duree_hors_couple >= -1).all()
     return result
 
 

@@ -35,8 +35,8 @@ entities:
           - pere:   int
           - mere:   int
           - partner: int
-          - dur_in_couple: {type: float, initialdata: false}
-          - dur_out_couple: {type: int, initialdata: false}
+          - duree_en_couple: {type: float, initialdata: false}
+          - duree_hors_couple: {type: int, initialdata: false}
           - civilstate: {type: int, initialdata: false}
 
       # education

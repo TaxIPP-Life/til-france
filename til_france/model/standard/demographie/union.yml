@@ -1,20 +1,20 @@
 entities:
   individus:
     fields:
-      - dur_in_couple: {type: float, initialdata: false, default 0}
-      - dur_out_couple: {type: int, initialdata: false, default 0}
+      - duree_en_couple: {type: float, initialdata: false, default 0}
+      - duree_hors_couple: {type: int, initialdata: false, default 0}
       - civilstate: {type: int, initialdata: false}
 
     processes:
       init_couple:
         - assertEqual(count(partner > -1) , count(l_partner.partner > -1))
-        - dur_in_couple : if(
+        - duree_en_couple : if(
             INCOUPLE,
             max(((age + l_partner.age) / 2 - 20 ), 0),
             0
             )
-        - assertTrue(all((dur_in_couple == l_partner.dur_in_couple) or (l_partner.partner == UNSET)))
-        - dur_out_couple : 0
+        - assertTrue(all((duree_en_couple == l_partner.duree_en_couple) or (l_partner.partner == UNSET)))
+        - duree_hors_couple : 0
 
       into_couple:
         - nb_children_ind : invl_mere.count() + invl_pere.count()
@@ -35,17 +35,17 @@ entities:
                 ),
             to_couple
             )
-        - ages : age - dur_out_couple  # age at separtation time
+        - ages : age - duree_hors_couple  # age at separtation time
         - to_couple: if(
             (age >= 18) and (age <= 90) and (not INCOUPLE) and (not ISSINGLE),
             if(
                 ISMALE,
                 logit_score(
-                    -0.25 + 0.09 * dur_out_couple + 0.19 * (dur_out_couple == 0) - 0.05 * ages + 0.41 * (nb_children_ind == 0)
+                    -0.25 + 0.09 * duree_hors_couple + 0.19 * (duree_hors_couple == 0) - 0.05 * ages + 0.41 * (nb_children_ind == 0)
                     - 0.19 * etude_courte
                     ),
                 logit_score(
-                    0.33 - 0.10 * dur_out_couple + 0.14 * (dur_out_couple == 0) - 0.08 * (ages) + 0.41 * (nb_children_ind == 0)
+                    0.33 - 0.10 * duree_hors_couple + 0.14 * (duree_hors_couple == 0) - 0.08 * (ages) + 0.41 * (nb_children_ind == 0)
                     - 0.57* ISWIDOW
                     )
                 ),
@@ -80,19 +80,19 @@ entities:
         - partner: if((l_partner.pere == pere and pere > -1), UNSET, partner)
         - partner: if((l_partner.mere == mere and mere > -1), UNSET, partner)
         - partner: if(l_partner.partner == UNSET, UNSET, partner)
-        # - in_new_couple: if(INCOUPLE and (dur_in_couple == 0), True, False)
-        # - dur_in_couple: if(INCOUPLE and not(in_new_couple), dur_in_couple + 1, 0)
-        # - dur_in_couple: if(in_new_couple, 0, dur_in_couple)
-        - dur_in_couple: if(INCOUPLE, dur_in_couple + 1, 0)
-        - dur_out_couple: if(INCOUPLE, 0, dur_out_couple)
-        # NOTE : dur_out_couple is incremented in divorce
+        # - in_new_couple: if(INCOUPLE and (duree_en_couple == 0), True, False)
+        # - duree_en_couple: if(INCOUPLE and not(in_new_couple), duree_en_couple + 1, 0)
+        # - duree_en_couple: if(in_new_couple, 0, duree_en_couple)
+        - duree_en_couple: if(INCOUPLE, duree_en_couple + 1, 0)
+        - duree_hors_couple: if(INCOUPLE, 0, duree_hors_couple)
+        # NOTE : duree_hors_couple is incremented in divorce
         - assertEqual(count(partner > -1) , count(l_partner.partner > -1))
-        - assertTrue(all((dur_in_couple == l_partner.dur_in_couple) or (partner == UNSET)))
+        - assertTrue(all((duree_en_couple == l_partner.duree_en_couple) or (partner == UNSET)))
 
       move_together:
         # on emmenage en fonction de la durée du couple (faire jouer l'age ?)
         # si un des deux est pref et pas l'autre ou si on est un homme et que l'autre est pref
-        - to_move_together: INCOUPLE and (dur_in_couple > 1)
+        - to_move_together: INCOUPLE and (duree_en_couple > 1)
         - assertTrue(all((to_move_together == l_partner.to_move_together) or (l_partner.partner == UNSET)))
         # on s'assure qu'on ne vit pas déjà ensemble
         - to_move_together: if((quimen==1 or l_partner.quimen==1) and to_move_together and l_partner.to_move_together, False, to_move_together)
@@ -138,17 +138,17 @@ entities:
                         new_men)
         - idmen: new_men
         # - test : l_men.get(individus.count(quimen==0))
-        # - csv(dump(id, to_move_together, move_in, age, sexe, l_partner.id, l_partner.age, dur_in_couple, quimen , l_partner.dur_in_couple, l_partner.quimen,  l_partner.to_move_together, l_partner.partner,
+        # - csv(dump(id, to_move_together, move_in, age, sexe, l_partner.id, l_partner.age, duree_en_couple, quimen , l_partner.duree_en_couple, l_partner.quimen,  l_partner.to_move_together, l_partner.partner,
         #      test, pere, mere, idmen, tuteur, filter=(test!=1)), fname='perso2_{period}.csv')
         - assertEqual(max(l_men.get(individus.count(quimen==0))), 1)
         - assertTrue(min(idmen) >= 0)
 
       legal_union:
         # on s'assure qu'on n'en n'a pas déjà un (voir plus tard pour le passage de pacs à mariage) TODO:
-        - to_move_together: INCOUPLE and (not LEGAL_UNION) and (dur_in_couple > 2)
+        - to_move_together: INCOUPLE and (not LEGAL_UNION) and (duree_en_couple > 2)
         # select who move into the other's house
         # if only one is quifoy==0 it's she or he, otherwise, we select the smallest ID.
-        # - csv(dump(id, to_move_together, sexe, l_partner.id, l_partner.age, dur_in_couple, quifoy , l_partner.dur_in_couple, l_partner.quifoy,  l_partner.to_move_together, civilstate, l_partner.civilstate))
+        # - csv(dump(id, to_move_together, sexe, l_partner.id, l_partner.age, duree_en_couple, quifoy , l_partner.duree_en_couple, l_partner.quifoy,  l_partner.to_move_together, civilstate, l_partner.civilstate))
         - assertEqual(count(to_move_together), count(l_partner.to_move_together))
         - assertTrue(count(to_move_together) % 2 == 0 )
 
@@ -205,7 +205,7 @@ entities:
             )
         - idfoy: new_idfoy
         # TODO: dissocier pacs et mariage
-        - show('counting newl Married', count(to_move_together and (civilstate != 1)))
+        - show('counting newly married', count(to_move_together and (civilstate != 1)))
         - show('married before', count(civilstate == 1))
         - civilstate: if(to_move_together, MARRIED, civilstate)
         - show('married after', count(civilstate == 1))

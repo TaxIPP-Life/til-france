@@ -7,9 +7,9 @@ entities:
                 - civilstate : if(conjoint==-2,DIVORCED,civilstate)
                 - civilstate : if(conjoint==-3,WIDOW,civilstate)
                 - conjoint: if(conjoint <0, UNSET, conjoint)
-                - dur_in_couple : if(partner.id>0,max(((age+partner.age)/2 - 20 ),0),0)
-                - dur_out_couple : 0
-                - show('Avg age of couple duration', avg(dur_in_couple))
+                - duree_en_couple : if(partner.id>0,max(((age+partner.age)/2 - 20 ),0),0)
+                - duree_hors_couple : 0
+                - show('Avg age of couple duration', avg(duree_en_couple))
 
             marriage:
             ### personne pour qui on est sur qu'ils etaient en couple
@@ -48,8 +48,8 @@ entities:
                                  to_couple)
                 - to_couple: if(condition and not ISSINGLE,
                                  if(ISMALE,
-                                     logit_score(-0.25 + 0.09 *(dur_out_couple==0) - 0.05* (age-dur_out_couple)  ),
-                                     logit_score( 0.33 - 0.10 *(dur_out_couple==0) - 0.08* (age-dur_out_couple) -0.57* ISWIDOW +0.41*(nb_children_ind==0)) ),
+                                     logit_score(-0.25 + 0.09 *(duree_hors_couple==0) - 0.05* (age-duree_hors_couple)  ),
+                                     logit_score( 0.33 - 0.10 *(duree_hors_couple==0) - 0.08* (age-duree_hors_couple) -0.57* ISWIDOW +0.41*(nb_children_ind==0)) ),
                                  to_couple)
                 - to_couple2: align_abs(to_couple, method = "sidewalk")
 
@@ -109,9 +109,9 @@ entities:
                 - idmen:    if(justcoupled, newhousehold, idmen)
 
                 - civilstate: if(justcoupled, MARRIED, civilstate)
-                - dur_in_couple: if(justcoupled,
+                - duree_en_couple: if(justcoupled,
                                     0,
-                                    if(ISMARRIED, dur_in_couple + 1, 0))
+                                    if(ISMARRIED, duree_en_couple + 1, 0))
                 - csv(dump(id, age, sexe, partner.id, partner.age,
                            partner.sexe, idmen, filter=justcoupled),
                       fname='output/individu_{period}.csv')
@@ -122,12 +122,12 @@ entities:
                 - other_children : children1.count() - children_couple
                 # ca marche : - show(groupby(children_couple, other_children))
                 # select females to divorce
-                - divorce: logit_regr(-2.02-0.06*agediff-0.04*dur_in_couple
+                - divorce: logit_regr(-2.02-0.06*agediff-0.04*duree_en_couple
                                        +0.58*(children_couple==0)
                                        +0.21*(children_couple==1)
                                        +0.13*(children_couple>3)
                                        +0.41*(other_children>0),
-                                      filter = ISFEMALE and ISMARRIED and (dur_in_couple > 0),
+                                      filter = ISFEMALE and ISMARRIED and (duree_en_couple > 0),
                                       align = 0.3)
                 # break link to partner
                 - to_divorce: divorce or partner.divorce
@@ -137,7 +137,7 @@ entities:
                 - conjoint: if(to_divorce, UNSET, conjoint)
 
                 - civilstate: if(to_divorce, DIVORCED, civilstate)
-                - dur_in_couple: if(to_divorce, 0, dur_in_couple)
+                - duree_en_couple: if(to_divorce, 0, duree_en_couple)
                 # males move out from house
                 # à améliorer en fonction de la propriété, de qui part et tout
                 - idmen: if(ISMALE and to_divorce,

@@ -126,7 +126,7 @@ class DataTil(object):
 
     #def rename_var(self, [pe1e, me1e]):
         # TODO: fonction qui renomme les variables pour qu'elles soient au format liam
-        # period, id, age_en_mois, age, sexe, men, quimen, foy quifoy pere, mere, partner, dur_in_couple, civilstate, workstate, salaire_imposable, findet
+        # period, id, age_en_mois, age, sexe, men, quimen, foy quifoy pere, mere, partner, duree_en_couple, civilstate, workstate, salaire_imposable, findet
 
     def drop_variable(self, variables_by_entity_name=None, option='white'):
         '''
