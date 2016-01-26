@@ -10,19 +10,18 @@ entities:
                 # TODO: create home and families.
                 # TODO: associate a carrier (in longitudinal)
                 - migrant: false
-                - select_men: logit_regr(
+                - migrant_homme: logit_regr(
                     0.0,
                     filter= ISMALE,
                     align = 'parameters/population/hyp_soldemigH_custom.csv'
                     )
-                - select_women: logit_regr(
+                - migrant_femme: logit_regr(
                     0.0,
                     filter= ISFEMALE,
                     align = 'parameters/population/hyp_soldemigF_custom.csv'
                     )
-                - select: select_men or select_women
                 - new('individus',
-                    filter = select,
+                    filter = migrant_homme or migrant_femme,
                     age = age,
                     age_en_mois = age_en_mois,
                     partner = UNSET,
@@ -42,7 +41,7 @@ entities:
                     # naiss = naiss
                 - csv(
                     period, count(migrant),
-                    fname = 'migrants.csv', mode = 'a'
+                    fname = 'migrations.csv', mode = 'a'
                     )
                 - new(
                     'register',

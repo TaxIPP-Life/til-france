@@ -100,14 +100,14 @@ entities:
         - 0
 
       stat_period_ini:
-          - csv('period', 'births',
-                fname = 'births.csv'
+          - csv('period', 'naissances',
+                fname = 'naissances.csv'
                 )
-          - csv('period', 'deaths',
-                fname = 'deaths.csv'
+          - csv('period', 'deces',
+                fname = 'deces.csv'
                 )
-          - csv('period', 'migrants',
-                fname = 'migrants.csv'
+          - csv('period', 'migrations',
+                fname = 'migrations.csv'
                 )
           - csv('population',
                 fname = 'population.csv'

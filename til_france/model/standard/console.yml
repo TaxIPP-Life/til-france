@@ -54,7 +54,7 @@ simulation:
     - individus: [check]
     - individus: [independance]
     - individus: [check]
-    - individus: [birth]
+    - individus: [naissance]
     - individus: [check]
     - menages: [men_composition]
     - foyers_fiscaux: [cases, empty_declar]

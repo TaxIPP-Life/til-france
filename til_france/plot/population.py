@@ -121,17 +121,17 @@ def extract_population_by_age_csv(simulation):
 
 def get_insee_projection(quantity, gender, function = None):
 
-    assert quantity in ['births', 'deaths', 'migrants', 'population']
+    assert quantity in ['naissances', 'deces', 'migrations', 'population']
     assert gender in ['total', 'male', 'female']
 
     data_path = os.path.join(til_france_path, 'param/demo/projpop0760_FECcentESPcentMIGcent.xls')
     sheetname_by_gender_by_quantity = dict(
-        births = 'nbre_naiss',
-        deaths = dict(zip(
+        naissances = 'nbre_naiss',
+        deces = dict(zip(
             ['total', 'male', 'female'],
             ['nbre_deces', 'nbre_decesH', 'nbre_decesF']
             )),
-        migrants = dict(zip(
+        migrations = dict(zip(
             ['male', 'female'],
             ['hyp_soldemigH', 'hyp_soldemigF']
             )),
@@ -141,28 +141,28 @@ def get_insee_projection(quantity, gender, function = None):
             ))
         )
     age_label_by_quantity = dict(
-        births = u"Âge au 1er janvier",
-        deaths = u"Âge atteint dans l'année",
-        migrants = u"Âge atteint dans l'année",
+        naissances = u"Âge au 1er janvier",
+        deces = u"Âge atteint dans l'année",
+        migrations = u"Âge atteint dans l'année",
         population = u'Âge au 1er janvier'
         )
 
     age_label = age_label_by_quantity[quantity]
-    if quantity == 'births':
+    if quantity == 'naissances':
         row_end = 36
-    elif quantity == 'migrants':
+    elif quantity == 'migrations':
         row_end = 111
     else:
         row_end = 109
 
-    if quantity in ['deaths', 'population']:
+    if quantity in ['deces', 'population']:
         sheetname = sheetname_by_gender_by_quantity[quantity][gender]
-    elif quantity == 'births':
+    elif quantity == 'naissances':
         sheetname = sheetname_by_gender_by_quantity[quantity]
         age_label = u'Âge au 1er janvier'
-    elif quantity == 'migrants' and gender in ['male', 'female']:
+    elif quantity == 'migrations' and gender in ['male', 'female']:
         sheetname = sheetname_by_gender_by_quantity[quantity][gender]
-    elif quantity == 'migrants' and gender not in ['male', 'female']:
+    elif quantity == 'migrations' and gender not in ['male', 'female']:
         return (
             get_insee_projection(quantity, 'male', function = function) +
             get_insee_projection(quantity, 'female', function = function)
@@ -266,7 +266,7 @@ def population_diagnostic(simulation):
     uniform_weight = simulation.uniform_weight
 
     population = None
-    for csv_file in ['births', 'deaths', 'migrants']:
+    for csv_file in ['naissances', 'deces', 'migrations']:
         simulation_data_frame = pandas.read_csv(os.path.join(directory, csv_file + '.csv'))
         simulation_data_frame.period = (simulation_data_frame['period']).round().astype(int)
         simulation_data_frame.set_index('period', inplace = True)
@@ -288,29 +288,28 @@ def population_diagnostic(simulation):
     population = population / 1000
     population.rename(
         columns = dict(
-            births = 'naissances',
-            births_insee = 'naissances (INSEE)',
-            deaths = u'décès',
-            deaths_insee = u'décès (INSEE)',
-            migrants = 'solde migratoire',
-            migrants_insee = 'solde migratoire (INSEE)',
+            naissances = 'naissances',
+            naissances_insee = 'naissances (INSEE)',
+            deces = u'décès',
+            deces_insee = u'décès (INSEE)',
+            migrations = 'solde migratoire',
+            migrations_insee = 'solde migratoire (INSEE)',
             ),
         inplace = True
         )
+    xtick_min, xtick_max = min(population.index.astype(int)), max(population.index.astype(int))
+    xtick_interval = 10 if (xtick_max - xtick_min) > 20 else 1
     ax = population.plot(
         color = ipp_colors.values(),
         linewidth = 2,
         title = u"Composantes de la croissance démographique",
-        xticks = [period for period in range(
-            min(population.index.astype(int)),
-            max(population.index.astype(int)),
-            10
-            )],
+        xticks = [period for period in range(xtick_min, xtick_max + 1, xtick_interval)]
         )
     ax.set_ylabel(u"effectifs en milliers")
-    ax.legend(loc='center', bbox_to_anchor=(0.5, -.2), ncol=3)
+    ax.legend(loc='center', bbox_to_anchor = (0.5, -.2), ncol = 3)
     fig = ax.get_figure()
     plt.gca().xaxis.set_major_formatter(FuncFormatter(lambda x, _: int(x)))
     fig.savefig(os.path.join(figures_directory, 'population_growth_components.pdf'), bbox_inches='tight')
+    plt.draw()
     del ax, fig
     return population

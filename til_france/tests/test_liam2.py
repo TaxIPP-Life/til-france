@@ -38,7 +38,7 @@ def iterate_directory(directory, dataset_creator, excluded_files):
 
 
 def test_demographic_model():
-    excluded = ('console.yml',)
+    excluded = ()
     # if use_travis:
     #     excluded += None
     for test_file in iterate_directory('demographic_model', 'demo_import.yml', excluded):

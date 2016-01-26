@@ -73,17 +73,14 @@ entities:
             min(trunc(age / 5) - 12 + 1, 6),
             0
             )
-        - show(groupby(being_dependant, data_origin))
-        - show('Number of initial being dependant before alignment', groupby(being_dependant, data_origin))
+        - show('\nNombre initial de dépendants avant alignement', groupby(being_dependant, data_origin))
         # TODO parameters/dependance/dependance_prevalence_2010.csv depends on weight
         - being_dependant: align_abs(
             being_dependant_score, need = 'parameters/dependance/dependance_prevalence_2010.csv',
             filter = (age_category >= 1)
             )
-        - show('Number of initial being dependant after alignment', groupby(being_dependant, data_origin))
-        - show('Number of initial being dependant after alignment by sex', groupby(sexe, being_dependant, data_origin))
-        - show('Number of initial male dependant aligned', count(being_dependant and ISMALE))
-        - show('Number of initial female dependant aligned', count(being_dependant and ISFEMALE))
+        - show('\nNombre initial de dépendants après alignement', groupby(being_dependant, data_origin))
+        - show('\nNombre initial de dépendants après alignement (sexe, data_origin)', groupby(sexe, being_dependant, data_origin))
         - being_very_dependant_score: if(
             data_origin == 1,
             if(dependance_niveau >= 2, 1, -1),
@@ -110,10 +107,9 @@ entities:
             -1
             )
         # TODO: add a sensible distribution of dependance anciennete FIXME
-        - show('Number of initial dependance_niveau 0', count(dependance_niveau == 0))
-        - show('Number of initial dependance_niveau 1', count(dependance_niveau == 1))
-        - show('Number of initial dependance_niveau 2', count(dependance_niveau == 2))
-        - show('Number of initial people', count())
+        - show('\nNombre initial de (non) dépendants de niveau 0', count(dependance_niveau == 0))
+        - show('\nNombre initial de dépendants de niveau 1', count(dependance_niveau == 1))
+        - show('\nNombre initial de dépendants de niveau 2', count(dependance_niveau == 2))
         - csv('period', period, 'dependance', groupby(
             age, sexe, expr = count((dependance_niveau == 1) or (dependance_niveau == 2))
             ),
@@ -155,9 +151,10 @@ entities:
         # From Marbot and Roy following Duée-Rebillard
         # Becoming dependant
         - assertTrue(all(dependance_niveau == 0, filter = (age < 60)))
-        - show('Nombre de dependants total', count(ISDEPENDANT > 0))
-        - show('Nombre de dependants legers', count(dependance_niveau == 1))
-        - show('Nombre de dependants lourds', count(dependance_niveau == 2))
+        - show('\nNombre de dépendants (total = niveau 1 + niveau 2)', count(ISDEPENDANT > 0), ' = ',
+            count(dependance_niveau == 1), ' + ',
+            count(dependance_niveau == 2)
+            )
         - dependance_anciennete: if(
             ISDEPENDANT,
             dependance_anciennete + 1,
@@ -195,11 +192,11 @@ entities:
         - assertTrue(all(becoming_dependant_score == -1, filter = (age < 60)))
         - dependants: dependance_prevalence_all_years[period - 2009] / uniform_weight
         - need: dependants - count(ISDEPENDANT)
-        - show('Amount ow newly deppendants people needed', need)
+        - show('\nNombre de nouveaux dépendants nécessaire pour atteindre la cible de prévalence', need)
         - becoming_dependant: align_abs(
-            becoming_dependant_score, need = need, filter = becoming_dependant_score >=0
+            becoming_dependant_score, need = need, filter = (becoming_dependant_score >= 0)
             )
-        - show('Amount ow newly deppendants people selected', count(becoming_dependant))
+        - show('\nNombre de nouveaux dépendants sélectionnés', count(becoming_dependant))
         - dependance_anciennete: if(
             becoming_dependant,
             0,
@@ -244,10 +241,9 @@ entities:
             dependance_niveau
             )
         - assertTrue(all(dependance_niveau == 0, filter = (age < 60)))
-        - show('Number of initial dependance_niveau 0', count(dependance_niveau == 0))
-        - show('Number of initial dependance_niveau 1', count(dependance_niveau == 1))
-        - show('Number of initial dependance_niveau 2', count(dependance_niveau == 2))
-        - show('Number of initial people', count())
+        - show('\nNombre de dépendants de niveau 0', count(dependance_niveau == 0))
+        - show('\nNombre de dépendants de niveau 1', count(dependance_niveau == 1))
+        - show('\nNombre de dépendants de niveau 2', count(dependance_niveau == 2))
         - csv('period', period, 'dependance', groupby(
             age, sexe, expr = count((dependance_niveau == 1) or (dependance_niveau == 2))
             ),

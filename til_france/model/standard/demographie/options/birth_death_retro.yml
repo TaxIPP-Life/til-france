@@ -1,16 +1,16 @@
 entities:
     individus:
         processes:
-            birth:
-                - birth: age_en_mois < 0
-                - remove(birth)
-                - show('Number of born this period is', count(birth))
+            naissance:
+                - naissance: age_en_mois < 0
+                - remove(naissance)
+                - show('Number of born this period is', count(naissance))
 
 
             deces_selection:
-                - dead: forruptv == trunc(period/100)
-                - show('Number of re-birth', count(dead))
-                - new('individus', filter=dead,
+                - decede: forruptv == trunc(period/100)
+                - show('Number of re-naissance', count(decede))
+                - new('individus', filter=decede,
                       mere = 0,
                       pere = 0,
                       idmen = idmen,
@@ -18,10 +18,10 @@ entities:
                       age_en_mois = age_en_mois,
                       partner = id,
                       civilstate =  MARRIED,
-                      sexe = if(ISMALE,FEMALE,MALE),
+                      sexe = if(ISMALE, FEMALE, MALE),
                       idfoy = idfoy,
                       quifoy = 1,
                       quimen = 1
                       )
                 # on aimerait evidemment avoir plus d'info
-                - civilstate: if( dead, MARRIED, civilstate)
+                - civilstate: if( decede, MARRIED, civilstate)

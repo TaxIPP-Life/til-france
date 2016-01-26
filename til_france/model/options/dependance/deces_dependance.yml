@@ -20,7 +20,7 @@ entities:
             individu2generation.qm_female_1997
             )
         - lq: log((MU * qm + (1 - MU) * qm1997)) / (1 - (MU * qm + (1 - MU) * qm1997))
-        - dead: if(
+        - decede: if(
             ISMALE,
             logit_regr(
               (dependance_niveau == 0) +
@@ -44,15 +44,10 @@ entities:
         ### par simplicite pour l'heritage (parce que pour le reste ca marche)
         ### on ne fait mourir qu une seule personne
         ### A retirer pour tester, ca doit etre bon maintenant
-        - dead: if(l_partner.dead and l_partner.id < id, False, dead)
-        - dead: if(l_pere.dead, False, dead)
-        - dead: if(l_mere.dead, False, dead)
-
-        - show('Avg age of partner', avg(l_partner.age, filter=l_partner.age>-1))
-        - show('Number of male death', count(dead and ISMALE))
-        - show('Number of female death', count(dead and ISFEMALE))
-        - show('Number of deaths', count(dead))
-        - show('Number of dependant deaths', count(dead and (dependance_niveau > 0)))
-        - show('Avg age of dead women', avg(age, filter=dead and ISFEMALE))
-        - show('Widows', sum(ISWIDOW))
-        - return dead
+        - decede: if(l_partner.decede and l_partner.id < id, False, decede)
+        - decede: if(l_pere.decede, False, decede)
+        - decede: if(l_mere.decede, False, decede)
+        - statistiques_deces(decede)
+        - show('Age moyen des partenaires', avg(l_partner.age, filter=l_partner.age>-1))
+        - show('\nNombre de personne dépendante décédées', count(decede and (dependance_niveau > 0)) * uniform_weight)
+        - return decede

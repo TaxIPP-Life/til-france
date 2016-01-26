@@ -8,83 +8,88 @@
 # kind of entity and any number of them.
 
 
+import: demo01.yml
+
 entities:
-  individus:
-    fields:
-      # All entities have two implicit integer fields: period and id.
-      # You do not need to define them.
-      - age: int
-      - sexe: int
+    individus:
+        # fields:
+            # # All entities have two implicit integer fields: period and id.
+            # # You do not need to define them.
+            # - age: int
+            # - sexe: bool
 
-    macros:
-      ISMALE: sexe == 0
-      ISFEMALE: sexe == 1
+        macros:
+            ISMALE: not sexe
+            ISFEMALE: sexe
 
-    processes:
-      - deces:
-        - dead: if(
-            ISMALE,
-            logit_regr(0.0, align='parameters/population/hyp_mortaliteH.csv'),
-            logit_regr(0.0, align='parameters/population/hyp_mortaliteF.csv')
-            )
+        processes:
+            deces:
+                - decede: if(
+                    ISMALE,
+                    logit_regr(0.0, align='input/hyp_mortaliteH.csv'),
+                    logit_regr(0.0, align='input/hyp_mortaliteF.csv')
+                    )
+                - remove(decede)
 
-        - migration:
-            # note : There is only net immigration in the Insee prevision
-            - select_men: logit_regr(
-                0.0,
-                filter= ISMALE,
-                align = 'parameters/population/hyp_soldemigH_custom.csv'
-                )
-            - select_women: logit_regr(
-                0.0,
-                filter= ISFEMALE,
-                align = 'parameters/population/hyp_soldemigF_custom.csv'
-                )
-            - select: select_men or select_women
-            - new('individus',
-                filter = select,
-                age = age,
-                age_en_mois = age_en_mois,
-                partner = UNSET,
-                civilstate = SINGLE,
-                workstate = workstate,
-                sexe = sexe,
-                productivite = productivite,
-                salaire_imposable = salaire_imposable,
-                rsti = 0,
-                choi = 0,
-                migrant = True,
-                quimen = 0,
-                quifoy = 0,
-                duree_en_couple = 0
-                )
-                # select = 2
-                # naiss = naiss
+            migration:
+                # note : There is only net immigration in the Insee prevision
+                - migrant_homme: logit_regr(
+                    0.0,
+                    filter= ISMALE,
+                    align = 'input/hyp_soldemigH_custom.csv'
+                    )
+                - migrant_femme: logit_regr(
+                    0.0,
+                    filter= ISFEMALE,
+                    align = 'input/hyp_soldemigF_custom.csv'
+                    )
+                - migrant: migrant_femme or migrant_homme
+                - new('individus',
+                    filter = migrant,
+                    age = age,
+                    sexe = sexe,
+                    )
 
-
+            naissance:
+              - future_mere: logit_regr(
+                  0.0,
+                  filter = ISFEMALE and (age >= 15) and (age <= 50),
+                  align = 'input/Hyp_fecondite.csv'
+                  )
+              - new('individus', filter = future_mere,
+                    age = 0,
+                    sexe = choice([0, 1], [0.5122, 0.4878]),
+                    )
 
 
 simulation:
-  # the functions listed in this section are only executed *once* in
-  # start_period - 1 (that is 2015 in this case), instead of once per period.
-  init:
-    - individus: []
+    # the functions listed in this section are only executed *once* in
+    # start_period - 1 (that is 2015 in this case), instead of once per period.
+    # init:
+    #     - individus: []
 
-  processes:
-    - individus: [ageing, deces]
+    processes:
+        - individus: [ageing, deces, migration, naissance]
 
-  output:
-    file: simul.h5
+    input:
+          file: input/demo.h5
+    output:
+        # all output files will be in the output subdirectory (this path is
+        # relative to the path of the simulation file). This is optional.
+        path: output
+        file: simul.h5
 
-  assertions: raise       # raise (default), warn, skip
-  skip_shows: False
-  logging:                # optional
-    timings: True       # optional
-    level: functions    # optional
+    assertions: raise       # raise (default), warn, skip
+    skip_shows: False
+    logging:                # optional
+        timings: True       # optional
+        level: functions    # optional
 
-  random_seed: 12345       # optional
+    random_seed: 12345       # optional
 
-  start_period: 2010  #01
-  # first simulated period is start_period + 1
+    start_period: 2016  #01
+    # first simulated period is start_period + 1 but the start period data is saved
 
-  periods: 7
+    # Number of periods includes initial period
+    periods: 45
+    # last period = periods + start_period - 1 = 45 + 2016 -1 = 2060

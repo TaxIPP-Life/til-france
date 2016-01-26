@@ -11,7 +11,7 @@ entities:
         fields:
             # All entities have two implicit integer fields: period and id.
             # You do not need to define them.
-            - age:    int
+            - age: int
             - sexe: bool
 
         # Here is a list of defined functions for this entity. The actual list

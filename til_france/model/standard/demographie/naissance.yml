@@ -1,12 +1,12 @@
 entities:
   individus:
     processes:
-      birth:
+      naissance:
         - interm : invl_pere.count() # nombre d'enfant du pere
         - before_max: ((invl_mere.count()<8) and (l_partner.interm <8))
         #on pourra retirer cette condition qui était technique avec R.
         # Note, on n'a pas de jumeaux
-        - to_give_birth: logit_regr(
+        - future_mere: logit_regr(
             0.0,
             filter = ISFEMALE and (age >= 15) and (age <= 50) and before_max,
             align = 'parameters/population/Hyp_fecondite.csv'
@@ -22,7 +22,7 @@ entities:
             )
         - temp_mere: findet + (l_mere.age > 35 + annee - 2009) + (l_mere.age > 45 + annee - 2009) + (l_mere.age > 55 + annee - 2009)
         - findet_temp: if(partner>0, trunc((temp_pere + temp_mere) / 2), temp_mere)
-        - new('individus', filter = to_give_birth,
+        - new('individus', filter = future_mere,
               mere = id,
               pere = partner,
               age = 0,
@@ -46,10 +46,10 @@ entities:
                 id=id, sexe=sexe, pere=pere, mere=mere, vivant=True, naiss=period, findet=findet)
         - csv(
             period, count(age==0),
-            fname = 'births.csv', mode = 'a'
+            fname = 'naissances.csv', mode = 'a'
             )
-        - show('Avg age of "young" mothers', avg(age, filter=to_give_birth and ISFEMALE))
-        - show('Avg age of "young" fathers', avg(l_partner.age, filter=to_give_birth and ISFEMALE and ISMARRIED))
+        - show('Avg age of "young" mothers', avg(age, filter=future_mere and ISFEMALE))
+        - show('Avg age of "young" fathers', avg(l_partner.age, filter=future_mere and ISFEMALE and ISMARRIED))
         - show('Avg age of all mothers', avg(l_mere.age, filter=l_mere.age>-1))  #la condition -1 permet de ne prendre que les vraies meres !
         - show('Avg age of all fathers', avg(l_pere.age, filter=l_pere.age>-1 ))
-        - show('Number of births', count(age==0))
+        - show('Number of naissances', count(age==0))
