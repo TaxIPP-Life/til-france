@@ -27,7 +27,7 @@ entities:
         - nb_pac: in_foyers_fiscaux.count(quifoy > 1)
         - nbF: in_foyers_fiscaux.count((age <= 18) and (quifoy > 1))
         - nbJ: in_foyers_fiscaux.count((age > 18) and (quifoy > 1))
-        # etre seul dans le foyer fiscal + avoir de personnes a charge + ne pas etre en couple => case_l
+        # ètre seul dans le foyer fiscal + avoir de personnes a charge + ne pas etre en couple => case_l
         - caseT: ((in_foyers_fiscaux.count(quifoy < 2) == 1) and (nbF + nbJ > 0) and (not l_vous.partner > 0))
 
       empty_declar:
@@ -37,11 +37,11 @@ entities:
         - empty: (nb_individus == 0)
 
         - test_vous: in_foyers_fiscaux.count(quifoy == 0)
-        - show('nombre de quifoy', groupby(test_vous,nb_individus))
+        # - show('nombre de quifoy', groupby(test_vous,nb_individus))
         - separ: l_vous.idfoy != id
-        - show('nombre probleme de vous', count(l_vous.quifoy != 0))
-        - show('nombre separ', count(separ))
-        - candidat: in_foyers_fiscaux.min(id,quifoy==0)
+        # - show('nombre probleme de vous', count(l_vous.quifoy != 0))
+        # - show('nombre separ', count(separ))
+        - candidat: in_foyers_fiscaux.min(id, quifoy == 0)
         - vous: if(
             separ and in_foyers_fiscaux.count(quifoy == 0) == 1,
             in_foyers_fiscaux.min(id, quifoy == 0),

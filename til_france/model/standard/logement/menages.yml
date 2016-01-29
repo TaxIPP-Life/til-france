@@ -72,7 +72,7 @@ entities:
         - menage_vide: (nb_individus == 0)
 
         - test_pref: individus.count(quimen == 0)
-        - show('nombre de quimen', groupby(test_pref, nb_individus))
+        # - show('nombre de quimen', groupby(test_pref, nb_individus))
         - separ: l_pref.idmen != id
         - show('nombre probleme de pref', count(l_pref.idmen != 0))
         - show('nombre separ', count(separ))

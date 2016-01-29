@@ -27,7 +27,7 @@ simulation:
     - menages: [init_weight_men, init_region_id, init_rent, init_value, init_wealth, init_owner, men_composition]
     - individus: [
       init_weight_ind,
-      init_couple,
+      couple_initialisation,
       education_niveau_initialisation,
       chomage_initialisation,
       productivite_initialisation
@@ -58,7 +58,7 @@ simulation:
     - individus: [check]
     - menages: [men_composition]
     - foyers_fiscaux: [cases, empty_declar]
-    - individus: [into_couple]
+    - individus: [couple_formation]
     - individus: [move_together]
     - individus: [check]
     - individus: [legal_union]
@@ -88,7 +88,7 @@ simulation:
   assertions: raise       # raise (default), xarn, skip
   skip_shows: False
   logging:                # optional
-    timings: True       # optional
+    timings: False       # optional
     level: functions    # optional
 
   random_seed: 12345       # optional

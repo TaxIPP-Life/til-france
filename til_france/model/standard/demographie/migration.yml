@@ -39,10 +39,6 @@ entities:
                     )
                     # select = 2
                     # naiss = naiss
-                - csv(
-                    period, count(migrant),
-                    fname = 'migrations.csv', mode = 'a'
-                    )
                 - new(
                     'register',
                     filter = migrant,
@@ -52,4 +48,11 @@ entities:
                     findet = findet,
                     migrant = period
                     )
-                - show('Number of migrant', count(migrant))
+                - statistiques_migrations()
+
+            statistiques_migrations:
+                - show('\nNombre de migrants', count(migrant) * uniform_weight)
+                - csv(
+                    period, count(migrant),
+                    fname = 'migrations.csv', mode = 'a'
+                    )

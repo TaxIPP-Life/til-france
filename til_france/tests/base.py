@@ -98,7 +98,6 @@ def plot_csv(simulation):
 
     for csv_file in ['civilstate', 'stat', 'workstate']:
         df = pandas.read_csv(os.path.join(directory, csv_file + '.csv'))
-        df.period = (df['period'] / 100).round().astype(int)
         df.set_index('period', inplace = True)
         ax = (df * uniform_weight).plot(title = csv_file)
         ax.legend()

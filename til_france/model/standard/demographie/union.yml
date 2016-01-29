@@ -5,74 +5,91 @@ entities:
       - duree_hors_couple: {type: int, initialdata: false, default 0}
       - civilstate: {type: int, initialdata: false}
 
+    macros:
+      MARRIED: 1
+      SINGLE: 2
+      DIVORCED: 3
+      WIDOW: 4
+      PACS: 5
+      ISMARRIED: civilstate == 1
+      ISSINGLE: civilstate == 2
+      ISDIVORCED: civilstate == 3
+      ISWIDOW: civilstate == 4
+      ISPACS: civilstate == 5
+      LEGAL_UNION: civilstate == 1 or civilstate == 5
+      LEGAL_CELIB: civilstate == 2 or civilstate == 3 or civilstate == 4
+      INCOUPLE: (partner > -1)
+
     processes:
-      init_couple:
+      couple_initialisation:
         - assertEqual(count(partner > -1) , count(l_partner.partner > -1))
-        - duree_en_couple : if(
+        - duree_en_couple: if(
             INCOUPLE,
-            max(((age + l_partner.age) / 2 - 20 ), 0),
+            max(((age + l_partner.age) / 2 - 20), 0),
             0
             )
         - assertTrue(all((duree_en_couple == l_partner.duree_en_couple) or (l_partner.partner == UNSET)))
-        - duree_hors_couple : 0
+        - duree_hors_couple: 0  # TODO mieux initialiser cela
 
-      into_couple:
-        - nb_children_ind : invl_mere.count() + invl_pere.count()
-        - to_couple: 0
-        - agec: age - findet
-        - etude_courte: (findet < 20)
-        - etude_longue: (findet > 20)
-        - to_couple: if(
-            (age >= 18) and (age <= 90) and ISSINGLE and (not INCOUPLE),
+      # http://www.insee.fr/fr/publications-et-services/docs_doc_travail/G2005-15.pdf
+      couple_formation:
+        - nb_children_ind: invl_mere.count() + invl_pere.count()
+        - candidat_couple: 0
+        - age_corrige: age - (findet - 16) / 2  # On corrige l'age de fin d'etude
+        - etudes_courtes: findet < 20  # TODO age moyen de sa generation
+        - etudes_longues: findet > 20
+        # Première mise en couple
+        - candidat_couple: if(
+            (age >= 18) and (age <= 90) and (not INCOUPLE) and ISSINGLE,
             if(
-                ISMALE,
-                logit_score(
-                    -73.10 + 8.96 * agec - 0.408 * agec ** 2 + 0.00796 * agec ** 3 -5.72 / 100000 * (agec ** 4) - 0.13 * etude_courte + 0.04 * etude_longue
-                    ),
-                logit_score(
-                    -68.49 + 9.06 * agec -0.441 * agec ** 2 + 0.00914 * agec ** 3 -6.91 / 100000 * (agec ** 4) - 0.06 * etude_longue
-                    )
+              ISMALE,
+              logit_score(
+                -73.10 + 8.96 * age_corrige - 0.408 * age_corrige ** 2 + 0.00796 * age_corrige ** 3 - 5.72 / 100000 * (age_corrige ** 4) - 0.13 * etudes_courtes + 0.04 * etudes_longues
                 ),
-            to_couple
+              logit_score(
+                -68.49 + 9.06 * age_corrige -0.441 * age_corrige ** 2 + 0.00914 * age_corrige ** 3 - 6.91 / 100000 * (age_corrige ** 4) - 0.06 * etudes_longues
+                )
+              ),
+            candidat_couple
             )
-        - ages : age - duree_hors_couple  # age at separtation time
-        - to_couple: if(
+        # age à la séparation
+        - age_separation: age - duree_hors_couple
+        # Remise en couple
+        - candidat_couple: if(
             (age >= 18) and (age <= 90) and (not INCOUPLE) and (not ISSINGLE),
             if(
-                ISMALE,
-                logit_score(
-                    -0.25 + 0.09 * duree_hors_couple + 0.19 * (duree_hors_couple == 0) - 0.05 * ages + 0.41 * (nb_children_ind == 0)
-                    - 0.19 * etude_courte
-                    ),
-                logit_score(
-                    0.33 - 0.10 * duree_hors_couple + 0.14 * (duree_hors_couple == 0) - 0.08 * (ages) + 0.41 * (nb_children_ind == 0)
-                    - 0.57* ISWIDOW
-                    )
+              ISMALE,
+              logit_score(
+                -0.25 - 0.09 * duree_hors_couple + 0.19 * (duree_hors_couple == 0) - 0.05 * age_separation + 0.41 * (nb_children_ind == 0)
+                - 0.19 * etudes_courtes
                 ),
-            to_couple
+              logit_score(
+                0.33 - 0.10 * duree_hors_couple + 0.14 * (duree_hors_couple == 0) - 0.08 * age_separation + 0.41 * (nb_children_ind == 0)
+                - 0.57 * ISWIDOW
+                )
+              ),
+            candidat_couple
             )
-        #- to_couple: if(to_couple > 0, logistic(to_couple), 0)
-        - show('Number of mariages potentiels tocouple', sum(to_couple))
-        - to_couple2: align_abs(to_couple, method = "sidewalk", need = sum(to_couple))
-        # A changer pour : sum(to_couple)/count((age >= 18) and (age <= 90) and not in_couple))
-        - show('Number of mariages potentiels tocouple', sum(to_couple))
-        - show('Number of mariages potentiels tocouple2', count(to_couple2))
-        # vérifier qu'il n'y a pas un bouléen dans to_couple2
+        - show("\nNombre de mises en couple potentielles pour les hommes", sum(candidat_couple * ISMALE), ' ou les femmes ', sum(candidat_couple * ISFEMALE))
+        - candidat_couple_selectionne: align_abs(candidat_couple, method = "sidewalk", need = sum(candidat_couple))
+        - show('\nNombre de mises en couple potentielles espérées avant sélection', sum(candidat_couple))
+        - show('\nNombre de mises en couple potentielles espérées après sélection', count(candidat_couple_selectionne))
         - difficult_match: if(
-            (to_couple2==1) and ISFEMALE,
-            abs(age - avg(age, filter=(to_couple2==1) and ISMALE)),
+            (candidat_couple_selectionne == 1) and ISFEMALE,
+            abs(age - avg(age, filter = (candidat_couple_selectionne == 1) and ISMALE)),
             nan
             )
         - partner: if(
-            to_couple2,
+            candidat_couple_selectionne,
             matching(
-                set1filter=ISFEMALE,
-                set2filter=ISMALE,
-                score = - 0.4893 * other.age + 0.0131 * other.age ** 2 - 0.0001 * other.age ** 3 + 0.0467 * (other.age - age) - 0.0189 * (other.age - age) ** 2 + 0.0003 * (other.age - age) ** 3 + 0.05 * (other.findet-findet),
-                orderby = difficult_match
-                ),
+              set1filter = ISFEMALE,
+              set2filter = ISMALE,
+              score = - 0.4893 * other.age + 0.0131 * other.age ** 2 - 0.0001 * other.age ** 3 + 0.0467 * (other.age - age) - 0.0189 * (other.age - age) ** 2 + 0.0003 * (other.age - age) ** 3 + 0.05 * (other.findet-findet),
+              orderby = difficult_match
+              ),
             partner
             )
+        - show('\nNombre de mises en couple réalisées (incestes conmpris)', count(candidat_couple_selectionne & INCOUPLE) / 2)
         # on corrige les incestes qui n'ont pas ete interdit dans le matching
         # ca n'est pas bcp de cas, donc on considère que ça ne change pas les marges
         # et puis entre les marges et un tabou universel, je sacrifie les marges
@@ -80,12 +97,12 @@ entities:
         - partner: if((l_partner.pere == pere and pere > -1), UNSET, partner)
         - partner: if((l_partner.mere == mere and mere > -1), UNSET, partner)
         - partner: if(l_partner.partner == UNSET, UNSET, partner)
+        - show('\nNombre de mises en couple réalisées (incestes exlus)', count(candidat_couple_selectionne & INCOUPLE) / 2)
         # - in_new_couple: if(INCOUPLE and (duree_en_couple == 0), True, False)
         # - duree_en_couple: if(INCOUPLE and not(in_new_couple), duree_en_couple + 1, 0)
         # - duree_en_couple: if(in_new_couple, 0, duree_en_couple)
         - duree_en_couple: if(INCOUPLE, duree_en_couple + 1, 0)
-        - duree_hors_couple: if(INCOUPLE, 0, duree_hors_couple)
-        # NOTE : duree_hors_couple is incremented in divorce
+        - duree_hors_couple: if(INCOUPLE, 0, duree_hors_couple) # NOTE : duree_hors_couple is incremented in divorce
         - assertEqual(count(partner > -1) , count(l_partner.partner > -1))
         - assertTrue(all((duree_en_couple == l_partner.duree_en_couple) or (partner == UNSET)))
 
@@ -101,11 +118,15 @@ entities:
         - assertTrue( count(to_move_together) % 2 == 0 )
         # select who move into the other's house
         # if only one is quimen==0 it's she or he, otherwise, we select the smallest ID.
-        - move_in: if(to_move_together and l_partner.quimen == 0,
-                                if(quimen > 0,
-                                    True,
-                                    if(id < l_partner.id, True, False)),
-                                False)
+        - move_in: if(
+            to_move_together and l_partner.quimen == 0,
+            if(
+              quimen > 0,
+              True,
+              if(id < l_partner.id, True, False)
+              ),
+            False
+            )
         # to move_out_together (when there is no quimen=0)
         - move_together: to_move_together and l_partner.quimen > 0 and quimen > 0
         # to move_in
@@ -205,10 +226,10 @@ entities:
             )
         - idfoy: new_idfoy
         # TODO: dissocier pacs et mariage
-        - show('counting newly married', count(to_move_together and (civilstate != 1)))
-        - show('married before', count(civilstate == 1))
+        - show('\nNouveaux mariés', round(count(to_move_together and (civilstate != 1)) * uniform_weight))
+        - show('\nAnciens mariés', round(count(civilstate == 1) * uniform_weight))
         - civilstate: if(to_move_together, MARRIED, civilstate)
-        - show('married after', count(civilstate == 1))
+        - show('\nTotal mariés', round(count(civilstate == 1) * uniform_weight))
         - assertEqual(max(l_foy.get(in_foyers_fiscaux.count(quifoy == 0))), 1)
         - assertTrue(min(idfoy) >= 0)
 

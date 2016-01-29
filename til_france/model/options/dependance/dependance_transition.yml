@@ -107,9 +107,9 @@ entities:
             -1
             )
         # TODO: add a sensible distribution of dependance anciennete FIXME
-        - show('\nNombre initial de (non) dépendants de niveau 0', count(dependance_niveau == 0))
-        - show('\nNombre initial de dépendants de niveau 1', count(dependance_niveau == 1))
-        - show('\nNombre initial de dépendants de niveau 2', count(dependance_niveau == 2))
+        - show('\nNombre initial de (non) dépendants de niveau 0', round(count(dependance_niveau == 0) * uniform_weight))
+        - show('\nNombre initial de dépendants de niveau 1', round(count(dependance_niveau == 1) * uniform_weight))
+        - show('\nNombre initial de dépendants de niveau 2', round(count(dependance_niveau == 2) * uniform_weight))
         - csv('period', period, 'dependance', groupby(
             age, sexe, expr = count((dependance_niveau == 1) or (dependance_niveau == 2))
             ),
@@ -151,7 +151,7 @@ entities:
         # From Marbot and Roy following Duée-Rebillard
         # Becoming dependant
         - assertTrue(all(dependance_niveau == 0, filter = (age < 60)))
-        - show('\nNombre de dépendants (total = niveau 1 + niveau 2)', count(ISDEPENDANT > 0), ' = ',
+        - show('\nNombre de dépendants (total = niveau 1 + niveau 2)', round(count(ISDEPENDANT > 0) * uniform_weight), ' = ',
             count(dependance_niveau == 1), ' + ',
             count(dependance_niveau == 2)
             )

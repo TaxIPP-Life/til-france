@@ -22,7 +22,7 @@ entities:
         - decede: if(l_partner.decede and l_partner.id < id, False, decede)
         - decede: if(l_pere.decede, False, decede)
         - decede: if(l_mere.decede, False, decede)
-        - show('\nAge moyen des partenaires', avg(l_partner.age, filter=l_partner.age>-1))
+        - show('\nAge moyen des partenaires', round(avg(l_partner.age, filter=l_partner.age>-1), 2))
         - return decede
 
         # Changement dans les regroupements (foyers_fiscaux et menages)
@@ -122,7 +122,7 @@ entities:
         # dans ce cas, il faut trouver une nouvelle personne de référence
         - coloc: (l_foy.l_vous.decede and l_foy.l_vous.partner < 1 and
                     l_foy.l_vous.id != pere and l_foy.l_vous.id != mere and quifoy>1)
-        - show('les personnes qui vivaient avec un individus décédés mais sans lien de filiation avec lui était', count(coloc))
+        - show('\nLes personnes qui vivaient avec un individus décédés mais sans lien de filiation avec lui était', count(coloc))
         # le plus vieux devient personne de reference
         - quifoy: if( coloc and id == l_foy.get(in_foyers_fiscaux.min(id, not decede)), 0, quifoy)
         # et son patneroint devient quifoy==1 du coup
@@ -136,7 +136,7 @@ entities:
 
         - nb_rang1: individus2registre.get(reg_inv_pere.count(vivant) + reg_inv_mere.count(vivant))
         # la ligne du dessus revient a : - rang1 : invl_pere.count() + invl_mere.count()
-        # mais avec les vivant updater et donc gere les cas de deces simultane a priori
+        # mais avec les vivant updater et donc gère les cas de décès simultané a priori
         #  individus2registre.herit_potentiel: not pere.vivant and
 
         #get : rang1
@@ -169,12 +169,12 @@ entities:
                 )
               )
             )
-        - show("\nNombre d'enfants vivants", groupby(decede, nb_rang1))
-        - show("\nNombre d'enfants morts avec des enfants vivants", groupby(decede, nb_rang2))
-        - show("\nNombre d'enfants morts avec  seulement des petits-enfants vivant", groupby(decede, nb_rang3))
+        # - show("\nNombre d'enfants vivants", groupby(decede, nb_rang1))
+        # - show("\nNombre d'enfants morts avec des enfants vivants", groupby(decede, nb_rang2))
+        # - show("\nNombre d'enfants morts avec  seulement des petits-enfants vivant", groupby(decede, nb_rang3))
 
         #### si partner
-        # on fait l'hypothese de pas de donation au dernier vivant
+        # on fait l'hypothèse de pas de donation au dernier vivant
         - nb_part_herit: nb_rang1 + nb_rang2 + nb_rang3
         - patrimoine: if(
             not decede and l_partner.decede,
@@ -196,7 +196,7 @@ entities:
             individus2registre.heritage + patrimoine / nb_part_herit,
             individus2registre.heritage
             )
-        # apres on fait une etape dans le registre
+        # après on fait une étape dans le registre
         - individus2registre.heritage_asc: if(
             decede and nb_part_herit == 0,
             individus2registre.heritage_asc + patrimoine,
@@ -204,8 +204,8 @@ entities:
             )
 
       deces_elimination(decede):
-        # Suppression du decéde
-        # enregistrement dans le registre et elimination de la table individus
+        # Suppression du decédé
+        # enregistrement dans le registre et élimination de la table individus
         - civilstate: if(l_partner.decede and LEGAL_UNION, WIDOW, civilstate)
         - duree_en_couple: if(l_partner.decede, 0, duree_en_couple)
         - partner: if(l_partner.decede, UNSET, partner)
@@ -226,9 +226,10 @@ entities:
             fname = 'deces.csv', mode = 'a'
             )
         - show('\nNombre de décès (total = hommes + femmes)',
-            count(decede) * uniform_weight, " = ",
-            count(decede and ISMALE) * uniform_weight, " + ", count(decede and ISFEMALE) * uniform_weight
+            round(count(decede) * uniform_weight), " = ",
+            round(count(decede and ISMALE) * uniform_weight), " + ",
+            round(count(decede and ISFEMALE) * uniform_weight)
             )
-        - show('\nAge moyen des hommes décédés', avg(age, filter=decede and ISMALE))
-        - show('\nAge moyen des femmes décédées', avg(age, filter=decede and ISFEMALE))
-        - show('\nNombre de veuves', sum(ISWIDOW) * uniform_weight)
+        - show('\nAge moyen des hommes décédés', round(avg(age, filter=decede and ISMALE), 2))
+        - show('\nAge moyen des femmes décédées', round(avg(age, filter=decede and ISFEMALE), 2))
+        - show('\nNombre de veuves', round(sum(ISWIDOW) * uniform_weight))

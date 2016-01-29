@@ -44,12 +44,15 @@ entities:
               )
         - new('register', filter=(age == 0),
                 id=id, sexe=sexe, pere=pere, mere=mere, vivant=True, naiss=period, findet=findet)
+        - statistiques_naissances(future_mere)
+
+      statistiques_naissances(future_mere):
         - csv(
             period, count(age==0),
             fname = 'naissances.csv', mode = 'a'
             )
-        - show('Avg age of "young" mothers', avg(age, filter=future_mere and ISFEMALE))
-        - show('Avg age of "young" fathers', avg(l_partner.age, filter=future_mere and ISFEMALE and ISMARRIED))
-        - show('Avg age of all mothers', avg(l_mere.age, filter=l_mere.age>-1))  #la condition -1 permet de ne prendre que les vraies meres !
-        - show('Avg age of all fathers', avg(l_pere.age, filter=l_pere.age>-1 ))
-        - show('Number of naissances', count(age==0))
+        - show("\nAge moyen des mères de l'année", round(avg(age, filter=future_mere and ISFEMALE), 2))
+        - show("\nAge moyen des pères de l'année", round(avg(l_partner.age, filter=future_mere and ISFEMALE and ISMARRIED), 2))
+        - show("\nAge moyen de toutes les mères", round(avg(l_mere.age, filter=l_mere.age>-1), 2))  #la condition -1 permet de ne prendre que les vraies meres !
+        - show("\nAge moyen de tous les pères", round(avg(l_pere.age, filter=l_pere.age>-1 ), 2))
+        - show("\nNombre de naissances", round(count(age==0) * uniform_weight))

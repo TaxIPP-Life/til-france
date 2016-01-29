@@ -1,7 +1,7 @@
 entities:
     individus:
         processes:
-            init_couple:
+            couple_initialisation:
                 - civilstate: SINGLE
                 - civilstate : if(conjoint>0,MARRIED,civilstate)
                 - civilstate : if(conjoint==-2,DIVORCED,civilstate)
