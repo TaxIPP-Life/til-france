@@ -9,7 +9,7 @@ import:
   - demographie/migration.yml
   - demographie/vieillissement.yml
   - demographie/union.yml
-  - demographie/divorce.yml
+  - demographie/rupture.yml
   - education/education.yml
   - logement/moving.yml
   - consommation/consommation.yml
@@ -67,7 +67,7 @@ simulation:
     - menages: [men_composition]
     - foyers_fiscaux: [cases]
     - foyers_fiscaux: [empty_declar]
-    - individus: [divorce]
+    - individus: [rupture]
     - individus: [check]
     - menages: [men_composition]
     - foyers_fiscaux: [cases, empty_declar]

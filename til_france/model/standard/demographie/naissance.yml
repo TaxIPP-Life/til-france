@@ -3,7 +3,7 @@ entities:
     processes:
       naissance:
         - interm : invl_pere.count() # nombre d'enfant du pere
-        - before_max: ((invl_mere.count()<8) and (l_partner.interm <8))
+        - before_max: ((invl_mere.count() < 8) and (l_partner.interm < 8))
         #on pourra retirer cette condition qui était technique avec R.
         # Note, on n'a pas de jumeaux
         - future_mere: logit_regr(
@@ -21,7 +21,7 @@ entities:
             0
             )
         - temp_mere: findet + (l_mere.age > 35 + annee - 2009) + (l_mere.age > 45 + annee - 2009) + (l_mere.age > 55 + annee - 2009)
-        - findet_temp: if(partner>0, trunc((temp_pere + temp_mere) / 2), temp_mere)
+        - findet_temp: if(partner > 0, trunc((temp_pere + temp_mere) / 2), temp_mere)
         - new('individus', filter = future_mere,
               mere = id,
               pere = partner,
@@ -56,3 +56,5 @@ entities:
         - show("\nAge moyen de toutes les mères", round(avg(l_mere.age, filter=l_mere.age>-1), 2))  #la condition -1 permet de ne prendre que les vraies meres !
         - show("\nAge moyen de tous les pères", round(avg(l_pere.age, filter=l_pere.age>-1 ), 2))
         - show("\nNombre de naissances", round(count(age==0) * uniform_weight))
+        - show("\nTaux de fécondité ", count(age==0) / count(ISFEMALE and (age >= 15) and (age <= 50)))
+        # - show("\nIndice conjoncturel de fecondité ", sum(fecondite_by_age)) # TODO
