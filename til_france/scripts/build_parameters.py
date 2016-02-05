@@ -20,7 +20,8 @@ def run_all(input_dir = None, uniform_weight = None):
     dependance.build_prevalence_all_years(input_dir = input_dir, to_csv = True)
     population.rescale_migration(input_dir = input_dir)
     population.build_mortality_rates(input_dir = input_dir, to_csv = True)
-    # Missing fecondite
+    population.build_deaths(input_dir = input_dir, to_csv = True)
+    # TODO: Missing fecondite
 
 
 def main():

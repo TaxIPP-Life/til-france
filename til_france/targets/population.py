@@ -46,6 +46,58 @@ def get_data_frame_insee(gender, by = 'age_group'):
     return data_frame_insee
 
 
+def build_deaths(to_csv = False, input_dir = None, uniform_weight = 200):
+    # Data from INSEE projections
+    data_path = os.path.join(til_france_path, 'param', 'demo')
+
+    sheetname_by_gender = dict(zip(
+        ['male', 'female'],
+        ['nbre_decesH', 'nbre_decesF']
+        ))
+    deaths_by_gender = dict(
+        (
+            gender,
+            pandas.read_excel(
+                os.path.join(data_path, 'projpop0760_FECcentESPcentMIGcent.xls'),
+                sheetname = sheetname, skiprows = 2, header = 2
+                )[:121].set_index(
+                    u"Âge atteint dans l'année", drop = True
+                    ).reset_index()
+            )
+        for gender, sheetname in sheetname_by_gender.iteritems()
+        )
+    for df in deaths_by_gender.values():
+        del df[u"Âge atteint dans l'année"]
+
+    if to_csv:
+        if input_dir is None:
+            config = Config()
+            input_dir = config.get('til', 'input_dir')
+
+        for gender in ['male', 'female']:
+            gender_letter = 'H' if gender == 'male' else 'F'
+            file_path = os.path.join(input_dir, 'parameters', 'population', 'deces{}.csv'.format(gender_letter))
+            check_population_directory_existence(input_dir)
+            df = deaths_by_gender[gender]
+            columns_for_liam = ['age', 'period'] + [''] * (len(df.columns) - 1)
+            first_row = ','.join([''] + [str(year) for year in df.columns])
+            header = ','.join(columns_for_liam) + '\n' + first_row + '\n'
+            df.dropna(inplace = True)
+            df.drop(109, inplace = True)
+            df = (df / 200).round()
+            df.to_csv(file_path, index = True, header = False)
+            with open(file_path, 'r') as input_file:
+                data = input_file.read().splitlines(True)
+
+            with open(file_path, 'w') as output_file:
+                output_file.writelines(header)
+                output_file.writelines(data)
+
+    else:
+        return deaths_by_gender
+
+
+
 def build_mortality_rates(to_csv = False, input_dir = None):
     # Data from INSEE projections
     data_path = os.path.join(til_france_path, 'param', 'demo')

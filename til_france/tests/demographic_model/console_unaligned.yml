@@ -19,6 +19,7 @@ globals:
     path: input/hyp_mortaliteF.csv
     type: float
 
+
 entities:
     individus:
         # fields:
@@ -52,13 +53,15 @@ entities:
                         decede_unaligned
                         )
                     - age_boucle: age_boucle + 1
+                - score: .5
                 - decede: if(
                     ISMALE,
-                    logit_regr(0.0, align='input/hyp_mortaliteH.csv'),
-                    logit_regr(0.0, align='input/hyp_mortaliteF.csv')
+                    align(score, 'input/hyp_mortaliteH.csv', frac_need = 'cutoff'),
+                    align(score, 'input/hyp_mortaliteF.csv', frac_need = 'cutoff')
                     )
                 - show(groupby(age, sexe, expr = sum(decede)))
                 - show(groupby(age, sexe, expr = sum(decede_unaligned)))
+                - assertTrue(1 == 2)
                 - remove(decede)
 
             migration:
@@ -99,7 +102,7 @@ simulation:
     #     - individus: []
 
     processes:
-        - individus: [ageing, deces, migration, naissance]
+        - individus: [deces, migration, naissance, ageing]
 
     input:
           file: input/demo.h5
