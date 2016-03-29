@@ -22,11 +22,6 @@ globals:
 
 entities:
     individus:
-        # fields:
-            # # All entities have two implicit integer fields: period and id.
-            # # You do not need to define them.
-            # - age: int
-            # - sexe: bool
 
         macros:
             ISMALE: not sexe
@@ -34,35 +29,27 @@ entities:
 
         processes:
             deces:
-                - show(period)
-                # - show(1000 * taux_mortalite_homme[3, period - 2007])
-                # - show(1000 * taux_mortalite_homme)
-                - age_boucle: 0
-                - decede_unaligned: False
-                - while age_boucle <= 120:
-                    - show(age_boucle)
-                    - tx_homme: taux_mortalite_homme[age_boucle, period - 2007]
-                    - tx_femme: taux_mortalite_femme[age_boucle, period - 2007]
-                    - decede_unaligned: if(
-                        age == age_boucle,
-                        if(
-                          ISMALE,
-                          choice([True, False], [tx_homme, 1-tx_homme]),
-                          choice([True, False], [tx_femme, 1-tx_femme])
-                          ),
-                        decede_unaligned
-                        )
-                    - age_boucle: age_boucle + 1
-                - score: .5
-                - decede: if(
+                - taux_homme: taux_mortalite_homme[age, period - 2007]
+                - taux_femme: taux_mortalite_femme[age, period - 2007]
+                - decede_unaligned: if(
                     ISMALE,
-                    align(score, 'input/hyp_mortaliteH.csv', frac_need = 'cutoff'),
-                    align(score, 'input/hyp_mortaliteF.csv', frac_need = 'cutoff')
+                    if(
+                        uniform() < taux_homme,
+                        True,
+                        False
+                        ),
+                    if(
+                        uniform() < taux_femme,
+                        True,
+                        False
+                        )
                     )
-                - show(groupby(age, sexe, expr = sum(decede)))
-                - show(groupby(age, sexe, expr = sum(decede_unaligned)))
-                - assertTrue(1 == 2)
-                - remove(decede)
+                - csv(
+                    period,
+                    sum(decede_unaligned),
+                    fname='deces.csv', mode='a'
+                    )
+                - remove(decede_unaligned)
 
             migration:
                 # note : There is only net immigration in the Insee prevision
@@ -84,15 +71,15 @@ entities:
                     )
 
             naissance:
-              - future_mere: logit_regr(
-                  0.0,
-                  filter = ISFEMALE and (age >= 15) and (age <= 50),
-                  align = 'input/Hyp_fecondite.csv'
-                  )
-              - new('individus', filter = future_mere,
-                    age = 0,
-                    sexe = choice([0, 1], [0.5122, 0.4878]),
+                - future_mere: logit_regr(
+                    0.0,
+                    filter = ISFEMALE and (age >= 15) and (age <= 50),
+                    align = 'input/Hyp_fecondite.csv'
                     )
+                - new('individus', filter = future_mere,
+                      age = 0,
+                      sexe = choice([0, 1], [0.5122, 0.4878]),
+                      )
 
 
 simulation:
@@ -102,7 +89,7 @@ simulation:
     #     - individus: []
 
     processes:
-        - individus: [deces, migration, naissance, ageing]
+        - individus: [ageing, deces, migration, naissance]
 
     input:
           file: input/demo.h5
@@ -118,11 +105,11 @@ simulation:
         timings: True       # optional
         level: functions    # optional
 
-    random_seed: 12345       # optional
+    # random_seed: 12345      # optional
 
     start_period: 2016  #01
     # first simulated period is start_period + 1 but the start period data is saved
 
-    # Number of periods includes initial period
-    periods: 1
-    # last period = periods + start_period - 1 = 45 + 2016 -1 = 2060
+    # Number of periods includes initial period
+    periods: 30
+    # last period = periods + start_period - 1

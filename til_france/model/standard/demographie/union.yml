@@ -38,7 +38,7 @@ entities:
         - nb_children_ind: invl_mere.count() + invl_pere.count()
         - candidat_couple: 0
         - age_corrige: age - (findet - 16) / 2  # On corrige l'age de fin d'etude
-        - etudes_courtes: findet < 20  # TODO age moyen de sa generation
+        - etudes_courtes: findet <= 20  # TODO: age moyen de sa generation
         - etudes_longues: findet > 20
         # Première mise en couple
         - candidat_couple: if(
@@ -46,8 +46,9 @@ entities:
             if(
               ISMALE,
               logit_score(
-                -73.10 + 8.96 * age_corrige - 0.408 * age_corrige ** 2 + 0.00796 * age_corrige ** 3 - 5.72 / 100000 * (age_corrige ** 4) - 0.13 * etudes_courtes + 0.04 * etudes_longues
-                ),
+                -73.10 + 8.96 * age_corrige - 0.408 * age_corrige ** 2 + 0.00796 * age_corrige ** 3
+                - 5.72 / 100000 * (age_corrige ** 4) - 0.13 * etudes_courtes + 0.04 * etudes_longues
+                + .264),  # cale Destinie
               logit_score(
                 -68.49 + 9.06 * age_corrige -0.441 * age_corrige ** 2 + 0.00914 * age_corrige ** 3 - 6.91 / 100000 * (age_corrige ** 4) - 0.06 * etudes_longues
                 )
@@ -94,15 +95,15 @@ entities:
               ),
             partner
             )
-        - show('\nNombre de mises en couple réalisées (incestes conmpris)', count(candidat_couple_selectionne & INCOUPLE) * uniform_weight / 2)
+        # - show('\nNombre de mises en couple réalisées (incestes conmpris)', count(candidat_couple_selectionne & INCOUPLE) * uniform_weight / 2)
         # on corrige les incestes qui n'ont pas ete interdit dans le matching
         # ca n'est pas bcp de cas, donc on considère que ça ne change pas les marges
-        # et puis entre les marges et un tabou universel, je sacrifie les marges
+        # et puis entre les marges et un tabou universel, on sacrifie les marges
         - partner: if((partner == pere or partner == mere), UNSET, partner)
         - partner: if((l_partner.pere == pere and pere > -1), UNSET, partner)
         - partner: if((l_partner.mere == mere and mere > -1), UNSET, partner)
         - partner: if(l_partner.partner == UNSET, UNSET, partner)
-        - show('\nNombre de mises en couple réalisées (incestes exlus)', count(candidat_couple_selectionne & INCOUPLE) * uniform_weight / 2)
+        - show('\nFlux brut de personnes nouvellement en couple', count(candidat_couple_selectionne & INCOUPLE) * uniform_weight)
         - show('\nNombre de personnes en couple', count(INCOUPLE) * uniform_weight)
         # - in_new_couple: if(INCOUPLE and (duree_en_couple == 0), True, False)
         # - duree_en_couple: if(INCOUPLE and not(in_new_couple), duree_en_couple + 1, 0)
@@ -110,11 +111,6 @@ entities:
         - duree_en_couple: if(INCOUPLE, duree_en_couple + 1, 0)
         - duree_hors_couple: if(INCOUPLE, 0, duree_hors_couple) # NOTE : duree_hors_couple is incremented in rupture
         - assertEqual(count(partner > -1) , count(l_partner.partner > -1))
-        - show('\nproblems', count(not((duree_en_couple == l_partner.duree_en_couple) or (partner == UNSET))))
-        - show('\nproblems', dump(duree_en_couple, duree_hors_couple, partner,
-            l_partner.duree_en_couple, l_partner.duree_hors_couple, l_partner.partner,
-            filter=not((duree_en_couple == l_partner.duree_en_couple) or (partner == UNSET))))
-
         - assertTrue(all((duree_en_couple == l_partner.duree_en_couple) or (partner == UNSET)))
 
 

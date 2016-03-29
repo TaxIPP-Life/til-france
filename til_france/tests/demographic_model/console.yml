@@ -29,6 +29,7 @@ entities:
                     logit_regr(0.0, align='input/hyp_mortaliteH.csv'),
                     logit_regr(0.0, align='input/hyp_mortaliteF.csv')
                     )
+                - csv(period, sum(decede), fname='deces.csv', mode='a')
                 - remove(decede)
 
             migration:
@@ -91,5 +92,5 @@ simulation:
     # first simulated period is start_period + 1 but the start period data is saved
 
     # Number of periods includes initial period
-    periods: 45
+    periods: 30
     # last period = periods + start_period - 1 = 45 + 2016 -1 = 2060
