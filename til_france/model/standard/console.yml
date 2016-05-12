@@ -24,7 +24,7 @@ globals:
 
 simulation:
   init:
-    - menages: [init_weight_men, init_region_id, init_rent, init_value, init_wealth, init_owner, men_composition]
+    - menages: [init_weight_men, init_region_id, init_rent, init_value, init_wealth, init_owner, composition_mise_a_jour]
     - individus: [
       init_weight_ind,
       couple_initialisation,
@@ -49,14 +49,14 @@ simulation:
   # - individus: [age, dump_info, show_demography , marriage]
     # - register: [rien]
     - generation: [mise_a_jour]
-    - individus: [vieillissement]
     - individus: [migration]
+    - individus: [vieillissement]
     - individus: [check]
     - individus: [independance]
     - individus: [check]
     - individus: [naissance]
     - individus: [check]
-    - menages: [men_composition]
+    - menages: [composition_mise_a_jour]
     - foyers_fiscaux: [cases, empty_declar]
     - individus: [couple_formation]
     - individus: [move_together]
@@ -64,12 +64,12 @@ simulation:
     - individus: [legal_union]
     - individus: [check]
     # - register: [sum_indiv]
-    - menages: [men_composition]
+    - menages: [composition_mise_a_jour]
     - foyers_fiscaux: [cases]
     - foyers_fiscaux: [empty_declar]
     - individus: [rupture]
     - individus: [check]
-    - menages: [men_composition]
+    - menages: [composition_mise_a_jour]
     - foyers_fiscaux: [cases, empty_declar]
     - individus: [ineducation, emploi_sortie, emploi_entree, retire, chomage, salaire , retraite
         # dump_all

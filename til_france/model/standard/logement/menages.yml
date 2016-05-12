@@ -64,7 +64,7 @@ entities:
       init_weight_men:
         - wprm: 1
 
-      men_composition:
+      composition_mise_a_jour:
         - nb_individus: individus.count()
         - nb_children: individus.count(age < 18 and quimen > 1)
         - nb_children_af: individus.count(age < 20 and quimen > 1)
