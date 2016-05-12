@@ -225,7 +225,7 @@ entities:
             choice([1, 2], [1 - .275, .275]),
             dependance_niveau
             )
-        # Transiiton GIRE_3_3 vers GIR_1_2
+        # Transition GIR_3_4 vers GIR_1_2
         - anc1: dependance_anciennete == 1  # anciennete d'un an dans la dependance
         - becoming_gir_1_2: logit_regr(
             -.277 + 0.512 * lq + .731 * anc1,
