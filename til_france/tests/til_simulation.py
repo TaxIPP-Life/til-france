@@ -98,9 +98,6 @@ def test_csv():
         (df * 200).plot(title = file_path)
 
 
-
-
-
 if __name__ == '__main__':
 
     # panel, panel_mean, panel_sum = test_panel()

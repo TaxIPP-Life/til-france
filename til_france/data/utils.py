@@ -1,17 +1,9 @@
 # -*- coding:utf-8 -*-
 from __future__ import print_function
 
-'''
-Created on 2 août 2013
-@author: a.eidelman
-'''
 
 import logging
 import numpy as np
-from pandas import Series, DataFrame
-from numpy.lib.stride_tricks import as_strided
-import pandas as pd
-import pdb
 
 
 log = logging.getLogger(__name__)
@@ -56,4 +48,3 @@ def new_link_with_men(table, table_exp, link_name):
         # log.info(el)
         new_id += el
     return new_id
-

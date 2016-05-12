@@ -1,7 +1,7 @@
 entities:
   individus:
     processes:
-      rupture:
+      couple_rupture:
         - agediff: if(ISFEMALE and INCOUPLE, age - l_partner.age, 0)
         - enfants_du_couple: invl_mere.count(target_filter = (pere == l_mere.partner) )
         - autres_enfants: invl_mere.count() - enfants_du_couple
@@ -109,7 +109,7 @@ entities:
         # enfant
         # children go with....?? HYPOTHESIS
         # priority to fater...
-        #TODO: do it randomly (but test if the couple are parents and not a second marriage)
+        # TODO: do it randomly (but test if the couple are parents and not a second marriage)
         - new_foy: if(
             l_pere.decohabitant and (l_pere.idfoy == idfoy) and (new_foy == idfoy),
             l_pere.new_foy,

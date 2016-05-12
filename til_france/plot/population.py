@@ -31,7 +31,7 @@ from StringIO import StringIO
 
 
 from til_france.tests.base import til_france_path, create_or_get_figures_directory, ipp_colors
-from til_france.targets.population import  get_data_frame_insee
+from til_france.targets.population import get_data_frame_insee
 
 
 def extract_population_csv(simulation):
@@ -225,6 +225,7 @@ def plot_population2(simulation):
 
     del ax2, ax, fig
 
+
 def plot_ratio_demographique(simulation):
     figures_directory = create_or_get_figures_directory(simulation)
 
@@ -241,7 +242,7 @@ def plot_ratio_demographique(simulation):
             return 'retired'
 
     ratio_60 = panel_simulation['total'].groupby(separate, axis = 0).sum()
-    ratio_60 = ratio_60.loc['retired', :]/ratio_60.loc['active', :]
+    ratio_60 = ratio_60.loc['retired', :] / ratio_60.loc['active', :]
     ratio_60.index.name = None
     # plt.figure()
     ax = ratio_60.plot(

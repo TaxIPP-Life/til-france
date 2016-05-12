@@ -1,10 +1,7 @@
 # -*- coding:utf-8 -*-
-'''
-Created on 22 juil. 2013
-Alexis Eidelman
-'''
 
-# TODO: duppliquer la table avant le matching parent enfant pour ne pas se trimbaler les valeur de hod dans la duplication.
+# TODO: duppliquer la table avant le matching parent enfant pour ne pas se trimbaler
+# les valeur de hod dans la duplication.
 
 
 import os
@@ -28,8 +25,7 @@ log = logging.getLogger(__name__)
 
 
 # Dictionnaire des variables, cohérent avec les imports du modèle.
-# il faut que ce soit à jour. Le premier éléments est la liste des
-# entiers, le second celui des floats
+# Le premier éléments est la liste des entiers, le second celui des floats
 variables_til = {
     'individus': (
         [
@@ -124,9 +120,10 @@ class DataTil(object):
         raise NotImplementedError()
         log.info(u"fin de l'importation des données")
 
-    #def rename_var(self, [pe1e, me1e]):
+    # def rename_var(self, [pe1e, me1e]):
         # TODO: fonction qui renomme les variables pour qu'elles soient au format liam
-        # period, id, age_en_mois, age, sexe, men, quimen, foy quifoy pere, mere, partner, duree_en_couple, civilstate, workstate, salaire_imposable, findet
+        # period, id, age_en_mois, age, sexe, men, quimen, foy quifoy pere, mere, partner, duree_en_couple, civilstate,
+        # workstate, salaire_imposable, findet
 
     def drop_variable(self, variables_by_entity_name=None, option='white'):
         '''
@@ -200,7 +197,8 @@ class DataTil(object):
         log.info("Il y a {} personnes en couples".format(sum(spouse)))
 
         # 2eme étape: rôles au sein du foyer fiscal
-        # selection du conjointqui va être le vousrant (= déclarant principal du foyer fiscal): pas d'incidence en théorie
+        # selection du conjoint qui va être le vous déclarant
+        #    (= déclarant principal du foyer fiscal): pas d'incidence en théorie
         foyers_fiscaux = spouse & (individus['partner'] > individus['id'])
         partner = spouse & (individus['partner'] < individus['id'])
         # Identification des personnes à charge (moins de 21 ans sauf si étudiant, moins de 25 ans )
@@ -320,7 +318,6 @@ class DataTil(object):
         '''
         raise NotImplementedError()
 
-
     def expand_data(self, weight_threshold=150, nb_ligne=None):
         # TODO: add future and past
         u'''
@@ -329,9 +326,8 @@ class DataTil(object):
         '''
         self.weight_threshold = weight_threshold
         if weight_threshold != 0 and nb_ligne is not None:
-            raise Exception(
-            "On ne peut pas à la fois avoir un nombre de ligne désiré et une valeur qui va determiner le nombre de ligne"
-            )
+            raise Exception("On ne peut pas à la fois avoir un nombre de ligne désiré \
+                et une valeur qui va determiner le nombre de ligne")
         # TODO: on peut prendre le min des deux quand même...
         foyers_fiscaux = self.entity_by_name.get('foyers_fiscaux')
         individus = self.entity_by_name['individus']
@@ -757,7 +753,6 @@ class DataTil(object):
             table['id'] = table.index
             store.append('longitudinal/' + varname, table)
         store.close()
-
 
     def store(self):
         path = self._output_name()

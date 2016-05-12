@@ -97,7 +97,6 @@ def build_deaths(to_csv = False, input_dir = None, uniform_weight = 200):
         return deaths_by_gender
 
 
-
 def build_mortality_rates(to_csv = False, input_dir = None):
     # Data from INSEE projections
     data_path = os.path.join(til_france_path, 'param', 'demo')

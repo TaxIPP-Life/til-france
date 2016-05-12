@@ -8,16 +8,23 @@ from numpy import array, arange, ones
 from numpy.lib.stride_tricks import as_strided
 from pandas import Series, DataFrame
 
-of_name_to_til = {'individus':'individus', 'foyers_fiscaux':'foyers_fiscaux', 'menages':'menages', 'familles':'familles'}
-til_name_to_of  = dict ( (v,k) for k, v in of_name_to_til.items() )
+of_name_to_til = {
+    'individus': 'individus',
+    'foyers_fiscaux': 'foyers_fiscaux',
+    'menages': 'menages',
+    'familles': 'familles'
+    }
+til_name_to_of = dict((v, k) for k, v in of_name_to_til.items())
 
 
-def concatenated_ranges(ranges_list) :
+def concatenated_ranges(ranges_list):
     ranges_list = array(ranges_list, copy=False)
     base_range = arange(ranges_list.max())
-    base_range = as_strided(base_range,
-                             shape=ranges_list.shape + base_range.shape,
-                             strides=(0,) + base_range.strides)
+    base_range = as_strided(
+        base_range,
+        shape = ranges_list.shape + base_range.shape,
+        strides = (0,) + base_range.strides
+        )
     return base_range[base_range < ranges_list[:, None]]
 
 

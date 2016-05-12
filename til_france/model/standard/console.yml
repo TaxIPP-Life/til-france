@@ -48,33 +48,41 @@ simulation:
   # plus tard, quand le code le permettra, on changera ce vous directement dans l'étape au niveau individus
   # - individus: [age, dump_info, show_demography , marriage]
     # - register: [rien]
+    # Démographie (1. Migration, 2. Décès, 3. Séparations, 4. Mises en couple, 5. Naissances)
     - generation: [mise_a_jour]
+    ## 1. Migration
     - individus: [migration]
+    ## 2. Décès
     - individus: [vieillissement]
     - individus: [check]
     - individus: [independance]
     - individus: [check]
-    - individus: [naissance]
+    ## 3. Séparations
+    - individus: [couple_rupture]
     - individus: [check]
     - menages: [composition_mise_a_jour]
     - foyers_fiscaux: [cases, empty_declar]
+    ## 4. Mises en couple
     - individus: [couple_formation]
     - individus: [move_together]
     - individus: [check]
     - individus: [legal_union]
     - individus: [check]
-    # - register: [sum_indiv]
+    ### - register: [sum_indiv]
     - menages: [composition_mise_a_jour]
     - foyers_fiscaux: [cases]
     - foyers_fiscaux: [empty_declar]
-    - individus: [rupture]
+    ## 5. Naissances
+    - individus: [naissance]
     - individus: [check]
     - menages: [composition_mise_a_jour]
     - foyers_fiscaux: [cases, empty_declar]
+    # Education - Marché du travail
     - individus: [ineducation, emploi_sortie, emploi_entree, retire, chomage, salaire , retraite
         # dump_all
         ]
     - individus: [check]
+    # Consommation épargne
     - menages: [init_value, consumption, saving]
     # - companies: [rien]
     - legislation: [2009] #[annee leg] = année de départ de la simulation

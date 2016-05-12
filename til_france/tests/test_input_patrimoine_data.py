@@ -84,13 +84,16 @@ print 'population totale TIL Destinie: ', (destinie_til.age >= 0).sum() * destin
 
 
 print 'Ecart absolu: ', (individus_til.age >= 0).sum() * uniform_weight - insee_proj_pop_total
-print 'Ecart absolu hommes: ', ((individus_til.age >= 0) & (individus_til.sexe == 0)).sum() * uniform_weight - insee_proj_pop_H
-print 'Ecart absolu femmes: ', ((individus_til.age >= 0) & (individus_til.sexe == 1)).sum() * uniform_weight - insee_proj_pop_F
-
+print 'Ecart absolu hommes: ', (
+    ((individus_til.age >= 0) & (individus_til.sexe == 0)).sum() * uniform_weight - insee_proj_pop_H)
+print 'Ecart absolu femmes: ', (
+    ((individus_til.age >= 0) & (individus_til.sexe == 1)).sum() * uniform_weight - insee_proj_pop_F)
 
 print 'Ecart absolu: ', (destinie_til.age >= 0).sum() * destinie_uniform_weight - insee_proj_pop_total
-print 'Ecart absolu hommes: ', ((destinie_til.age >= 0) & (destinie_til.sexe == 0)).sum() * destinie_uniform_weight- insee_proj_pop_H
-print 'Ecart absolu femmes: ', ((destinie_til.age >= 0) & (destinie_til.sexe == 1)).sum() * destinie_uniform_weight - insee_proj_pop_F
+print 'Ecart absolu hommes: ', (
+    ((destinie_til.age >= 0) & (destinie_til.sexe == 0)).sum() * destinie_uniform_weight - insee_proj_pop_H)
+print 'Ecart absolu femmes: ', (
+    ((destinie_til.age >= 0) & (destinie_til.sexe == 1)).sum() * destinie_uniform_weight - insee_proj_pop_F)
 
 
 # Grouping by age_group
@@ -110,25 +113,29 @@ population_patrimoine.rename(columns = dict(pond = 'total_pat'), inplace = True)
 
 
 # TIL data
-population_til = individus_til.loc[individus_til.age >= 0, ['age_group', 'age']].groupby('age_group').count() * uniform_weight
+population_til = individus_til.loc[
+    individus_til.age >= 0, ['age_group', 'age']
+    ].groupby('age_group').count() * uniform_weight
 population_til.rename(columns = dict(age = 'total_til'), inplace = True)
 
 # TIL data
-population_destinie = destinie_til.loc[destinie_til.age >= 0, ['age_group', 'age']].groupby('age_group').count() * destinie_uniform_weight
+population_destinie = destinie_til.loc[
+    destinie_til.age >= 0, ['age_group', 'age']
+    ].groupby('age_group').count() * destinie_uniform_weight
 population_destinie.rename(columns = dict(age = 'total_destinie'), inplace = True)
 
 
 population_til
 population
-summary =  pandas.concat([population_patrimoine, population_til, population_destinie, population], axis = 1)
+summary = pandas.concat([population_patrimoine, population_til, population_destinie, population], axis = 1)
 summary = summary.append(summary.sum(), ignore_index = True)
 
 
 target = 'total_destinie'
 
 fig, axes = plt.subplots(ncols=1)
-axes.barh(summary.index[:11], summary[target][:11]/1e6, align='center', color='red')
-axes.barh(summary.index[:11], summary['total'][:11]/1e6, align='center', color='blue', alpha = .4)
+axes.barh(summary.index[:11], summary[target][:11] / 1e6, align='center', color='red')
+axes.barh(summary.index[:11], summary['total'][:11] / 1e6, align='center', color='blue', alpha = .4)
 axes.grid(True)
 
 plt.yticks(summary.index[:11], ["{} - {}".format(i * 10, i * 10 + 9) for i in summary.index[:11]])
@@ -138,10 +145,6 @@ plt.title(u"Différence avec les projections de population INSEE")
 fig.tight_layout()
 
 fig.show()
-
-
-
-
 
 summary.eval('abs_diff_til = total_til - total', engine = 'python')
 summary.eval('rel_diff_til = abs_diff_til / total', engine = 'python')

@@ -19,10 +19,12 @@ from openfisca_core import simulations
 
 # import check_structure from : ...
 # from openfisca_france_data.build_openfisca_survey_data.utils import check_structure
+
+
 def check_structure(dataframe):
-# duplicates = dataframe.noindiv.duplicated().sum()
-# assert duplicates == 0, "There are {} duplicated individuals".format(duplicates)
-# df.drop_duplicates("noindiv", inplace = True)
+    # duplicates = dataframe.noindiv.duplicated().sum()
+    # assert duplicates == 0, "There are {} duplicated individuals".format(duplicates)
+    # df.drop_duplicates("noindiv", inplace = True)
     for entity in ["menages", "foyers_fiscaux"]:
         role = 'qui' + entity
         entity_id = 'id' + entity
@@ -96,10 +98,10 @@ def main(liam, annee_leg=None, annee_base=None, mode_output='array'):
         if isinstance(annee_base, int):
             annee_base = [annee_base]
     else:
-        #TODO: ? peut-être updater pour qaund
+        # TODO: ? peut-être updater pour qaund
         output_tab = os.path.join(path_til[0], "output", "to_run_leg.h5")
-        get_years =  HDFStore(output_tab)
-        years = [x[-4:] for x in dir(get_years.root) if x[0]!='_' ]
+        get_years = HDFStore(output_tab)
+        years = [x[-4:] for x in dir(get_years.root) if x[0] != '_']
         get_years.close()
 
     boum
@@ -164,7 +166,7 @@ def main(liam, annee_leg=None, annee_base=None, mode_output='array'):
         of_entity.step_size = sum(selected)
         of_entity.count = sum(selected)
 
-        of_entity.roles_count = 10 # TODO: faire une fonction (max du nombre d'enfant ?
+        of_entity.roles_count = 10  # TODO: faire une fonction (max du nombre d'enfant ?
 
         # pour toutes les variables de l'entité of
         for column in of_entity.column_by_name:

@@ -3,7 +3,6 @@ from __future__ import print_function
 
 import os
 import pkg_resources
-from itertools import chain
 
 from liam2.simulation import Simulation
 from liam2.importer import csv2h5

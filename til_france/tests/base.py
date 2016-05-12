@@ -3,15 +3,12 @@
 import os
 import pkg_resources
 
-
-import matplotlib.pyplot as plt
 import pandas
-
+from webcolors import rgb_to_hex
 
 from til_core.config import Config
 from til_core.simulation import TilSimulation
 
-from webcolors import rgb_to_hex
 
 # RGB tuples
 ipp_colors_not_normalized = dict(
@@ -104,5 +101,3 @@ def plot_csv(simulation):
         fig = ax.get_figure()
         fig.savefig(os.path.join(figures_directory, '{}.png'.format(csv_file)))
         del ax, fig
-
-

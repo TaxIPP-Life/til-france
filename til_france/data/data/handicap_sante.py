@@ -36,7 +36,7 @@ def compute_nans_and_missing_values(dataframe, column):
         if nans != 0 or missing_values != 0:
             message = 'Variable {} has {} nans and {} missing values (= {})'.format(
                 column, nans, missing_values, int(round(missing)) if missing is not None else None)
-            print message
+            print(message)
         return nans, missing_values, missing
 
 
@@ -104,7 +104,7 @@ def impute_value(dataframe, endogeneous_variable, exogeneous_variables):
     mod = sm.OLS(y, X)    # Describe model
     res = mod.fit()       # Fit model
     # print res.summary()   # Summarize model
-    error_variance = res.scale # the square root of `scale` is often called the standard error of the regression
+    error_variance = res.scale  # the square root of `scale` is often called the standard error of the regression
 
     missing_dataframe = dataframe.copy()
     nans, missing_values, missing = compute_nans_and_missing_values(dataframe, endogeneous_variable)
@@ -200,12 +200,12 @@ if __name__ == "__main__":
     exogeneous_variables = ['age', 'sexe']
     imputed_dataframe = initial_dataframe.copy()
     for endogeneous_variable in ['cdatco', 'cdatse', 'agfinetu', 'rgir']:
-        print '_____ {} ____'.format(endogeneous_variable)
+        # print '_____ {} ____'.format(endogeneous_variable)
         compute_nans_and_missing_values(imputed_dataframe, endogeneous_variable)
-        print '==='
+        # print '==='
         imputed_dataframe = impute_value(imputed_dataframe, endogeneous_variable, exogeneous_variables)
         nans, missing_values, missing = compute_nans_and_missing_values(imputed_dataframe, endogeneous_variable)
-        print missing_values
+        # print missing_values
 
     dataframe = rename_variables(imputed_dataframe)
     dataframe = dataframe.dropna(subset = ['age']).query('age >= 60').copy()

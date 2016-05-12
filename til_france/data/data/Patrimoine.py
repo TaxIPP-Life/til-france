@@ -284,6 +284,8 @@ class Patrimoine(DataTil):
 
         # travail sur les carrières
         if method == 'from_external_match':
+            config = Config()
+            patrimoine_data_directory = config.get('raw_data', 'patrimoine_data_directory')
             path_patr_past = os.path.join(patrimoine_data_directory, 'carriere_passee_patrimoine.csv')
             past = read_csv(path_patr_past)
             assert past['identind'].isin(individus['identind']).all()
@@ -619,8 +621,8 @@ class Patrimoine(DataTil):
             k = str(k)
             # hodln : lien de parenté
             var_hod = ['hodln', 'hodsex', 'hodan', 'hodco', 'hodip', 'hodenf', 'hodemp', 'hodcho', 'hodpri', 'hodniv']
-            var_hod_rename = ['hodln', 'sexe', 'anais', 'couple', 'dip6', 'nb_enf', 'hodemp', 'hodcho', 'hodpri',
-                'hodniv']
+            var_hod_rename = [
+                'hodln', 'sexe', 'anais', 'couple', 'dip6', 'nb_enf', 'hodemp', 'hodcho', 'hodpri', 'hodniv']
             var_hod_k = [var + k for var in var_hod]
             temp = menages.loc[menages[var_hod_k[0]].notnull(), ['id'] + var_hod_k]
             dict_rename = {'id': 'idmen'}
@@ -832,8 +834,9 @@ class Patrimoine(DataTil):
         parent_found3 = match3.evaluate(orderby=None, method='cells')
         individus.loc[parent_found3.index, ['pere']] = child_out_of_house.loc[parent_found3, ['pere']]
 
-        log.info(u" au départ on fait " + str(len(parent_found1) + len(parent_found2) + len(parent_found3)) +
-            " match enfant-parent hors dom")
+        log.info(u" au départ on fait {} match enfant-parent hors dom".format(
+            len(parent_found1) + len(parent_found2) + len(parent_found3)))
+
         # on retire les match non valides
         to_check = individus[['id', 'age_en_mois', 'sexe', 'idmen', 'partner', 'pere', 'mere', 'lienpref']]
         tab = to_check.copy()
@@ -956,12 +959,14 @@ class Patrimoine(DataTil):
             insee.index = ['{}_{}'.format(decade, sexe_number) for decade in insee.index]
             margins_by_decade.update(insee.to_dict())
 
-        log.info('''Marges par décade et sexe.
+        log.info('''
+Marges par décade et sexe.
 Hommes: {}
 Femmes: {}'''.format(
-                [(decade, margins_by_decade['{}_0'.format(decade)]) for decade in range(0, 11)],
-                [(decade, margins_by_decade['{}_1'.format(decade)]) for decade in range(0, 11)]
-                ))
+            [(decade, margins_by_decade['{}_0'.format(decade)]) for decade in range(0, 11)],
+            [(decade, margins_by_decade['{}_1'.format(decade)]) for decade in range(0, 11)]
+            ))
+
         parameters = dict(
             method = 'logit',
             lo = 1.0 / 3.0,

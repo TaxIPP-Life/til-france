@@ -16,7 +16,8 @@ import pdb
 import time
 import sys
 
-# 1- Importation des classes/librairies/tables nécessaires à l'importation des données de Destinie -> Recup des infos dans Patrimoine
+# 1- Importation des classes/librairies/tables nécessaires à l'importation des données de Destinie
+# -> Recup des infos dans Patrimoine
 
 from til.data.DataTil import DataTil
 from til.data.utils.utils import minimal_dtype, drop_consecutive_row
@@ -36,8 +37,10 @@ class Destinie(DataTil):
         self.survey_date = 100 * self.survey_year + 1
         # TODO: Faire une fonction qui check où on en est, si les précédent on bien été fait, etc.
         # TODO: Dans la même veine, on devrait définir la suppression des variables en fonction des étapes à venir.
-        self.methods_order = ['load', 'format_initial', 'enf_to_par', 'check_partneroint', 'creation_menage', 'creation_foy',
-                               'var_sup', 'add_futur', 'store_to_liam']
+        self.methods_order = [
+            'load', 'format_initial', 'enf_to_par', 'check_partneroint', 'creation_menage', 'creation_foy',
+            'var_sup', 'add_futur', 'store_to_liam'
+            ]
 
     def load(self):
         def _BioEmp_in_2():
@@ -52,7 +55,8 @@ class Destinie(DataTil):
             taille = len(BioEmp) / 3
             BioEmp['id'] = BioEmp.index / 3
 
-            # selection0 : informations atemporelles  sur les individus (identifiant, sexe, date de naissance et âge de fin d'étude)
+            # selection0 : informations atemporelles  sur les individus (identifiant, sexe, date de naissance et
+            #    âge de fin d'étude)
             selection0 = [3 * x for x in range(taille)]
             ind = BioEmp.iloc[selection0].copy()
             ind.reset_index(inplace=True)
@@ -72,17 +76,17 @@ class Destinie(DataTil):
             selection1 = [3 * x + 1 for x in range(taille)]
             statut = BioEmp.iloc[selection1].copy()
             statut = np.array(statut.set_index('id').stack().reset_index())
-            #statut = statut.rename(columns={'level_1':'period', 0:'workstate'})
-            #statut = statut[['id', 'period', 'workstate']] #.fillna(np.nan)
-            #statut = minimal_dtype(statut)
+            # statut = statut.rename(columns={'level_1':'period', 0:'workstate'})
+            # statut = statut[['id', 'period', 'workstate']] #.fillna(np.nan)
+            # statut = minimal_dtype(statut)
 
             # selection2 : informations sur les salaires
             selection2 = [3 * x + 2 for x in range(taille)]
             sal = BioEmp.iloc[selection2].copy()
             sal = sal.set_index('id').stack().reset_index()
             sal = sal[0]
-            #.fillna(np.nan)
-            #sal = minimal_dtype(sal)
+            # .fillna(np.nan)
+            # sal = minimal_dtype(sal)
 
             # Merge de selection 1 et 2 :
             emp = np.zeros((len(sal), 4))
@@ -96,9 +100,12 @@ class Destinie(DataTil):
 
         def _lecture_BioFam():
             path = os.path.join(path_data_destinie, 'BioFam.txt')
-            BioFam = read_table(path, sep=';',
-                                   header=None, names=['id', 'pere', 'mere', 'civilstate', 'partner',
-                                                       'enf1', 'enf2', 'enf3', 'enf4', 'enf5', 'enf6'])
+            BioFam = read_table(
+                path,
+                sep = ';',
+                header = None,
+                names = ['id', 'pere', 'mere', 'civilstate', 'partner', 'enf1', 'enf2', 'enf3', 'enf4', 'enf5', 'enf6']
+                )
             # Index limites pour changement de date
             delimiters = BioFam['id'].str.contains('Fin')
             annee = BioFam[delimiters].index.tolist()  # donne tous les index limites
@@ -117,7 +124,8 @@ class Destinie(DataTil):
             for var in ['pere', 'mere', 'partner'] + list_enf:
                 BioFam.loc[BioFam[var] < 0, var] = -1
             BioFam = BioFam.fillna(-1)
-#             BioFam = drop_consecutive_row(BioFam.sort(['id', 'period']), ['id', 'pere', 'mere', 'partner', 'civilstate'])
+            # BioFam = drop_consecutive_row(
+            #    BioFam.sort(['id', 'period']), ['id', 'pere', 'mere', 'partner', 'civilstate'])
             BioFam.replace(-1, np.nan, inplace=True)
             BioFam = minimal_dtype(BioFam)
             BioFam['civilstate'].replace([2, 1, 4, 3, 5], [1, 2, 3, 4, 5], inplace=True)
@@ -137,8 +145,8 @@ class Destinie(DataTil):
         self.entity_by_name['individus']['sexe'] = _recode_sexe(self.entity_by_name['individus']['sexe'])
         self.BioFam = _lecture_BioFam()
         log.info(u"Temps d'importation des données : " + str(time.time() - start_time) + "s")
-
         log.info(u"fin de l'importation des données")
+
     def format_initial(self):
         '''
         Aggrégation des données en une seule base
@@ -154,11 +162,11 @@ class Destinie(DataTil):
             Création de la table décès qui donne l'année de décès des individus (index = identifiant)  '''
             emp = merge(emp, ind[['naiss']], left_on = 'id', right_on = ind[['naiss']].index)
             emp['period'] = emp['period'] + emp['naiss']
-            #deces = emp.groupby('id')['period'].max()
+            # deces = emp.groupby('id')['period'].max()
             emp = emp[['id', 'period', 'workstate', 'salaire_imposable']]
 
-            ## Deux étapes pour recoder une nouvelle base Destinie avec le code d'une
-            ## ancienne base : nouveaux états non pris en compte pour l'instant
+            # Deux étapes pour recoder une nouvelle base Destinie avec le code d'une
+            # ancienne base : nouveaux états non pris en compte pour l'instant
             # contractuel + stagiaire -> RG non-cadre
             emp['workstate'].replace([11, 12, 13], 1, inplace = True)
 
@@ -223,8 +231,9 @@ class Destinie(DataTil):
                 past['period'].max()),
                 )
 
-            past['period'] = (past['period'] - 1)/100
-            # La table futur doit contenir une ligne par changement de statut à partir de l'année n+1, on garde l'année n, pour
+            past['period'] = (past['period'] - 1) / 100
+            # La table futur doit contenir une ligne par changement de statut à partir de l'année n+1,
+            # on garde l'année n, pour
             # voir si la situation change entre n et n+1
             # Indications de l'année du changement + variables inchangées -> -1
             futur = ind[ind['period'] >= survey_year].copy()
@@ -264,13 +273,13 @@ class Destinie(DataTil):
                 futur = futur.sort(['id', 'period'])
                 no_last = futur.duplicated('id', take_last=True)
                 futur['death'] = -1
-                cond_death = (no_last == False) & ((futur['workstate'] == 0) | (futur['period'] != 2060))
+                cond_death = not(no_last) & ((futur['workstate'] == 0) | (futur['period'] != 2060))
                 futur.loc[cond_death, 'death'] = 100 * futur.loc[cond_death, 'period'] + 1
                 futur.loc[(futur['workstate'] != 0) & (futur['death'] != -1), 'death'] += 1
                 add_lines = futur.loc[(futur['period'] > futur['death']) & (futur['death'] != -1), 'id']
                 if len(add_lines) != 0:
                     # TODO: prévoir de rajouter une ligne quand il n'existe pas de ligne associée à la date de mort.
-                    print len(add_lines)
+                    print(len(add_lines))
                     pdb.set_trace()
 
                 return futur
@@ -320,8 +329,10 @@ class Destinie(DataTil):
             #     par_ini = identifiant du parent déclaré par l'enfant
             #     id = identifiant de l'enfant (déclaré ou déclarant)
             par_ini = par_ini[par_ini[par] != -1]
-            link = ind.loc[(ind['enf1'] != -1) & (ind['sexe'] == sexe),  list_enf]
-            link = link.stack().reset_index().rename(columns={'id': par, 'level_1': 'link', 0 :'id'})[[par,'id']].astype(int)
+            link = ind.loc[(ind['enf1'] != -1) & (ind['sexe'] == sexe), list_enf]
+            link = link.stack().reset_index().rename(
+                columns = {'id': par, 'level_1': 'link', 0: 'id'}
+                )[[par, 'id']].astype(int)
             link = link[link['id'] != -1]
             link = merge(link, par_ini, on = 'id', suffixes=('_decla', '_ini'),
                          how = 'outer').fillna(-1)
@@ -335,7 +346,7 @@ class Destinie(DataTil):
 
             # Cas 2 : enfants déclarant un parent mais ce parent ne les déclare pas (rattachés au ménage du parent)
             # Remarques : 8 cas pour les pères, 10 pour les mères
-            parents = link[(link[par + '_decla'] != link[par + '_ini']) & (link[par + '_decla'] == -1)] ['id']
+            parents = link[(link[par + '_decla'] != link[par + '_ini']) & (link[par + '_decla'] == -1)]['id']
             ind.loc[parents.values, 'men_' + par] = 1
             log.info(str(sum(ind['men_' + par] == 1)) + " vivent avec leur " + par)
 
@@ -355,16 +366,18 @@ class Destinie(DataTil):
         Vérifications/corrections de :
             - La réciprocité des déclarations des conjoints
             - La concordance de la déclaration des états civils en cas de réciprocité
-            - partner hdom : si couple_hdom=True, les couples ne vivant pas dans le même domicile sont envisageable, sinon non.
+            - partner hdom : si couple_hdom=True, les couples ne vivant pas dans le même domicile sont envisageable,
+                sinon non.
         '''
         ind = self.entity_by_name['individus']
         ind = ind.fillna(-1)
-        rec = ind.loc[ind['partner'] != -1, ['id', 'partner', 'civilstate', 'pere', 'mere']] #| ind['civilstate'].isin([1,5])
-        reciprocity = rec.merge(rec, left_on='id', right_on='partner', suffixes=('','_c'))
+        rec = ind.loc[
+            ind['partner'] != -1, ['id', 'partner', 'civilstate', 'pere', 'mere']]  # | ind['civilstate'].isin([1,5])
+        reciprocity = rec.merge(rec, left_on='id', right_on='partner', suffixes=('', '_c'))
         rec = reciprocity
         # 1- check reciprocity of partner
         assert all(rec['partner_c'] == rec['id'])
-        assert all(rec.loc[rec['civilstate'].isin([1,5]), 'partner'] > -1)
+        assert all(rec.loc[rec['civilstate'].isin([1, 5]), 'partner'] > -1)
         # 2- priority to marriage
         rec.loc[rec['civilstate_c'] == 1, 'civilstate'] = 1
         ind.loc[ind['partner'] != -1, 'civilstate'] = rec['civilstate'].values
@@ -389,8 +402,7 @@ class Destinie(DataTil):
         # 1ere étape : Détermination des têtes de ménages
         # (a) - Plus de 25 ans ou plus de 17ans ne déclarant ni pères, ni mères
         maj = (
-            (ind.loc[:, 'age_en_mois'] >= 12 * 25)
-            |
+            (ind.loc[:, 'age_en_mois'] >= 12 * 25) |
             ((ind.loc[:, 'men_pere'] == 0) & (ind.loc[:, 'men_mere'] == 0) & (ind.loc[:, 'age_en_mois'] > 12 * 16))
             ).copy()
         ind.loc[maj, 'quimen'] = 0
@@ -443,14 +455,18 @@ class Destinie(DataTil):
 #         care = {}
 #         for par in ['mere', 'pere']:
 #             care_par = ind.loc[(ind['men_' + par] == 1), ['id',par]].astype(int)
-#             par_care = ind.loc[(ind['age_en_mois'] > 12*74) & (ind['id'].isin(care_par[par].values) & (ind['partner'] == -1)), ['id']]
+#             par_care = ind.loc[
+#                (ind['age_en_mois'] > 12*74) & (ind['id'].isin(care_par[par].values) & (ind['partner'] == -1)),
+#                 ['id']
+#                 ]
 #             care_par = care_par.merge(par_care, left_on=par, right_on='id', how='inner',
 #                               suffixes = ('_enf', '_'+par))[['id_enf', 'id_'+par]]
 #             #print 'Nouveaux ménages' ,len(ind.loc[(ind['id'].isin(care_par['id_enf'].values)) & ind['quimen']!= 0])
 #             # Enfant ayant des parents à charge deviennent tête de ménage, parents à charge n'ont pas de foyers
 #             ind.loc[care_par['id_enf'], 'quimen'] = 0
 #             ind.loc[care_par['id_' + par], 'quimen'] = -2 # pour identifier les couples à charge
-#             # Si personne potentiellement à la charge de plusieurs enfants -> à charge de l'enfant ayant l'identifiant le plus petit
+#             # Si personne potentiellement à la charge de plusieurs enfants -> à charge de l'enfant ayant l'identifiant
+#             # le plus petit
 #             care_par.drop_duplicates('id_' + par, inplace=True)
 #             care[par] = care_par
 #             print str(len(care_par)) +" " + par + "s à charge"
@@ -499,9 +515,11 @@ class Destinie(DataTil):
         ind.fillna(-1, inplace=True)
 
         log.info(ind[ind['idmen'] == -1].to_string())
-        assert sum((ind['idmen'] == -1)) == 0  # Tout le monde a un ménage : on est content!
+        # Tout les individus doievtn appartenir à un ménage
+        assert sum((ind['idmen'] == -1)) == 0
         assert sum((ind['quimen'] < 0)) == 0
-        assert max(ind.loc[ind['quimen'] == 0, :].groupby('idmen')['quimen'].count()) == 1  # vérifie que le nombre de tête de ménage n'excède pas 1 par ménage
+        # Vérification que le nombre de tête de ménage n'excède pas 1 par ménage
+        assert max(ind.loc[ind['quimen'] == 0, :].groupby('idmen')['quimen'].count()) == 1
         log.info('Taille de la table men : {}'.format(len(men)))
         self.entity_by_name['individus'] = ind
         self.entity_by_name['menages'] = men

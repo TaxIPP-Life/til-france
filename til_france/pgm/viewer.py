@@ -4,7 +4,6 @@
 """This is the launcher script for the ViTables application."""
 
 
-
 from __future__ import print_function
 
 #       Copyright (C) 2005-2007 Carabos Coop. V. All rights reserved
@@ -25,8 +24,6 @@ from __future__ import print_function
 #
 #       Author:  Vicent Mas - vmas@vitables.org
 
-__docformat__ = 'restructuredtext'
-
 
 import locale
 from optparse import OptionParser
@@ -38,6 +35,7 @@ sip.setapi('QString', 2)
 sip.setapi('QVariant', 2)
 
 from PyQt4 import QtGui
+
 
 def main(args):
     """The application launcher.
@@ -76,12 +74,15 @@ def main(args):
     # app.installTranslator(qt_translator)
 
     # Parse the command line
-    parser = OptionParser(prog='vitables', version=vtconfig.getVersion(),
-        usage='''%prog [options] [h5file]''')
-    parser.add_option('-m', '--mode', dest='mode', choices=['r', 'a'],
-        help='mode access for a database', metavar='MODE')
-    parser.add_option('-d', '--dblist', dest='dblist',
-        help='a file with the list of databases to be open', metavar='h5list')
+    parser = OptionParser(
+        prog = 'vitables',
+        version = vtconfig.getVersion(),
+        usage = '''%prog [options] [h5file]'''
+        )
+    parser.add_option(
+        '-m', '--mode', dest='mode', choices=['r', 'a'], help='mode access for a database', metavar='MODE')
+    parser.add_option(
+        '-d', '--dblist', dest='dblist', help='a file with the list of databases to be open', metavar='h5list')
     parser.set_defaults(mode='a', dblist='')
     (options, h5files) = parser.parse_args()
     if options.dblist:
@@ -97,13 +98,13 @@ def main(args):
 
 if __name__ == '__main__':
     # How to run in Mac OS X
-    if (sys.platform == 'darwin'
-        and not sys.executable.endswith('MacOS/Python')
-        and getattr(sys, 'frozen', None) != 'macosx_app'):
-        # When running this script under Mac OS X from the command line
-        # (but not as an app), the ``pythonw`` interpreter must be used
-        # instead of the ordinary ``python``.
-        os.execvp('pythonw', ['pythonw', __file__] + sys.argv[1:])
+    if (
+        sys.platform == 'darwin' and not sys.executable.endswith('MacOS/Python') and
+        getattr(sys, 'frozen', None) != 'macosx_app'
+            ):
+            # When running this script under Mac OS X from the command line
+            # (but not as an app), the ``pythonw`` interpreter must be used
+            # instead of the ordinary ``python``.
+            os.execvp('pythonw', ['pythonw', __file__] + sys.argv[1:])
 
     main(sys.argv)
-
