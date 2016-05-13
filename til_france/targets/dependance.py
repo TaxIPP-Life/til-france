@@ -5,9 +5,9 @@ from __future__ import division
 
 
 import logging
-import numpy
+import numpy as np
 import os
-import pandas
+import pandas as pd
 
 from liam2.importer import array_to_disk_array
 from til_core.config import Config
@@ -26,7 +26,7 @@ def build_prevalence_2010(input_dir = None, uniform_weight = None):
         config = Config()
         input_dir = config.get('til', 'input_dir')
 
-    df = pandas.read_excel(drees_excel_file_path, sheetname ='Tab2', header = 3, parse_cols = 'B:O', skip_footer = 4)
+    df = pd.read_excel(drees_excel_file_path, sheetname ='Tab2', header = 3, parse_cols = 'B:O', skip_footer = 4)
     for column in df.columns:
         if column.startswith('Unnamed') or column.startswith('Ensemble'):
             del df[column]
@@ -34,8 +34,8 @@ def build_prevalence_2010(input_dir = None, uniform_weight = None):
     df.columns = range(1, 7)
     check_dependance_directory_existence(input_dir)
     csv_file_path = os.path.join(input_dir, 'parameters', 'dependance', 'dependance_prevalence_2010.csv')
-    data = pandas.DataFrame(df.xs(2010)).T
-    data = (data / uniform_weight).apply(numpy.round)
+    data = pd.DataFrame(df.xs(2010)).T
+    data = np.round(data / uniform_weight)
     data.astype(int).to_csv(csv_file_path, index = False)
     line_prepender(csv_file_path, 'age_category')
 
@@ -47,7 +47,7 @@ def build_prevalence_all_years(globals_node = None, input_dir = None, to_csv = N
             config = Config()
             input_dir = config.get('til', 'input_dir')
 
-    df = pandas.read_excel(drees_excel_file_path, sheetname ='Tab6A', header = 3, parse_cols = 'B:E', skip_footer = 3)
+    df = pd.read_excel(drees_excel_file_path, sheetname ='Tab6A', header = 3, parse_cols = 'B:E', skip_footer = 3)
     # "Au 1er janvier"
     df.columns = ['year', 'dependants_optimiste', 'DEPENDANTS', 'dependants_pessimiste']
     df.set_index('year', inplace = True)

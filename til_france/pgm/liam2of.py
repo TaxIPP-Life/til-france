@@ -102,7 +102,7 @@ def table_for_of(simulation, period=None, check_validity=False, save_tables=Fals
     years = np.unique(table['ind']['period'].values / 100)
     if period is not None:
         years = [period]
-        print years
+        print(years)
 
     if check_validity:
         for year in years:
@@ -114,7 +114,7 @@ def table_for_of(simulation, period=None, check_validity=False, save_tables=Fals
                 try:
                     assert ind.groupby([id, qui]).size().max() == 1
                 except:
-                    print ent
+                    print(ent)
                     pb = ind.groupby([id, qui]).size() > 1
                     print(ind.groupby([id, qui]).size()[pb])
                     pdb.set_trace()

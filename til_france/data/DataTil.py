@@ -5,7 +5,6 @@
 
 
 import os
-import pdb
 
 
 import numpy as np
@@ -532,15 +531,11 @@ class DataTil(object):
         # on va plus loin sur les conjoints pour éviter les frères et soeurs:
         tab_partner = tab.loc[tab['partner'] > -1].copy()
         tab_partner.replace(-1, np.nan, inplace=True)
-        try:
-            # Les couples dovent être réciproques
-            assert (tab_partner['id'] == tab_partner['partner_partner']).all()
-            # Il ne doit pas y avoir de mariage entre frere et soeur
-            assert (tab_partner['mere'] != tab_partner['mere_partner']).all()
-            assert (tab_partner['pere'] != tab_partner['pere_partner']).all()
-        except:
-            test = tab_partner['pere'] == tab_partner['pere_partner']
-            pdb.set_trace()
+        # Les couples dovent être réciproques
+        assert (tab_partner['id'] == tab_partner['partner_partner']).all()
+        # Il ne doit pas y avoir de mariage entre frere et soeur
+        assert (tab_partner['mere'] != tab_partner['mere_partner']).all()
+        assert (tab_partner['pere'] != tab_partner['pere_partner']).all()
 
     def final_check(self):
         ''' Les checks sont censés vérifiés toutes les conditions

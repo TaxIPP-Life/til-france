@@ -27,7 +27,7 @@ naiss = reg_ind.max()['naiss']
 deces = reg_ind.max()['deces']
 duree_vie = (deces > 0) * (deces - naiss)
 duree_vie_freq = duree_vie.value_counts()
-print duree_vie_freq
+print(duree_vie_freq)
 
 
 pdb.set_trace()

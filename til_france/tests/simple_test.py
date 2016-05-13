@@ -1,5 +1,7 @@
 # -*- coding:utf-8 -*-
 
+
+import logging
 import os
 import pkg_resources
 
@@ -9,6 +11,9 @@ import pandas
 
 from liam2.simulation import Simulation
 import openfisca_france_data
+
+
+log = logging.getLogger(__name__)
 
 
 path_model = os.path.join(
@@ -87,10 +92,10 @@ def test_variables():
 
     entities = [('person', 'individus'), ('declar', 'foyers_fiscaux'), ('menages', 'menages')]
     for patrimoine_entity, openfisca_entity in entities:
-        print patrimoine_entity, openfisca_entity
+        log.info(patrimoine_entity, openfisca_entity)
         patrimoine_columns = patrimoine_store['/entities/{}'.format(patrimoine_entity)]
         openfisca_columns = openfisca_store['/entities/{}'.format(openfisca_entity)]
-        print set(patrimoine_columns).difference(set(openfisca_columns))
+        log.info(set(patrimoine_columns).difference(set(openfisca_columns)))
 
 if __name__ == '__main__':
     simulation = test()

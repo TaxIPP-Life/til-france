@@ -91,7 +91,7 @@ def main(liam, annee_leg=None, annee_base=None, mode_output='array'):
      mais à voir
      - annee_leg pour donner les paramètres
      '''
-    print "annee base", annee_base
+    print("annee base", annee_base)
 
     # on recupere la liste des annees en entree
     if annee_base is not None:

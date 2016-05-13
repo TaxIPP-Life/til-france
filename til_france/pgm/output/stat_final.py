@@ -9,7 +9,7 @@ __version__ = "0.0"
 
 
 def stat(year):
-    print "Calcul des statistiques individuelles"
+    print("Calcul des statistiques individuelles")
 
     simul = "C:/til/output/simul.h5"
     simul = HDFStore(simul)

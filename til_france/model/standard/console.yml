@@ -17,7 +17,7 @@ import:
   - entreprises/entreprises.yml
 
 globals:
-  weight: 200
+  # weight: 200
   uniform_weight:
     type: float
 
@@ -39,7 +39,7 @@ simulation:
     - register: [init_reg]
     # - legislation: [2009]
     - register: [sum_indiv]
-    - individus: [stat_period_ini, stat_period]
+    - individus: [statistiques_initialisation, statistiques_periodiques]
 
   processes:
   # apres chaque étape qui modifie les ménages,
@@ -88,7 +88,7 @@ simulation:
     - legislation: [2009] #[annee leg] = année de départ de la simulation
     # - register: [alive]
     # - register: [sum_indiv]
-    - individus: [stat_period]
+    - individus: [statistiques_periodiques]
 
   output:
     file: simul.h5

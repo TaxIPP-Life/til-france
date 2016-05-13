@@ -276,7 +276,6 @@ def population_diagnostic(simulation):
             '{}_insee'.format(csv_file): get_insee_projection(csv_file, 'total', function = 'sum')
             })
         insee_data_frame.index.name = 'period'
-
         data_frame = pandas.concat([simulation_data_frame * uniform_weight, insee_data_frame], axis = 1)
 
         if population is not None:

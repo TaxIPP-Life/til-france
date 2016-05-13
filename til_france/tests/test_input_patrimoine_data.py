@@ -77,23 +77,23 @@ insee_proj_pop_total = insee_proj_pop_F + insee_proj_pop_H
 destinie_uniform_weight = insee_proj_pop_total / (destinie_til.age >= 0).sum()
 
 
-print 'population totale INSEE: ', insee_proj_pop_total
-print 'population totale Patrimoine (hors DOM): ', ((individus_patrimoine.age >= 0) * individus_patrimoine.pond).sum()
-print 'population totale TIL patrimoine: ', (individus_til.age >= 0).sum() * uniform_weight
-print 'population totale TIL Destinie: ', (destinie_til.age >= 0).sum() * destinie_uniform_weight
+print('population totale INSEE: ', insee_proj_pop_total)
+print('population totale Patrimoine (hors DOM): ', ((individus_patrimoine.age >= 0) * individus_patrimoine.pond).sum())
+print('population totale TIL patrimoine: ', (individus_til.age >= 0).sum() * uniform_weight)
+print('population totale TIL Destinie: ', (destinie_til.age >= 0).sum() * destinie_uniform_weight)
 
 
-print 'Ecart absolu: ', (individus_til.age >= 0).sum() * uniform_weight - insee_proj_pop_total
-print 'Ecart absolu hommes: ', (
-    ((individus_til.age >= 0) & (individus_til.sexe == 0)).sum() * uniform_weight - insee_proj_pop_H)
-print 'Ecart absolu femmes: ', (
-    ((individus_til.age >= 0) & (individus_til.sexe == 1)).sum() * uniform_weight - insee_proj_pop_F)
+print('Ecart absolu: ', (individus_til.age >= 0).sum() * uniform_weight - insee_proj_pop_total)
+print('Ecart absolu hommes: ', (
+    ((individus_til.age >= 0) & (individus_til.sexe == 0)).sum() * uniform_weight - insee_proj_pop_H))
+print('Ecart absolu femmes: ', (
+    ((individus_til.age >= 0) & (individus_til.sexe == 1)).sum() * uniform_weight - insee_proj_pop_F))
 
-print 'Ecart absolu: ', (destinie_til.age >= 0).sum() * destinie_uniform_weight - insee_proj_pop_total
-print 'Ecart absolu hommes: ', (
-    ((destinie_til.age >= 0) & (destinie_til.sexe == 0)).sum() * destinie_uniform_weight - insee_proj_pop_H)
-print 'Ecart absolu femmes: ', (
-    ((destinie_til.age >= 0) & (destinie_til.sexe == 1)).sum() * destinie_uniform_weight - insee_proj_pop_F)
+print('Ecart absolu: ', (destinie_til.age >= 0).sum() * destinie_uniform_weight - insee_proj_pop_total)
+print('Ecart absolu hommes: ', (
+    ((destinie_til.age >= 0) & (destinie_til.sexe == 0)).sum() * destinie_uniform_weight - insee_proj_pop_H))
+print('Ecart absolu femmes: ', (
+    ((destinie_til.age >= 0) & (destinie_til.sexe == 1)).sum() * destinie_uniform_weight - insee_proj_pop_F))
 
 
 # Grouping by age_group

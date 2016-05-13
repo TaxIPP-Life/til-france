@@ -83,7 +83,7 @@ entities:
       options_initialisation:
         - 0
 
-      stat_period_ini:
+      statistiques_initialisation:
           - csv('period', 'naissances',
                 fname = 'naissances.csv'
                 )
@@ -118,7 +118,7 @@ entities:
               'period', 'marie', 'celib', 'divorce', 'veuf', 'pacs', 'en_couple',
               fname='civilstate.csv'
               )
-      stat_period:
+      statistiques_periodiques:
           - csv('period', period, 'population',
               groupby(trunc(age / 10), sexe),
               fname = 'population2.csv', mode = 'a'

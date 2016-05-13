@@ -40,17 +40,18 @@ entities:
         - age_corrige: age - (findet - 16) / 2  # On corrige l'age de fin d'etude
         - etudes_courtes: findet <= 20  # TODO: age moyen de sa generation
         - etudes_longues: findet > 20
-        # Première mise en couple
+        # Première mise en couple .264 est une cale destinie
         - candidat_couple: if(
             (age >= 18) and (age <= 90) and (not INCOUPLE) and ISSINGLE,
             if(
               ISMALE,
               logit_score(
                 -73.10 + 8.96 * age_corrige - 0.408 * age_corrige ** 2 + 0.00796 * age_corrige ** 3
-                - 5.72 / 100000 * (age_corrige ** 4) - 0.13 * etudes_courtes + 0.04 * etudes_longues
-                + .264),  # cale Destinie
+                - 5.72 / 100000 * (age_corrige ** 4) - 0.13 * etudes_courtes + 0.04 * etudes_longues + .264
+                ),
               logit_score(
-                -68.49 + 9.06 * age_corrige -0.441 * age_corrige ** 2 + 0.00914 * age_corrige ** 3 - 6.91 / 100000 * (age_corrige ** 4) - 0.06 * etudes_longues
+                -68.49 + 9.06 * age_corrige -0.441 * age_corrige ** 2 + 0.00914 * age_corrige ** 3
+                - 6.91 / 100000 * (age_corrige ** 4) - 0.06 * etudes_longues
                 )
               ),
             candidat_couple

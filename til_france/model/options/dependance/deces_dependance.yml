@@ -47,7 +47,6 @@ entities:
         - decede: if(l_partner.decede and l_partner.id < id, False, decede)
         - decede: if(l_pere.decede, False, decede)
         - decede: if(l_mere.decede, False, decede)
-        - statistiques_deces(decede)
         - show('Age moyen des partenaires', round(avg(l_partner.age, filter=l_partner.age>-1), 2))
         - show('\nNombre de personne dépendante décédées', count(decede and (dependance_niveau > 0)) * uniform_weight)
         - return decede

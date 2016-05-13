@@ -89,7 +89,7 @@ def test_csv():
     directory = os.path.abspath('/home/benjello/data/til/output/til/')
     files_path = [
         os.path.join(directory, csv_file + '.csv')
-        for csv_file in 'civilstate', 'stat', 'workstate'
+        for csv_file in ['civilstate', 'stat', 'workstate']
         ]
     for file_path in files_path:
         df = pandas.read_csv(file_path)
