@@ -73,7 +73,7 @@ On passe possiblement à côté d'élément redistributif.
 Par exemple, rien ne dit, que certains ne financent pas plus la retraite ou les dépenses de maladie des autres.
 On sous-estime peut-être la redistribution.
 
-### Évaluation \textit{ex ante} de réformes
+### Évaluation _ex ante_ de réformes
 
 Un modèle de microsimulation est aussi un élément d'évaluation ex-ante des politiques publiques.
 Les simulations en coupe sont en générale assez limitée.
