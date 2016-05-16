@@ -54,7 +54,6 @@ def build_prevalence_all_years(globals_node = None, input_dir = None, to_csv = N
     data = df.reindex(index = range(2010, 2061)).interpolate(method='polynomial', order = 6)
     data.index = [int(str(year - 1)) for year in data.index]
     data.index.name = "PERIOD"
-
     if globals_node:
         array_to_disk_array(globals_node, 'dependance_prevalence_all_years', data.DEPENDANTS.values)
     elif to_csv:

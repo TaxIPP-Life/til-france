@@ -13,6 +13,7 @@ test_root = os.path.join(
     pkg_resources.get_distribution('til_france').location,
     'til_france',
     'tests',
+    'models',
     )
 
 
