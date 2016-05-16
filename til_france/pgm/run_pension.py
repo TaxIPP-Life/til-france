@@ -3,10 +3,12 @@
 import datetime as dt
 import pandas as pd
 
-
-from til_pension.pension_data import PensionData
-from til_pension.pension_legislation import PensionParam, PensionLegislation
-from til_pension.simulation import PensionSimulation
+try:
+    from til_pension.pension_data import PensionData
+    from til_pension.pension_legislation import PensionParam, PensionLegislation
+    from til_pension.simulation import PensionSimulation
+except ImportError:
+    til_pension = None
 
 
 def get_pension(context, yearleg):

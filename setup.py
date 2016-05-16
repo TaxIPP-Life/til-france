@@ -56,11 +56,20 @@ setup(
     license = 'http://www.fsf.org/licensing/licenses/agpl-3.0.html',
     long_description = '\n'.join(doc_lines[2:]),
     url = 'https://github.com/TaxIPP-Life/til-france',
+    extras_require = dict(
+        test = [
+            'scipy >= 0.17',
+            'nose',
+            'pandas >= 0.17',
+            'webcolors',
+            'xlrd',
+            ],
+        ),
     install_requires = [
         'numpy',
-        'pandas',
-        # 'til-core'
-        ],
+        'Til-Core',
+        'PyYAML >= 3.10',
+        'liam2'],
     packages = find_packages(),
-    zip_safe = False,
+    test_suite = 'nose.collector',
     )
