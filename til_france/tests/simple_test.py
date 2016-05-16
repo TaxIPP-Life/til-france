@@ -70,7 +70,7 @@ def test(regenerate_hdf_file = False, test_case = False):
             )
 
     output_dir = os.path.join(os.path.dirname(__file__), 'output')
-    console_file = os.path.join(path_model, 'test_case' if test_case else '', 'console.yml')
+    console_file = os.path.join(path_model, 'test_case' if test_case else '', 'model/standard/console.yml')
     simulation = Simulation.from_yaml(
         console_file,
         input_dir = None,
@@ -90,9 +90,9 @@ def test_variables():
     patrimoine_store = pandas.HDFStore(os.path.join(path_model, 'Patrimoine_1500.h5'))
     openfisca_store = pandas.HDFStore(os.path.join(path_model, 'toto.h5'))
 
-    entities = [('person', 'individus'), ('declar', 'foyers_fiscaux'), ('menages', 'menages')]
+    entities = [('individus', 'individus'), ('foyers_fiscaux', 'foyers_fiscaux'), ('menages', 'menages')]
     for patrimoine_entity, openfisca_entity in entities:
-        log.info(patrimoine_entity, openfisca_entity)
+        log.info('patrimoine: {} -> openfisca: {}'.format(patrimoine_entity, openfisca_entity))
         patrimoine_columns = patrimoine_store['/entities/{}'.format(patrimoine_entity)]
         openfisca_columns = openfisca_store['/entities/{}'.format(openfisca_entity)]
         log.info(set(patrimoine_columns).difference(set(openfisca_columns)))
