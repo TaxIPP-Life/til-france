@@ -6,6 +6,9 @@ til_france/tests/output/*.csv
 til_france/tests/output/*.h5
 docs/_book
 docs/node_modules
+til_france/tests/models/demographic_model/output/replication_*/
+til_france/tests/models/demographic_model/output/*.csv
+til_france/tests/models/demographic_model/output/*.h5
 
 ##########################
 # Local configuration file
