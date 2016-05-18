@@ -1,9 +1,4 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Thu Nov 12 19:05:59 2015
-
-@author: benjello
-"""
 
 import logging
 import numpy
