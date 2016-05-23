@@ -101,12 +101,22 @@ entities:
             if(being_very_dependant_score > uniform(), 2, 1),
             0
             )
-        - dependance_anciennete: if(
-            ISDEPENDANT,
-            1,
-            -1
-            )
         # TODO: add a sensible distribution of dependance anciennete FIXME
+        # TODO: deal with data_origin
+        # add alignment
+        # On sépare ceux qui ont plus de dix ans d'ancienneté dans la dépendance des autres
+        - dependance_anciennete_superieur_10_score: -1
+        - dependance_anciennete_superieur_10_score: if(
+            ISFEMALE and being_dependant,
+            logit_score(-0.0139 * age),
+            dependance_anciennete_superieur_10_score
+            )
+        - dependance_anciennete_superieur_10_score: if(
+            ISMALE and being_dependant,
+            logit_score(-0.0245 * age),
+            dependance_anciennete_superieur_10_score
+            )
+
         - show('\nNombre initial de (non) dépendants de niveau 0', round(count(dependance_niveau == 0) * uniform_weight))
         - show('\nNombre initial de dépendants de niveau 1', round(count(dependance_niveau == 1) * uniform_weight))
         - show('\nNombre initial de dépendants de niveau 2', round(count(dependance_niveau == 2) * uniform_weight))

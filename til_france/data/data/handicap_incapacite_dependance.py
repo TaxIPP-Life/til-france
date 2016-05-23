@@ -60,6 +60,7 @@ def load_dataframe():
     modb = modb.merge(mindiv, how = 'left')
     assert 'age' in modb.columns
     assert 'sexe' in modb.columns
+    modb['sexe'] = modb.sexe - 1
     result = modb.query('age >= 60')[['age', 'sexe', 'dependance_entree_age', 'poidscor']].copy()
     result['dependance_duree'] = result.age - result.dependance_entree_age
 
@@ -74,21 +75,29 @@ def load_dataframe():
     # On regarde la probabilité selon l'âge d'avoir plus de 10 ans de dépendance
     import statsmodels.formula.api as smf
     data['dependance_duree_sup_10'] = (data.dependance_duree >= 10) * 1
-    data
-    logit = smf.logit(formula='dependance_duree_sup_10 ~ age + sexe',
-                      data=data)
-    logit.fit().summary()
-
-    data_duree = data.query('dependance_duree_sup_10 < 1 & sexe == 2').copy()
-    data_duree.dependance_duree.hist(bins = 10)
+    for sexe in data.sexe.unique():
+        print sexe
+        logit = smf.logit(formula='dependance_duree_sup_10 ~ age',
+                          data=data.query('sexe == @sexe'))
+        logit.fit().summary()
 
 
-    import scipy.stats
-    res = sm.Poisson(data_duree.dependance_duree, np.ones_like(data_duree.dependance_duree)).fit()
-    res.summary()
 
-    import scipy.stats as stats
-    stats.exponweib.fit(data_duree.dependance_duree, floc=0)
+    for sexe in data.sexe.unique():
+        print sexe
+        data_duree = data.query('dependance_duree_sup_10 < 1 & sexe == @sexe').copy()
+        data_duree.dependance_duree.hist(bins = 10)
+
+
+        import scipy.stats
+        res = sm.Poisson(data_duree.dependance_duree, np.ones_like(data_duree.dependance_duree)).fit()
+        res.summary()
+
+        import scipy.stats as stats
+        stats.exponweib.fit(data_duree.dependance_duree, floc=0)
+
+        import scipy.stats as stats
+        stats.poisson.fit(data_duree.dependance_duree, floc=0)
 
 
     formula = 'dependance_duree ~ age'
