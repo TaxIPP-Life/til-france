@@ -84,7 +84,7 @@ def build_deaths(to_csv = False, input_dir = None, uniform_weight = 200):
             header = ','.join(columns_for_liam) + '\n' + first_row + '\n'
             df.dropna(inplace = True)
             df.drop(109, inplace = True)
-            df = (df / 200).round()
+            df = (df / uniform_weight).round()
             df.to_csv(file_path, index = True, header = False)
             with open(file_path, 'r') as input_file:
                 data = input_file.read().splitlines(True)

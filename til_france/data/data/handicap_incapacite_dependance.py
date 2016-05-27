@@ -64,6 +64,16 @@ def load_dataframe():
     result = modb.query('age >= 60')[['age', 'sexe', 'dependance_entree_age', 'poidscor']].copy()
     result['dependance_duree'] = result.age - result.dependance_entree_age
 
+    from gir_imputation import get_dataframe
+    gir = get_dataframe()
+
+
+    for sexe in result.sexe.unique():
+        data = result.query('sexe == @sexe').copy()
+        taux_dependants = (
+            np.average(data.dependance_entree_age != 1000, weights = data.poidscor)
+            )
+        print sexe, taux_dependants
 
     clean = result.query('(dependance_entree_age != 1000) & (dependance_entree_age != 999)').copy()
     data = clean.dropna()[['dependance_duree', 'age', 'sexe']].copy()
@@ -75,19 +85,17 @@ def load_dataframe():
     # On regarde la probabilité selon l'âge d'avoir plus de 10 ans de dépendance
     import statsmodels.formula.api as smf
     data['dependance_duree_sup_10'] = (data.dependance_duree >= 10) * 1
+
     for sexe in data.sexe.unique():
         print sexe
         logit = smf.logit(formula='dependance_duree_sup_10 ~ age',
                           data=data.query('sexe == @sexe'))
         logit.fit().summary()
 
-
-
     for sexe in data.sexe.unique():
         print sexe
         data_duree = data.query('dependance_duree_sup_10 < 1 & sexe == @sexe').copy()
         data_duree.dependance_duree.hist(bins = 10)
-
 
         import scipy.stats
         res = sm.Poisson(data_duree.dependance_duree, np.ones_like(data_duree.dependance_duree)).fit()
@@ -98,7 +106,6 @@ def load_dataframe():
 
         import scipy.stats as stats
         stats.poisson.fit(data_duree.dependance_duree, floc=0)
-
 
     formula = 'dependance_duree ~ age'
     import statsmodels.formula.api as smf
@@ -112,9 +119,6 @@ def load_dataframe():
 
     ax2.scatter(yhat, data.dependance_duree)
 
-
-
-
     y, X = patsy.dmatrices(formula, data = data, return_type='dataframe')
     ols = sm.OLS(y, X)    # Describe model
     # Fit model
@@ -122,13 +126,7 @@ def load_dataframe():
 
     ax.scatter(ols.predict(X), data.age)
 
-
-
-
-
-
     result.replace({'dependance_entree_age': {999: np.nan}}, inplace = True)
-
 
     interp = result.query('dependance_entree_age != 1000').copy()
 

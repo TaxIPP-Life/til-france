@@ -118,7 +118,7 @@ entities:
               'period', 'marie', 'celib', 'divorce', 'veuf', 'pacs', 'en_couple',
               fname='civilstate.csv'
               )
-      statistiques_periodiques:
+      statistiques_fin_de_periode:
           - csv('period', period, 'population',
               groupby(trunc(age / 10), sexe),
               fname = 'population2.csv', mode = 'a'

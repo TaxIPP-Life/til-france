@@ -1,0 +1,364 @@
+Programme de calcul des groupes iso-ressources (langage SAS)
+
+   /*************************************************/
+   /* Chiffrement des axes AGGIR sur le             */
+   /* fichier d'enquète en domicile ordinaire       */
+   /*************************************************/
+   /*  gprojet\gdtincap\aggir\girv3.sas             */
+   /*************************************************/
+   /* Remarque : pour un travail sur le fichier en  */
+   /* institution, il faudra adapter ce programme   */
+   /* au questionnement qui est différent           */
+   /*********************************************** */
+data aggir; merge hid99.modb_c aggir13; by ident numind;
+      if btoi1 ne ' ' and bale1 ne ' ';
+       axe1='9';
+   if bcoh1 in ('0','4') or bcoh2='3' then axe1='C';
+   else if bcoh2='2' then axe1='B';
+   else axe1='A';
+ /* 2. Axe 2 : Orientation */
+ /**************************/
+       axe2='9';
+     if bori1='3' or bori2='4' then axe2='C';
+     else if bori2='3' or bori1='2' then axe2='B';
+     else axe2='A';
+      run;
+ *** 16620 obs : le GIR n'est pas calculable pour les enfants de moins de 5 ans ;
+ /* I. Passage des r�ponses au questionnaire */
+ /*     aux "notes" des 10 axes AGGIR        */
+ /********************************************/
+ data aggir; merge aggir (keep=ident numind axe1-axe2 in=x)
+                   hid99.modb_c; by ident numind;
+    if x=0 then enfant=1; else enfant=2;
+ /* 3. Axe 3 : Toilette */
+ /***********************/
+       axe3='9';
+       if btoi1 in ('0','4','6') then axe3='C';
+       else if btoi1='5' then axe3='B';             * ou mettre le 3;
+       else if btoi1 in ('1','2','3') then axe3='A';
+ /* 4. Axe 4 : Habillage */
+ /************************/
+       axe4='9';
+       if bhab1 in ('0','6') then axe4='C';
+       else if bhab1 in ('4','5') then axe4='B';
+       else axe4='A';         * ou mettre le 3;
+ /* 5. Axe 5 : Alimentation */
+ /***************************/
+       axe5='9';
+       if bali1='0' then axe5='C';
+       else do;
+         if bali1 in ('4','5') and bali2 in ('0','4') then serv='C';
+         else if bali1 in ('4','5') or bali2 in ('0','4') then serv='B';        * ou mettre le 3;
+         else if bali1 in ('1','2','3') and bali2 in ('1','2','3') then serv='A';
+         if bali3='4' then mang='C';
+         else if bali3='3' then mang='B';
+         else if bali3 in ('1','2') then mang='A';
+         if serv='C' and mang='C' then axe5='C';
+         else if serv='C' and mang='B' then axe5='C';
+         else if serv='B' and mang='C' then axe5='C';
+         else if serv='A' and mang='A' then axe5='A';
+         else axe5='B';
+       end;
+ /* 6. Axe 6 : Elimination */
+ /**************************/
+       axe6='9';
+       if beli1='0' or beli3='5' then axe6='C';
+       else if beli1='5' then do;
+            if beli3=' ' then axe6='B';
+            else axe6='C';
+       end;
+       else if beli1='4' or beli3='4' then axe6='B';             * ou mettre les 3 ;
+       else if beli1 in ('1','2','3','9')
+            and beli3 in ('1','2','3','9') then axe6='A';
+ /* 7. Axe 7 : Transferts */
+ /*************************/
+       axe7='9';
+       if bmob1='1' or (btra1='4' and btra2='4') or btra2='0' then axe7='C';
+       else if btra1='4' or (btra2='4') or (btra1='3' and btra2='3') then axe7='B';
+       else if btra1 in ('1','2','3','9')
+            and btra2 in ('1','2','3') then axe7='A';
+ /* 8. Axe 8 : D�placements � l'int�rieur */
+ /*****************************************/
+       axe8='9';
+       if bmob1 in ('1','2') or bdpi1='3' then axe8='C';
+       else if bdpi1='2'
+               or bdpi2 in ('4','5') then axe8='B';
+       else if bdpi1='1' then axe8='A';
+ /* 9. Axe 9 : D�placements � l'ext�rieur */
+ /*****************************************/
+       axe9='9';
+       if bdpe2=0 or bmob1 in ('1','2','3') then axe9='C';
+       else if 0<bdpe2<=100 then axe9='B';
+       else if 100<bdpe2 then axe9='A';
+ /* 10. Axe 10 : Communication � distance */
+ /*****************************************/
+       axe10='9';
+       if bale1 in ('2','3','4') then axe10='C';
+       else if bale1='1' then axe10='B';
+       else if bale1 in ('0','9') then axe10='A';
+ run;
+   /*******************************************************/
+   /* Programme de calcul des groupes iso-ressources      */
+   /* conforme � l'algorithme publi� au J.O. du 30/04/97  */
+   /*******************************************************/
+   /*   gprojet\gdtincap\prog\GIRCALC2.SAS                */
+   /********************** (08/02/99) *********************/
+   /* Pr�paration du fichier standard */
+   /***********************************/
+   data agirgrp;
+          set aggir (keep=ident numind axe1-axe10 enfant) ; by ident numind;
+       if axe1 ne '9';
+       array axei(10) axe1-axe10;
+       /* Groupe A */
+       do i=1 to 10;
+         if i=1 then valeur=0;
+         if axei(i)='C' then do;
+           if i=1 then valeur=valeur+2000;
+           else if i=2 then valeur=valeur+1200;
+           else if i=3 then valeur=valeur+40;
+           else if i=4 then valeur=valeur+40;
+           else if i=5 then valeur=valeur+60;
+           else if i=6 then valeur=valeur+100;
+           else if i=7 then valeur=valeur+800;
+           else if i=8 then valeur=valeur+200;
+           else if i=9 then valeur=valeur+0;
+           else if i=10 then valeur=valeur+0;
+         end;
+         else if axei(i)='B' then do;
+           if i=1 then valeur=valeur+0;
+           else if i=2 then valeur=valeur+0;
+           else if i=3 then valeur=valeur+16;
+           else if i=4 then valeur=valeur+16;
+           else if i=5 then valeur=valeur+20;
+           else if i=6 then valeur=valeur+16;
+           else if i=7 then valeur=valeur+120;
+           else if i=8 then valeur=valeur+32;
+           else if i=9 then valeur=valeur+0;
+           else if i=10 then valeur=valeur+0;
+         end;
+       end;
+       if valeur>=4380 then do; rang=1; gir=1; end;
+         else if valeur>=4140 then do; rang=2; gir=2; end;
+         else if valeur>=3390 then do; rang=3; gir=2; end;
+       if valeur>=3390 then go to FIN;
+       /* Groupe B */
+       do i=1 to 10;
+         if i=1 then valeur=0;
+         if axei(i)='C' then do;
+           if i=1 then valeur=valeur+1500;
+           else if i=2 then valeur=valeur+1200;
+           else if i=3 then valeur=valeur+40;
+           else if i=4 then valeur=valeur+40;
+           else if i=5 then valeur=valeur+60;
+           else if i=6 then valeur=valeur+100;
+           else if i=7 then valeur=valeur+800;
+           else if i=8 then valeur=valeur-80;
+           else if i=9 then valeur=valeur+0;
+           else if i=10 then valeur=valeur+0;
+         end;
+         else if axei(i)='B' then do;
+           if i=1 then valeur=valeur+320;
+           else if i=2 then valeur=valeur+120;
+           else if i=3 then valeur=valeur+16;
+           else if i=4 then valeur=valeur+16;
+           else if i=5 then valeur=valeur+0;
+           else if i=6 then valeur=valeur+16;
+           else if i=7 then valeur=valeur+120;
+           else if i=8 then valeur=valeur-40;
+           else if i=9 then valeur=valeur+0;
+           else if i=10 then valeur=valeur+0;
+         end;
+       end;
+       if valeur>=2016 then do; rang=4; gir=2; end;
+       if valeur>=2016 then go to FIN;
+       /* gir C */
+       do i=1 to 10;
+         if i=1 then valeur=0;
+         if axei(i)='C' then do;
+           if i=1 then valeur=valeur+0;
+           else if i=2 then valeur=valeur+0;
+           else if i=3 then valeur=valeur+40;
+           else if i=4 then valeur=valeur+40;
+           else if i=5 then valeur=valeur+60;
+           else if i=6 then valeur=valeur+160;
+           else if i=7 then valeur=valeur+1000;
+           else if i=8 then valeur=valeur+400;
+           else if i=9 then valeur=valeur+0;
+           else if i=10 then valeur=valeur+0;
+         end;
+         else if axei(i)='B' then do;
+           if i=1 then valeur=valeur+0;
+           else if i=2 then valeur=valeur+0;
+           else if i=3 then valeur=valeur+16;
+           else if i=4 then valeur=valeur+16;
+           else if i=5 then valeur=valeur+20;
+           else if i=6 then valeur=valeur+20;
+           else if i=7 then valeur=valeur+200;
+           else if i=8 then valeur=valeur+40;
+           else if i=9 then valeur=valeur+0;
+           else if i=10 then valeur=valeur+0;
+         end;
+       end;
+       if valeur>=1700 then do; rang=5; gir=2; end;
+         else if valeur>=1432 then do; rang=6; gir=2; end;
+       if valeur>=1432 then go to FIN;
+       /* gir D */
+       do i=1 to 10;
+         if i=1 then valeur=0;
+         if axei(i)='C' then do;
+           if i=1 then valeur=valeur+0;
+           else if i=2 then valeur=valeur+0;
+           else if i=3 then valeur=valeur+0;
+           else if i=4 then valeur=valeur+0;
+           else if i=5 then valeur=valeur+2000;
+           else if i=6 then valeur=valeur+400;
+           else if i=7 then valeur=valeur+2000;
+           else if i=8 then valeur=valeur+200;
+           else if i=9 then valeur=valeur+0;
+           else if i=10 then valeur=valeur+0;
+         end;
+         else if axei(i)='B' then do;
+           if i=1 then valeur=valeur+0;
+           else if i=2 then valeur=valeur+0;
+           else if i=3 then valeur=valeur+0;
+           else if i=4 then valeur=valeur+0;
+           else if i=5 then valeur=valeur+200;
+           else if i=6 then valeur=valeur+200;
+           else if i=7 then valeur=valeur+200;
+           else if i=8 then valeur=valeur+0;
+           else if i=9 then valeur=valeur+0;
+           else if i=10 then valeur=valeur+0;
+         end;
+       end;
+       if valeur>=2400 then do; rang=7; gir=2; end;
+       if valeur>=2400 then go to FIN;
+       /* gir E */
+       do i=1 to 10;
+         if i=1 then valeur=0;
+         if axei(i)='C' then do;
+           if i=1 then valeur=valeur+400;
+           else if i=2 then valeur=valeur+400;
+           else if i=3 then valeur=valeur+400;
+           else if i=4 then valeur=valeur+400;
+           else if i=5 then valeur=valeur+400;
+           else if i=6 then valeur=valeur+800;
+           else if i=7 then valeur=valeur+800;
+           else if i=8 then valeur=valeur+200;
+           else if i=9 then valeur=valeur+0;
+           else if i=10 then valeur=valeur+0;
+         end;
+         else if axei(i)='B' then do;
+           if i=1 then valeur=valeur+0;
+           else if i=2 then valeur=valeur+0;
+           else if i=3 then valeur=valeur+100;
+           else if i=4 then valeur=valeur+100;
+           else if i=5 then valeur=valeur+100;
+           else if i=6 then valeur=valeur+100;
+           else if i=7 then valeur=valeur+100;
+           else if i=8 then valeur=valeur+0;
+           else if i=9 then valeur=valeur+0;
+           else if i=10 then valeur=valeur+0;
+         end;
+       end;
+       if valeur>=1200 then do; rang=8; gir=3; end;
+       if valeur>=1200 then go to FIN;
+       /* gir F */
+       do i=1 to 10;
+         if i=1 then valeur=0;
+         if axei(i)='C' then do;
+           if i=1 then valeur=valeur+200;
+           else if i=2 then valeur=valeur+200;
+           else if i=3 then valeur=valeur+500;
+           else if i=4 then valeur=valeur+500;
+           else if i=5 then valeur=valeur+500;
+           else if i=6 then valeur=valeur+500;
+           else if i=7 then valeur=valeur+500;
+           else if i=8 then valeur=valeur+200;
+           else if i=9 then valeur=valeur+0;
+           else if i=10 then valeur=valeur+0;
+         end;
+         else if axei(i)='B' then do;
+           if i=1 then valeur=valeur+100;
+           else if i=2 then valeur=valeur+100;
+           else if i=3 then valeur=valeur+100;
+           else if i=4 then valeur=valeur+100;
+           else if i=5 then valeur=valeur+100;
+           else if i=6 then valeur=valeur+100;
+           else if i=7 then valeur=valeur+100;
+           else if i=8 then valeur=valeur+0;
+           else if i=9 then valeur=valeur+0;
+           else if i=10 then valeur=valeur+0;
+         end;
+       end;
+       if valeur>=800 then do; rang=9; gir=3; end;
+       if valeur>=800 then go to FIN;
+       /* gir G */
+       do i=1 to 10;
+         if i=1 then valeur=0;
+         if axei(i)='C' then do;
+           if i=1 then valeur=valeur+150;
+           else if i=2 then valeur=valeur+150;
+           else if i=3 then valeur=valeur+300;
+           else if i=4 then valeur=valeur+300;
+           else if i=5 then valeur=valeur+500;
+           else if i=6 then valeur=valeur+500;
+           else if i=7 then valeur=valeur+400;
+           else if i=8 then valeur=valeur+200;
+           else if i=9 then valeur=valeur+0;
+           else if i=10 then valeur=valeur+0;
+         end;
+         else if axei(i)='B' then do;
+           if i=1 then valeur=valeur+0;
+           else if i=2 then valeur=valeur+0;
+           else if i=3 then valeur=valeur+200;
+           else if i=4 then valeur=valeur+200;
+           else if i=5 then valeur=valeur+200;
+           else if i=6 then valeur=valeur+200;
+           else if i=7 then valeur=valeur+200;
+           else if i=8 then valeur=valeur+100;
+           else if i=9 then valeur=valeur+0;
+           else if i=10 then valeur=valeur+0;
+         end;
+       end;
+       if valeur>=650 then do; rang=10; gir=4; end;
+       if valeur>=650 then go to FIN;
+       /* gir H */
+       do i=1 to 10;
+         if i=1 then valeur=0;
+         if axei(i)='C' then do;
+           if i=1 then valeur=valeur+0;
+           else if i=2 then valeur=valeur+0;
+           else if i=3 then valeur=valeur+3000;
+           else if i=4 then valeur=valeur+3000;
+           else if i=5 then valeur=valeur+3000;
+           else if i=6 then valeur=valeur+3000;
+           else if i=7 then valeur=valeur+1000;
+           else if i=8 then valeur=valeur+1000;
+           else if i=9 then valeur=valeur+0;
+           else if i=10 then valeur=valeur+0;
+         end;
+         else if axei(i)='B' then do;
+           if i=1 then valeur=valeur+0;
+           else if i=2 then valeur=valeur+0;
+           else if i=3 then valeur=valeur+2000;
+           else if i=4 then valeur=valeur+2000;
+           else if i=5 then valeur=valeur+2000;
+           else if i=6 then valeur=valeur+2000;
+           else if i=7 then valeur=valeur+2000;
+           else if i=8 then valeur=valeur+1000;
+           else if i=9 then valeur=valeur+0;
+           else if i=10 then valeur=valeur+0;
+         end;
+       end;
+       if valeur>=4000 then do; rang=11; gir=4; end;
+         else if valeur>=2000 then do; rang=12; gir=5; end;
+         else do; if valeur ne . then do; rang=13; gir=6; end;  else gir=.; end;
+FIN:      output;
+    run;
+ *** 16916 obs ;
+    data hid99.agirgrp (keep=ident numind gir); set agirgrp; by ident numind;
+       if enfant=1 then gir=.;
+    run;
+   /* Attention : on a mis pour les enfants de moins de 5 ans    */
+   /*  le GIR � valeur manquante, ce qui est logique             */
+Retrour page d'accueil de l'enqu�te

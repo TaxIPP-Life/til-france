@@ -1,0 +1,96 @@
+# This is a LIAM2 simulation file. In this first example, we will see how to
+# define an extremely simple simulation, how to run it and explore the results.
+
+# Please note that any line starting with a # sign is a comment and is ignored.
+
+# First, we define all our entities, their fields and functions (processes).
+# In this case, we define only one 'person' entity, but LIAM2 can work with any
+# kind of entity and any number of them.
+
+
+import: demo01.yml
+
+entities:
+    individus:
+        # fields:
+            # # All entities have two implicit integer fields: period and id.
+            # # You do not need to define them.
+            # - age: int
+            # - sexe: bool
+
+        macros:
+            ISMALE: not sexe
+            ISFEMALE: sexe
+
+        processes:
+            deces:
+                - decede: if(
+                    ISMALE,
+                    logit_regr(0.0, align='input/hyp_mortaliteH.csv'),
+                    logit_regr(0.0, align='input/hyp_mortaliteF.csv')
+                    )
+                - csv(period, sum(decede), fname='deces.csv', mode='a')
+                - remove(decede)
+
+            migration:
+                # note : There is only net immigration in the Insee prevision
+                - migrant_homme: logit_regr(
+                    0.0,
+                    filter= ISMALE,
+                    align = 'input/hyp_soldemigH_custom.csv'
+                    )
+                - migrant_femme: logit_regr(
+                    0.0,
+                    filter= ISFEMALE,
+                    align = 'input/hyp_soldemigF_custom.csv'
+                    )
+                - migrant: migrant_femme or migrant_homme
+                - new('individus',
+                    filter = migrant,
+                    age = age,
+                    sexe = sexe,
+                    )
+
+            naissance:
+              - future_mere: logit_regr(
+                  0.0,
+                  filter = ISFEMALE and (age >= 15) and (age <= 50),
+                  align = 'input/Hyp_fecondite.csv'
+                  )
+              - new('individus', filter = future_mere,
+                    age = 0,
+                    sexe = choice([0, 1], [0.5122, 0.4878]),
+                    )
+
+
+simulation:
+    # the functions listed in this section are only executed *once* in
+    # start_period - 1 (that is 2015 in this case), instead of once per period.
+    # init:
+    #     - individus: []
+
+    processes:
+        - individus: [ageing, deces, migration, naissance]
+
+    input:
+          file: input/demo.h5
+    output:
+        # all output files will be in the output subdirectory (this path is
+        # relative to the path of the simulation file). This is optional.
+        path: output
+        file: simul.h5
+
+    assertions: raise       # raise (default), warn, skip
+    skip_shows: False
+    logging:                # optional
+        timings: True       # optional
+        level: functions    # optional
+
+    random_seed: 12345       # optional
+
+    start_period: 2016  #01
+    # first simulated period is start_period + 1 but the start period data is saved
+
+    # Number of periods includes initial period
+    periods: 30
+    # last period = periods + start_period - 1 = 45 + 2016 -1 = 2060

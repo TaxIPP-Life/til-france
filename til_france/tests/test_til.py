@@ -16,5 +16,6 @@ plot_population2(simulation)
 plot_csv(simulation)
 #
 population_diagnostic_data_frame = population_diagnostic(simulation)
+
 plot_ratio_demographique(simulation)
 plot_dependance_csv(simulation)

@@ -1,28 +1,21 @@
-globals:
-  # periodic:
-  #     path: param\demo\dependance_prevalence_all_years.csv
-  #     fields:
-  #         # PERIOD is implicit
-  #         - DEPENDANTS: float
-
-  # periodic do not work
-  dependance_prevalence_all_years:
-    type: float
+# globals:
+#   # periodic:
+#   #     path: param\demo\dependance_prevalence_all_years.csv
+#   #     fields:
+#   #         # PERIOD is implicit
+#   #         - DEPENDANTS: float
+#
+#   # periodic do not work
+#   dependance_prevalence_all_years:
+#     type: float
 
 
 entities:
   individus:
-    fields:
-      - dependance_anciennete: {type: int, initialdata: false, default: 0}
-      - dependance_ehpad: {type: bool, initialdata: false, default: false}
-      - dependance_gir: {type: int, initialdata: false}
-      # dependance_niveau: 0 non dependant, 1: moyennement dependant, 2: fortement dependant
-      - dependance_niveau: {type: int, initialdata: true}
-
-    macros:
-        ISDEPENDANT: (dependance_niveau == 1) or (dependance_niveau == 2)
-        ISGIR_1_2: (dependance_niveau == 2)
-        ISGIR_3_4: (dependance_niveau == 1)
+    # macros:
+    #     ISDEPENDANT: (dependance_niveau == 1) or (dependance_niveau == 2)
+    #     ISGIR_1_2: (dependance_niveau == 2)
+    #     ISGIR_3_4: (dependance_niveau == 1)
 
     processes:
       dependance_initialisation:
@@ -129,8 +122,8 @@ entities:
             mode = 'a'
             )
         - csv('period', period, 'dependance', groupby(
-              age, data_origin, expr = count((dependance_niveau == 1) or (dependance_niveau == 2))
-              ),
+            age, data_origin, expr = count((dependance_niveau == 1) or (dependance_niveau == 2))
+            ),
             fname = 'dependance2.csv',
             mode = 'a'
             )
@@ -268,79 +261,5 @@ entities:
             fname = 'dependance2.csv',
             mode = 'a'
             )
-        # dependance_detaillee (FIXME may be part of an independent section)
-        - dependance_gir_1_score: if(
-            dependance_niveau == 2,
-            if(
-              ISMALE,
-              logit_score(-1.564),
-              logit_score(-0.745 + .209 * lq)
-              ),
-            0
-            )
-        - personne_seule_sans_enfant: if(
-            INCOUPLE and (invl_pere.count() == 0),
-            True,
-            False
-            )
-        - personne_seule_avec_enfant: if(
-            INCOUPLE and (invl_pere.count() > 0),
-            True,
-            False
-            )
-        - dependance_gir_3_score: if(
-            dependance_niveau == 1,
-            if(
-              ISMALE,
-              logit_score(0.072 + 0.261 * lq - 1.226 * personne_seule_sans_enfant),
-              logit_score(-0.745 + .209 * lq)
-              ),
-            0
-            )
-        - dependance_gir: if(
-            dependance_niveau == 2,
-            if(
-              dependance_gir_1_score > uniform(),
-              1,
-              2
-              ),
-            if(
-              dependance_niveau == 1,
-              if(
-                dependance_gir_3_score > uniform(),
-                3,
-                4
-                ),
-              dependance_gir
-              )
-            )
-        # Probabilit´e de vivre en institution plutˆot qu’`a domicile
-        - ehpad_score: if(
-            dependance_gir == 4,
-            logit_score(
-              - 4.050 + 2.229 * personne_seule_avec_enfant + 4.332 * personne_seule_sans_enfant
-              ),
-            if(
-              (dependance_gir >= 1) and (dependance_gir <= 3),
-              if(
-                ISMALE,
-                logit_score(
-                  - 2.745 +
-                  2.295 * personne_seule_avec_enfant +
-                  2.893 * personne_seule_sans_enfant +
-                  1.844 * (dependance_gir == 1) +
-                  0.803 * (dependance_gir == 2)
-                  ),
-                logit_score(
-                  - 2.814 +
-                  1.044 * personne_seule_avec_enfant +
-                  1.838 * personne_seule_sans_enfant +
-                  1.718 * (dependance_gir == 1) +
-                  0.871 * (dependance_gir == 2) +
-                  1.245 * (age >= 75)
-                  )
-                ),
-              0
-              )
-            )
-          # Devenir dependant (voir http://insee.fr/fr/publications-et-services/docs_doc_travail/g2012-10.pdf)
+
+        # Devenir dependant (voir http://insee.fr/fr/publications-et-services/docs_doc_travail/g2012-10.pdf)

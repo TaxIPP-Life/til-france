@@ -39,7 +39,7 @@ simulation:
     - register: [init_reg]
     # - legislation: [2009]
     - register: [sum_indiv]
-    - individus: [statistiques_initialisation, statistiques_periodiques]
+    - individus: [statistiques_initialisation, statistiques_fin_de_periode]
 
   processes:
   # apres chaque étape qui modifie les ménages,
@@ -88,7 +88,7 @@ simulation:
     - legislation: [2009] #[annee leg] = année de départ de la simulation
     # - register: [alive]
     # - register: [sum_indiv]
-    - individus: [statistiques_periodiques]
+    - individus: [statistiques_fin_de_periode]
 
   output:
     file: simul.h5
@@ -104,4 +104,4 @@ simulation:
   start_period: 2010  #01
   # first simulated period is start_period + 1  TODO: a bit ugly !
 
-  periods: 7
+  periods: 5

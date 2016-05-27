@@ -1,0 +1,54 @@
+entities:
+  individus:
+    processes:
+      vieillissement:
+        - ageing()
+        - deces()
+        - dependance()
+
+      deces_selection:
+        # ############# Tirage ###########
+        # - MU: .85
+        # - qm: if(
+        #     ISMALE,
+        #     individu2generation.qm_male,
+        #     individu2generation.qm_female
+        #     )
+        # - qm1997: if(
+        #     ISMALE,
+        #     individu2generation.qm_male_1997,
+        #     individu2generation.qm_female_1997
+        #     )
+        # - lq: log((MU * qm + (1 - MU) * qm1997)) / (1 - (MU * qm + (1 - MU) * qm1997))
+
+
+        - decede: if(
+            ISMALE,
+            logit_regr(
+              (dependance_niveau == 0) +
+              (dependance_niveau == 1) * (
+                (dependance_anciennete >= 10) * (1.510 + 1.228 * lq) +
+                (dependance_anciennete < 10) * (.634 + .454 * lq)
+                ) +
+              (dependance_niveau == 2) * (1.815 + .752 * lq + .987 * (dependance_anciennete == 1)
+                ),
+              align='parameters/population/hyp_mortaliteH.csv'
+              ),
+            logit_regr(
+              (dependance_niveau == 0) +
+              (dependance_niveau == 1) * (.241 + .319 * lq - .079 * dependance_anciennete) +
+              (dependance_niveau == 2) * (
+                (dependance_anciennete >= 10) * (2.306 + 1.059 * lq) +
+                (dependance_anciennete < 10) * (.695 + .390 * lq + .244 * (dependance_anciennete == 1))
+                )
+              , align='parameters/population/hyp_mortaliteF.csv')
+            )
+        ### par simplicite pour l'heritage (parce que pour le reste ca marche)
+        ### on ne fait mourir qu une seule personne
+        ### A retirer pour tester, ca doit etre bon maintenant
+        - decede: if(l_partner.decede and l_partner.id < id, False, decede)
+        - decede: if(l_pere.decede, False, decede)
+        - decede: if(l_mere.decede, False, decede)
+        - show('Age moyen des partenaires', round(avg(l_partner.age, filter=l_partner.age>-1), 2))
+        - show('\nNombre de personne dépendante décédées', count(decede and (dependance_niveau > 0)) * uniform_weight)
+        - return decede
