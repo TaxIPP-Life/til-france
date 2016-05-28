@@ -25,7 +25,6 @@ log = logging.getLogger(__name__)
 
 
 def get_dataframe():
-
     survey_collection = SurveyCollection.load(collection = 'hid')
     survey = survey_collection.get_survey('hid_domicile_1999')
     modb = survey.get_values(table = 'modb_c')
@@ -70,7 +69,7 @@ def get_dataframe():
     result.gir.value_counts(dropna = False)
     result = result.merge(mindiv, on = ['ident', 'numind'])
     print result.groupby(['gir'])['poidscor'].sum() / 1e3
-    return result
+    return result[['ident', 'numind', 'gir']].copy()
 
 
 def build_axes(modb):
