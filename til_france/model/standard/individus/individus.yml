@@ -80,67 +80,88 @@ entities:
         - data_origin: data_origin
         - wprm_init: lag(age_en_mois, 2)
 
+      # Processus destiné à être abondé par les options
       options_initialisation:
         - 0
 
+      # Statistiques de l'état initial
       statistiques_initialisation:
-          - csv('period', 'naissances',
-                fname = 'naissances.csv'
-                )
-          - csv('period', 'deces',
-                fname = 'deces.csv'
-                )
-          - csv('period', 'migrations',
-                fname = 'migrations.csv'
-                )
-          - csv('population',
-                fname = 'population.csv'
-                )
-          - csv('population_by_period',
-                fname = 'population2.csv'
-                )
-          # - csv('dependance_by_period',
-          #       fname = 'dependance.csv'
-          #       )
-          # - csv('dependance_by_period',
-          #       fname = 'dependance2.csv'
-          #       )
-          - csv(
-              'period', 'population', 'naissance', 'salaire_imposable', 'rsti', 'choi','age moyen',
-              fname = 'stat.csv'
+        - demographie_statistiques_initialisation()
+        - autres_statistiques_initialisation()
+        - options_statistiques_initialisation()
+
+      autres_statistiques_initialisation:
+        - csv(
+            'period', 'population', 'naissance', 'salaire_imposable', 'rsti', 'choi','age moyen',
+            fname = 'stat.csv'
+            )
+        - csv(
+            'period', 'emploi_entree', 'inpublic', 'inprive', 'independant', 'chomage', 'students', 'retired',
+            'other_inact',
+            fname = 'workstate.csv'
+            )
+        - csv(
+            'period', 'marie', 'celib', 'divorce', 'veuf', 'pacs', 'en_couple',
+            fname='civilstate.csv'
+            )
+
+      demographie_statistiques_initialisation:
+        - csv('period', 'naissances',
+              fname = 'naissances.csv'
               )
-          - csv(
-              'period', 'emploi_entree', 'inpublic', 'inprive', 'independant', 'chomage', 'students', 'retired',
-              'other_inact',
-              fname = 'workstate.csv'
+        - csv('period', 'deces',
+              fname = 'deces.csv'
               )
-          - csv(
-              'period', 'marie', 'celib', 'divorce', 'veuf', 'pacs', 'en_couple',
-              fname='civilstate.csv'
+        - csv('period', 'migrations',
+              fname = 'migrations.csv'
               )
+        - csv('population',
+              fname = 'population.csv'
+              )
+        - csv('population_by_period',
+              fname = 'population2.csv'
+              )
+
+      # Processus destiné à être abondé par les options
+      options_statistiques_initialisation:
+        - 0
+
+      # Statistiques calculées et sauvegardées à chaque fin de période
       statistiques_fin_de_periode:
-          - csv('period', period, 'population',
-              groupby(trunc(age / 10), sexe),
-              fname = 'population2.csv', mode = 'a'
-              )
-          - csv('period', period, 'population',
-              groupby(age, sexe),
-              fname = 'population.csv', mode = 'a'
-              )
-          - csv(
-              period, count(), count(age==0), sum(salaire_imposable), sum(rsti), sum(choi), avg(age),
-              fname = 'stat.csv', mode = 'a'
-              )
-          - csv(
-              period, count(ISINWORK), count(WORK_PUBLIC), count(WORK_PRIVE), count(WORK_INDEP),
-              count(ISUNEMPLOYED), count(ISSTUDENT), count(ISRETIRED), count(ISOTHERINACTIVE),
-              fname = 'workstate.csv', mode = 'a'
-              )
-          - csv(
-              period, count(ISMARRIED), count(ISSINGLE), count(ISDIVORCED), count(ISWIDOW),
-              count(ISPACS), count(INCOUPLE),
-              fname = 'civilstate.csv', mode = 'a'
-              )
+        - demographie_statistiques_fin_de_periode()
+        - autres_statistiques_fin_de_periode()
+        - options_statistiques_fin_de_periode()
+
+      autres_statistiques_fin_de_periode:
+        - csv(
+            period, count(), count(age==0), sum(salaire_imposable), sum(rsti), sum(choi), avg(age),
+            fname = 'stat.csv', mode = 'a'
+            )
+        - csv(
+            period, count(ISINWORK), count(WORK_PUBLIC), count(WORK_PRIVE), count(WORK_INDEP),
+            count(ISUNEMPLOYED), count(ISSTUDENT), count(ISRETIRED), count(ISOTHERINACTIVE),
+            fname = 'workstate.csv', mode = 'a'
+            )
+        - csv(
+            period, count(ISMARRIED), count(ISSINGLE), count(ISDIVORCED), count(ISWIDOW),
+            count(ISPACS), count(INCOUPLE),
+            fname = 'civilstate.csv', mode = 'a'
+            )
+
+      demographie_statistiques_fin_de_periode:
+        - csv('period', period, 'population',
+            groupby(trunc(age / 10), sexe),
+            fname = 'population2.csv', mode = 'a'
+            )
+        - csv('period', period, 'population',
+            groupby(age, sexe),
+            fname = 'population.csv', mode = 'a'
+            )
+
+      # Processus destiné à être abondé par les options
+      options_statistiques_fin_de_periode:
+        - 0
+
       check:
           - assertEqual(count((pere == l_partner.pere) and (pere > -1)), 0)
           - assertEqual(count((mere == l_partner.mere) and (mere > -1)), 0)
