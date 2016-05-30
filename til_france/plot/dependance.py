@@ -73,6 +73,28 @@ def extract_dependance_csv(simulation):
     return panel * uniform_weight
 
 
+def extract_dependance_gir_csv(simulation):
+    directory = os.path.dirname(simulation.data_sink.output_path)
+    uniform_weight = simulation.uniform_weight
+    file_path = os.path.join(directory, 'dependance_gir.csv')
+
+    input_file = open(file_path)
+    txt = input_file.readlines()[1:]
+    txt = [line for line in txt if not(
+        line.startswith('dependance') or line.startswith('period') or line.startswith(',,'))]
+
+    df = pandas.read_csv(
+        StringIO('\n'.join(txt)),
+        header = None,
+        names = ['period', 'age', 'dependance_gir', 'total', 'total_global'],
+        )
+    print df
+    df.drop('total_global', axis = 1, inplace = True)
+    df.period = df.period.astype(int)
+    df.total = df.total * uniform_weight
+    return df
+
+
 def plot_dependance_csv(simulation):
     figures_directory = create_or_get_figures_directory(simulation)
 
@@ -103,4 +125,29 @@ def plot_dependance_csv(simulation):
     fig = ax.get_figure()
 
     fig.savefig(os.path.join(figures_directory, 'dependance.pdf'), bbox_inches='tight')
+    del ax, fig
+
+
+def plot_dependance_gir_csv(simulation):
+    figures_directory = create_or_get_figures_directory(simulation)
+    data = (extract_dependance_gir_csv(simulation)
+        .groupby(['period', 'dependance_gir'])['total'].sum()
+        .unstack()
+        .drop([0, -1], axis = 1) / 1000)
+    plt.figure()
+    ax = data.plot(
+        linewidth = 2,
+        # color = [ipp_colors[name] for name in ['ipp_dark_blue', 'ipp_medium_blue', 'ipp_light_blue']],
+        xticks = [period for period in range(
+            min(data.index.astype(int)),
+            max(data.index.astype(int)),
+            10
+            )],
+        )
+    ax.set_ylabel(u"effectifs en milliers")
+    ax.legend(loc='lower center', bbox_to_anchor=(0.5, 1.2), ncol=3)
+    plt.gca().xaxis.set_major_formatter(FuncFormatter(lambda x, _: int(x)))
+    fig = ax.get_figure()
+
+    fig.savefig(os.path.join(figures_directory, 'dependance_gir.pdf'), bbox_inches='tight')
     del ax, fig

@@ -19,7 +19,6 @@ entities:
 
     processes:
       dependance_initialisation:
-        - MU: .85
         - qm: if(
             ISMALE,
             individu2generation.qm_male,
@@ -120,18 +119,6 @@ entities:
         - show('\nNombre initial de (non) dépendants de niveau 0', round(count(dependance_niveau == 0) * uniform_weight))
         - show('\nNombre initial de dépendants de niveau 1', round(count(dependance_niveau == 1) * uniform_weight))
         - show('\nNombre initial de dépendants de niveau 2', round(count(dependance_niveau == 2) * uniform_weight))
-        - csv('period', period, 'dependance', groupby(
-            age, sexe, expr = count((dependance_niveau == 1) or (dependance_niveau == 2))
-            ),
-            fname = 'dependance.csv',
-            mode = 'a'
-            )
-        - csv('period', period, 'dependance', groupby(
-            age, data_origin, expr = count((dependance_niveau == 1) or (dependance_niveau == 2))
-            ),
-            fname = 'dependance2.csv',
-            mode = 'a'
-            )
         - assertTrue(all(dependance_niveau == 0, filter = (age < 60)))
 
       dependance:
@@ -140,7 +127,6 @@ entities:
             dependance_niveau,
             0
             )
-        - MU: .85
         - qm: if(
             ISMALE,
             individu2generation.qm_male,

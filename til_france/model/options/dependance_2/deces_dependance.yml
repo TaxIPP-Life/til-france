@@ -8,7 +8,6 @@ entities:
 
       deces_selection:
         # ############# Tirage ###########
-        # - MU: .85
         # - qm: if(
         #     ISMALE,
         #     individu2generation.qm_male,

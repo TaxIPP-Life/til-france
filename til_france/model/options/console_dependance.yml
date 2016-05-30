@@ -10,6 +10,10 @@ import:
 
 entities:
   individus:
+    macros:
+      ALIGN_DEPENDANCE_PREVALENCE: False
+      MU: .76
+
     processes:
       options_initialisation:
         - dependance_initialisation()
@@ -18,26 +22,20 @@ entities:
         - dependance_statistiques_initialisation()
 
       dependance_statistiques_initialisation:
-        - csv('period', period, 'dependance', groupby(
-            age, sexe, expr = count((dependance_niveau == 1) or (dependance_niveau == 2))
-            ),
-            fname = 'dependance.csv',
-            mode = 'a'
-            )
-        - csv('period', period, 'dependance', groupby(
-              age, data_origin, expr = count((dependance_niveau == 1) or (dependance_niveau == 2))
-              ),
-            fname = 'dependance2.csv',
-            mode = 'a'
-            )
-        - csv('period', period, 'dependance', groupby(
-              age, data_origin, dependance_gir, expr = count((dependance_niveau == 1) or (dependance_niveau == 2))
-              ),
-            fname = 'dependance_gir.csv',
-            mode = 'a'
-            )
+          - csv('dependance_by_period',
+                fname = 'dependance.csv'
+                )
+          - csv('dependance_by_period',
+                fname = 'dependance2.csv'
+                )
+          - csv('dependance_gir_by_period',
+                fname = 'dependance_gir.csv'
+                )
 
       options_statistiques_fin_de_periode:
+        - dependance_statistiques_fin_de_periode()
+
+      dependance_statistiques_fin_de_periode:
         - csv('period', period, 'dependance', groupby(
             age, sexe, expr = count((dependance_niveau == 1) or (dependance_niveau == 2))
             ),
@@ -50,9 +48,11 @@ entities:
             fname = 'dependance2.csv',
             mode = 'a'
             )
-        - csv('period', period, 'dependance', groupby(
-              age, data_origin, dependance_gir, count()
-              ),
+        - csv(
+            groupby(period, age, dependance_gir, count()),
             fname = 'dependance_gir.csv',
             mode = 'a'
             )
+
+simulation:
+  periods: 10

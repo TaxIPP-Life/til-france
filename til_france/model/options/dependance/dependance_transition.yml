@@ -26,7 +26,6 @@ entities:
 
     processes:
       dependance_initialisation:
-        - MU: .85
         - qm: if(
             ISMALE,
             individu2generation.qm_male,
@@ -153,7 +152,6 @@ entities:
             '\nNombre initial de dépendants selon leur ancienneté après alignement',
             groupby(dependance_anciennete, sexe, data_origin)
             )
-        - assertTrue(False)
         - show('\nNombre initial de (non) dépendants de niveau 0', round(count(dependance_niveau == 0) * uniform_weight))
         - show('\nNombre initial de dépendants de niveau 1', round(count(dependance_niveau == 1) * uniform_weight))
         - show('\nNombre initial de dépendants de niveau 2', round(count(dependance_niveau == 2) * uniform_weight))
@@ -165,7 +163,6 @@ entities:
             dependance_niveau,
             0
             )
-        - MU: .85
         - qm: if(
             ISMALE,
             individu2generation.qm_male,
@@ -176,19 +173,23 @@ entities:
             individu2generation.qm_male_1997,
             individu2generation.qm_female_1997
             )
+        - show('qm1997', min(qm1997, filter = (age == 60)))
+        - show('qm1997', max(qm1997, filter = (age == 60)))
+        - show('qm', min(qm, filter = (age == 60)))
+        - show('qm', max(qm, filter = (age == 60)))
         - lq: log((MU * qm + (1 - MU) * qm1997)) / (1 - (MU * qm + (1 - MU) * qm1997))
         - etudes: (education_niveau > individu2generation.education_niveau)
         - enf_2_3: if(
             ISMALE,
-            invl_pere.count() >= 2 and invl_pere.count() <= 3,
-            invl_mere.count() >= 2 and invl_mere.count() <= 3
+            (invl_pere.count() >= 2) and (invl_pere.count() <= 3),
+            (invl_mere.count() >= 2) and (invl_mere.count() <= 3)
             )
         # From Marbot and Roy following Duée-Rebillard
         # Becoming dependant
         - assertTrue(all(dependance_niveau == 0, filter = (age < 60)))
-        - show('\nNombre de dépendants (total = niveau 1 + niveau 2)', round(count(ISDEPENDANT > 0) * uniform_weight), ' = ',
+        - show('\nNombre de dépendants (total = niveau 1 + niveau 2)', round(count(ISDEPENDANT > 0) * uniform_weight), ' = (',
             count(dependance_niveau == 1), ' + ',
-            count(dependance_niveau == 2)
+            count(dependance_niveau == 2), ') * ', uniform_weight
             )
         - dependance_anciennete: if(
             ISDEPENDANT,
@@ -225,72 +226,60 @@ entities:
             becoming_dependant_score
             )
         - assertTrue(all(becoming_dependant_score == -1, filter = (age < 60)))
-        - dependants: dependance_prevalence_all_years[period - 2009] / uniform_weight
-        - need: dependants - count(ISDEPENDANT)
-        - show('\nNombre de nouveaux dépendants nécessaire pour atteindre la cible de prévalence', need)
-        - becoming_dependant: align_abs(
-            becoming_dependant_score, need = need, filter = (becoming_dependant_score >= 0)
-            )
-        - show('\nNombre de nouveaux dépendants sélectionnés', count(becoming_dependant))
+        - assertTrue(all(becoming_dependant_score == -1, filter = (ISDEPENDANT)))
+        - should_align: ALIGN_DEPENDANCE_PREVALENCE
+        - becoming_dependant: 1 - (1 -becoming_dependant_score) ** (1/2) > uniform()
+        - while should_align:
+          - becoming_dependant: align_becoming_dependant(becoming_dependant_score)
+          - should_align: False
+        - show('\n Nombre de nouveaux dépendants selon score', sum(becoming_dependant_score * (becoming_dependant_score > 0)))
+        - show('\nNombre de nouveaux dépendants vraiement sélectionnés', sum(becoming_dependant))
         - dependance_anciennete: if(
             becoming_dependant,
             0,
             dependance_anciennete
             )
         - dependance_niveau: if(
-            becoming_dependant and ISMALE and (age < 75),
-            choice([1, 2], [1 - .174, .174]),
+            becoming_dependant and ISMALE,
+            if(
+              (age < 75),
+              choice([1, 2], [(1 - .174) ** (1/2), 1 - (1 - .174) ** (1/2)]),
+              choice([1, 2], [(1 - .325) ** (1/2), 1 - (1 - .325) ** (1/2)])
+              ),
+            dependance_niveau
+            )
+        - dependance_niveau: if(
+            becoming_dependant and ISFEMALE,
+            if(
+              (age < 80),
+              choice([1, 2], [(1 - .211) ** (1/2), 1 - (1 - .211) ** (1/2)]),
+              choice([1, 2], [(1 - .275) ** (1/2), 1 - (1 - .275) ** (1/2)])
+              ),
             dependance_niveau
             )
         - assertTrue(all(dependance_niveau == 0, filter = (age < 60)))
-        - dependance_niveau: if(
-            becoming_dependant and ISMALE and (age >= 75),
-            choice([1, 2], [1 - .325, .325]),
-            dependance_niveau
-            )
-        - assertTrue(all(dependance_niveau == 0, filter = (age < 60)))
-        - dependance_niveau: if(
-            becoming_dependant and ISFEMALE and (age < 80),
-            choice([1, 2], [1 - .211, .211]),
-            dependance_niveau
-            )
-        - assertTrue(all(dependance_niveau == 0, filter = (age < 60)))
-        - dependance_niveau: if(
-            becoming_dependant and ISFEMALE and (age >= 80),
-            choice([1, 2], [1 - .275, .275]),
-            dependance_niveau
-            )
         # Transition GIR_3_4 vers GIR_1_2
         - anc1: dependance_anciennete == 1  # anciennete d'un an dans la dependance
-        - becoming_gir_1_2: logit_regr(
-            -.277 + 0.512 * lq + .731 * anc1,
-            filter = ISMALE and ISGIR_3_4
-            )
-        - becoming_gir_1_2: logit_regr(
-            .570 + 0.579 * lq,
-            filter = ISFEMALE and ISGIR_3_4
+        - becoming_gir_1_2: 0
+        - becoming_gir_1_2: if(
+            ISGIR_3_4,
+            if(
+              ISMALE,
+              logit_score(-.277 + 0.512 * lq + .731 * anc1,),
+              logit_score(.570 + 0.579 * lq)
+              ),
+            0
             )
         - dependance_niveau: if(
             ISDEPENDANT,
-            if(becoming_gir_1_2, 2, 1),
+            if(
+              1 - (1 - becoming_gir_1_2) ** (1 / 2) > uniform(), 2, 1),
             dependance_niveau
             )
         - assertTrue(all(dependance_niveau == 0, filter = (age < 60)))
         - show('\nNombre de dépendants de niveau 0', count(dependance_niveau == 0))
         - show('\nNombre de dépendants de niveau 1', count(dependance_niveau == 1))
         - show('\nNombre de dépendants de niveau 2', count(dependance_niveau == 2))
-        - csv('period', period, 'dependance', groupby(
-            age, sexe, expr = count((dependance_niveau == 1) or (dependance_niveau == 2))
-            ),
-            fname = 'dependance.csv',
-            mode = 'a'
-            )
-        - csv('period', period, 'dependance', groupby(
-            age, data_origin, expr = count((dependance_niveau == 1) or (dependance_niveau == 2))
-            ),
-            fname = 'dependance2.csv',
-            mode = 'a'
-            )
         # dependance_detaillee (FIXME may be part of an independent section)
         - dependance_gir_1_score: if(
             dependance_niveau == 2,
@@ -334,9 +323,14 @@ entities:
                 3,
                 4
                 ),
-              dependance_gir
+              0
               )
             )
+        - assertTrue(all(dependance_niveau == 0, filter = (age < 60)))
+        - show('\nNombre de dépendants de gir 1', count(dependance_gir == 1))
+        - show('\nNombre de dépendants de gir 2', count(dependance_gir == 2))
+        - show('\nNombre de dépendants de gir 3', count(dependance_gir == 3))
+        - show('\nNombre de dépendants de gir 4', count(dependance_gir == 4))
         # Probabilité de vivre en institution plutôt qu’à domicile
         - ehpad_score: if(
             dependance_gir == 4,
@@ -367,3 +361,13 @@ entities:
               )
             )
           # Devenir dependant (voir http://insee.fr/fr/publications-et-services/docs_doc_travail/g2012-10.pdf)
+
+      align_becoming_dependant(becoming_dependant_score):
+        - dependants: dependance_prevalence_all_years[period - 2009] / uniform_weight
+        - need: dependants - count(ISDEPENDANT)
+        - show('\nNombre de nouveaux dépendants nécessaire pour atteindre la cible de prévalence', need)
+        - becoming_dependant: align_abs(
+            becoming_dependant_score, need = need, filter = (becoming_dependant_score >= 0)
+            )
+        - show('\nNombre de nouveaux dépendants sélectionnés', count(becoming_dependant))
+        - return becoming_dependant
