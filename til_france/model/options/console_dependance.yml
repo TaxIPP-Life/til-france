@@ -33,7 +33,7 @@ entities:
         - csv('period', period, 'dependance', groupby(
               age, data_origin, dependance_gir, expr = count((dependance_niveau == 1) or (dependance_niveau == 2))
               ),
-            fname = 'dependance2.csv',
+            fname = 'dependance_gir.csv',
             mode = 'a'
             )
 
@@ -48,5 +48,11 @@ entities:
             age, data_origin, expr = count((dependance_niveau == 1) or (dependance_niveau == 2))
             ),
             fname = 'dependance2.csv',
+            mode = 'a'
+            )
+        - csv('period', period, 'dependance', groupby(
+              age, data_origin, dependance_gir, count()
+              ),
+            fname = 'dependance_gir.csv',
             mode = 'a'
             )
