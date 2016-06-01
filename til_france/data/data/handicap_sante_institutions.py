@@ -188,9 +188,7 @@ def save(dataframe):
     dataframe.to_hdf(os.path.join(hsi_data_directory, "hsi_extract.h5"), 'individus_institutions')
 
 
-if __name__ == "__main__":
-    log.setLevel(logging.INFO)
-
+def create_hsi_data():
     initial_dataframe = load_dataframe()
     exogeneous_variables = ['age', 'sexe']
     imputed_dataframe = initial_dataframe.copy()
@@ -213,3 +211,9 @@ if __name__ == "__main__":
     final_dataframe.loc[final_dataframe.rgir <= 0, 'rgir'] = 0
     final_dataframe.loc[final_dataframe.rgir >= 6, 'rgir'] = 6
     save(final_dataframe)
+
+
+
+if __name__ == "__main__":
+    log.setLevel(logging.INFO)
+    create_hsi_data()

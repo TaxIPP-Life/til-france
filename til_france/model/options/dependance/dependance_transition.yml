@@ -150,12 +150,16 @@ entities:
             )
         - show(
             '\nNombre initial de dépendants selon leur ancienneté après alignement',
-            groupby(dependance_anciennete, sexe, data_origin)
+            groupby(dependance_niveau, dependance_anciennete, data_origin)
             )
         - show('\nNombre initial de (non) dépendants de niveau 0', round(count(dependance_niveau == 0) * uniform_weight))
         - show('\nNombre initial de dépendants de niveau 1', round(count(dependance_niveau == 1) * uniform_weight))
         - show('\nNombre initial de dépendants de niveau 2', round(count(dependance_niveau == 2) * uniform_weight))
         - assertTrue(all(dependance_niveau == 0, filter = (age < 60)))
+        - show(groupby(
+            dependance_niveau, dependance_anciennete
+            ))
+        - assertTrue(all(dependance_anciennete < 0, filter = (dependance_niveau < 1)))
 
       dependance:
         - dependance_niveau: if(
@@ -173,10 +177,6 @@ entities:
             individu2generation.qm_male_1997,
             individu2generation.qm_female_1997
             )
-        - show('qm1997', min(qm1997, filter = (age == 60)))
-        - show('qm1997', max(qm1997, filter = (age == 60)))
-        - show('qm', min(qm, filter = (age == 60)))
-        - show('qm', max(qm, filter = (age == 60)))
         - lq: log((MU * qm + (1 - MU) * qm1997)) / (1 - (MU * qm + (1 - MU) * qm1997))
         - etudes: (education_niveau > individu2generation.education_niveau)
         - enf_2_3: if(
@@ -186,6 +186,7 @@ entities:
             )
         # From Marbot and Roy following Duée-Rebillard
         # Becoming dependant
+        - show(groupby(dependance_niveau))
         - assertTrue(all(dependance_niveau == 0, filter = (age < 60)))
         - show('\nNombre de dépendants (total = niveau 1 + niveau 2)', round(count(ISDEPENDANT > 0) * uniform_weight), ' = (',
             count(dependance_niveau == 1), ' + ',

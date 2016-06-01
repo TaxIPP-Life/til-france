@@ -313,3 +313,43 @@ def population_diagnostic(simulation):
     plt.draw()
     del ax, fig
     return population
+
+
+
+
+def plot_age_pyramid(age_min = 0, age_max = None, group_by = 1, year = 2010):
+
+
+    population = extract_population_by_age_csv(simulation)
+    data = population.to_frame()[['male', 'female']]
+    data = (data.stack()
+        .unstack('period')
+        .get(year)
+        .unstack()
+        .drop('total')
+        )
+    data.index = data.index.astype(int)
+    data.sort_index(inplace = True)
+
+    age_min = 60
+    data = data.loc[age_min:age_max]
+
+    data.group_by
+
+    fig, axes = plt.subplots(ncols=2, sharey=True)
+    axes[0].barh(data.index, data.male, align='center', color='gray', zorder=10)
+    axes[0].set(title='Hommes')
+    axes[1].barh(data.index, data.female, align='center', color='gray', zorder=10)
+    axes[1].set(title='Femmes')
+
+    axes[0].invert_xaxis()
+    axes[0].set(yticks=data.index)
+    axes[0].yaxis.tick_right()
+
+    for ax in axes.flat:
+        ax.margins(0.03)
+        ax.grid(True)
+
+    fig.tight_layout()
+    fig.subplots_adjust(wspace=0.09)
+    plt.show()

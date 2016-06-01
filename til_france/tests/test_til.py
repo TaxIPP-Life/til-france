@@ -1,8 +1,12 @@
 # -*- coding:utf-8 -*-
 
 from til_france.tests.base import create_til_simulation, plot_csv
-from til_france.plot.dependance import plot_dependance_csv, plot_dependance_gir_csv
-from til_france.plot.population import plot_population2, population_diagnostic, plot_ratio_demographique
+from til_france.plot.dependance import (
+    plot_dependance_csv, plot_dependance_gir_csv, plot_dependance_prevalence_by_age
+    )
+from til_france.plot.population import (
+    plot_population2, population_diagnostic, plot_ratio_demographique,
+    )
 
 simulation = create_til_simulation(
     input_name = 'patrimoine',
@@ -20,6 +24,6 @@ simulation.run()
 #plot_ratio_demographique(simulation)
 plot_dependance_csv(simulation)
 plot_dependance_gir_csv(simulation)
-
+plot_dependance_prevalence_by_age(simulation, years = [2010, 2015, 2019])
 # avec alignement 403
 # sans alignement

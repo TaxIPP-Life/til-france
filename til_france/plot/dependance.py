@@ -22,8 +22,9 @@
 
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
+import numpy as np
 import os
-import pandas
+import pandas as pd
 from StringIO import StringIO
 
 
@@ -59,7 +60,7 @@ def extract_dependance_csv(simulation):
     proto_panel = None
     for period, data in data_by_date.iteritems():
         csv_string = StringIO('\n'.join(data_by_date[period]))
-        df = pandas.read_csv(csv_string)
+        df = pd.read_csv(csv_string)
         df.set_index(df.columns[0], inplace = True)
         df.index.name = 'age'
         df.columns = df.iloc[0]
@@ -67,7 +68,7 @@ def extract_dependance_csv(simulation):
         df.columns = ['male', 'female', 'total']
         df.columns.name = "dependants"
         df['period'] = period
-        proto_panel = pandas.concat([proto_panel, df]) if proto_panel is not None else df
+        proto_panel = pd.concat([proto_panel, df]) if proto_panel is not None else df
 
     panel = proto_panel.loc['total'].set_index(['period'], append = True).to_panel().astype(int)
     return panel * uniform_weight
@@ -83,12 +84,11 @@ def extract_dependance_gir_csv(simulation):
     txt = [line for line in txt if not(
         line.startswith('dependance') or line.startswith('period') or line.startswith(',,'))]
 
-    df = pandas.read_csv(
+    df = pd.read_csv(
         StringIO('\n'.join(txt)),
         header = None,
-        names = ['period', 'age', 'dependance_gir', 'total', 'total_global'],
+        names = ['period', 'age', 'sexe', 'dependance_gir', 'total', 'total_global'],
         )
-    print df
     df.drop('total_global', axis = 1, inplace = True)
     df.period = df.period.astype(int)
     df.total = df.total * uniform_weight
@@ -108,7 +108,6 @@ def plot_dependance_csv(simulation):
             ),
         inplace = True
         )
-    plt.figure()
     ax = panel_simulation.plot(
         linewidth = 2,
         color = [ipp_colors[name] for name in ['ipp_dark_blue', 'ipp_medium_blue', 'ipp_light_blue']],
@@ -134,7 +133,6 @@ def plot_dependance_gir_csv(simulation):
         .groupby(['period', 'dependance_gir'])['total'].sum()
         .unstack()
         .drop([0, -1], axis = 1) / 1000)
-    plt.figure()
     ax = data.plot(
         linewidth = 2,
         # color = [ipp_colors[name] for name in ['ipp_dark_blue', 'ipp_medium_blue', 'ipp_light_blue']],
@@ -151,3 +149,51 @@ def plot_dependance_gir_csv(simulation):
 
     fig.savefig(os.path.join(figures_directory, 'dependance_gir.pdf'), bbox_inches='tight')
     del ax, fig
+
+
+
+def plot_dependance_prevalence_by_age(simulation, years = None):
+    assert years is not None
+    figures_directory = create_or_get_figures_directory(simulation)
+
+    data = extract_dependance_gir_csv(simulation)
+
+    data = (data
+        .groupby(['dependance_gir', 'period', 'age', 'sexe'])['total'].sum()
+        .unstack(['dependance_gir'])
+        )
+    data[0] = data[-1] + data[0]
+    data.drop(-1, axis = 1, inplace = True)
+    data['prevalence'] = sum([data[i] for i in range(1, 5)])/ sum([data[i] for i in range(5)])
+    data.drop(range(5), axis = 1, inplace = True)
+
+    data = data.reset_index()
+    data.age = data.age.astype(int)
+    data['age_group'] = np.trunc((data.age - 60) / 5)
+    data.age_group = data.age_group.astype(int)
+
+    # data = data.query('age_group > 0').copy()
+
+    data_plot = (data
+        .query(
+            '(age > 60) and (period in @years)'
+            )
+        )[['age', 'period', 'prevalence', 'sexe']]
+
+    import seaborn as sns
+    fig, ax = plt.subplots()
+    colors = [ipp_colors[name] for name in ['ipp_dark_blue', 'ipp_medium_blue', 'ipp_light_blue']]
+    color_by_period = dict(zip(data_plot['period'].unique(), colors))
+    legend_items = list()
+    for grouped in data_plot.groupby(['period', 'sexe']):
+        period, sexe = grouped[0]
+        linestyle = '--' if sexe == 1 else "-"
+
+        grouped[1].plot(
+            x = 'age', y = 'prevalence', kind = 'line', ax = ax,
+            linestyle = linestyle, color = color_by_period[period]
+            )
+        legend_items.append([sexe, period])
+
+    plt.legend(legend_items, loc='best')
+

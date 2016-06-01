@@ -119,7 +119,7 @@ entities:
         - show('\nNombre initial de (non) dépendants de niveau 0', round(count(dependance_niveau == 0) * uniform_weight))
         - show('\nNombre initial de dépendants de niveau 1', round(count(dependance_niveau == 1) * uniform_weight))
         - show('\nNombre initial de dépendants de niveau 2', round(count(dependance_niveau == 2) * uniform_weight))
-        - assertTrue(all(dependance_niveau == 0, filter = (age < 60)))
+        # - assertTrue(all(dependance_niveau == 0, filter = (age < 60)))
 
       dependance:
         - dependance_niveau: if(
@@ -146,7 +146,7 @@ entities:
             )
         # From Marbot and Roy following Duée-Rebillard
         # Becoming dependant
-        - assertTrue(all(dependance_niveau == 0, filter = (age < 60)))
+        # - assertTrue(all(dependance_niveau == 0, filter = (age < 60)))
         - show('\nNombre de dépendants (total = niveau 1 + niveau 2)', round(count(ISDEPENDANT > 0) * uniform_weight), ' = ',
             count(dependance_niveau == 1), ' + ',
             count(dependance_niveau == 2)

@@ -12,7 +12,7 @@ entities:
   individus:
     macros:
       ALIGN_DEPENDANCE_PREVALENCE: False
-      MU: .76
+      MU: 1
 
     processes:
       options_initialisation:
@@ -49,10 +49,11 @@ entities:
             mode = 'a'
             )
         - csv(
-            groupby(period, age, dependance_gir, count()),
+            groupby(period, age, sexe, dependance_gir, count()),
             fname = 'dependance_gir.csv',
             mode = 'a'
             )
 
 simulation:
-  periods: 10
+  periods: 31
+  random_seed: 54321

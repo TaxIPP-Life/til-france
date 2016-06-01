@@ -27,7 +27,7 @@ entities:
               (dependance_niveau == 0) +
               (dependance_niveau == 1) * (
                 (dependance_anciennete >= 10) * (1.510 + 1.228 * lq) +
-                (dependance_anciennete < 10) * (.634 + .454 * lq)
+                ((dependance_anciennete > 0) * (dependance_anciennete < 10) * (.634 + .454 * lq)
                 ) +
               (dependance_niveau == 2) * (1.815 + .752 * lq + .987 * (dependance_anciennete == 1)
                 ),
@@ -38,7 +38,7 @@ entities:
               (dependance_niveau == 1) * (.241 + .319 * lq - .079 * dependance_anciennete) +
               (dependance_niveau == 2) * (
                 (dependance_anciennete >= 10) * (2.306 + 1.059 * lq) +
-                (dependance_anciennete < 10) * (.695 + .390 * lq + .244 * (dependance_anciennete == 1))
+                ((dependance_anciennete > 0) * (dependance_anciennete < 10) * (.695 + .390 * lq + .244 * (dependance_anciennete == 1))
                 )
               , align='parameters/population/hyp_mortaliteF.csv')
             )
