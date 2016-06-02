@@ -13,7 +13,7 @@ globals:
 entities:
   individus:
     fields:
-      - dependance_anciennete: {type: int, initialdata: false, default: 0}
+      - dependance_anciennete: {type: int, initialdata: false, default: -1}
       - dependance_ehpad: {type: bool, initialdata: false, default: false}
       - dependance_gir: {type: int, initialdata: false}
       # dependance_niveau: 0 non dependant, 1: moyennement dependant, 2: fortement dependant
@@ -229,7 +229,7 @@ entities:
         - assertTrue(all(becoming_dependant_score == -1, filter = (age < 60)))
         - assertTrue(all(becoming_dependant_score == -1, filter = (ISDEPENDANT)))
         - should_align: ALIGN_DEPENDANCE_PREVALENCE
-        - becoming_dependant: 1 - (1 -becoming_dependant_score) ** (1/2) > uniform()
+        - becoming_dependant: 1 - (1 - becoming_dependant_score) ** (1/2) > uniform()
         - while should_align:
           - becoming_dependant: align_becoming_dependant(becoming_dependant_score)
           - should_align: False
@@ -260,13 +260,14 @@ entities:
             )
         - assertTrue(all(dependance_niveau == 0, filter = (age < 60)))
         # Transition GIR_3_4 vers GIR_1_2
-        - anc1: dependance_anciennete == 1  # anciennete d'un an dans la dependance
         - becoming_gir_1_2: 0
         - becoming_gir_1_2: if(
             ISGIR_3_4,
             if(
               ISMALE,
-              logit_score(-.277 + 0.512 * lq + .731 * anc1,),
+              logit_score(
+                -.277 + 0.512 * lq + .731 * (dependance_anciennete == 1)
+                ),
               logit_score(.570 + 0.579 * lq)
               ),
             0

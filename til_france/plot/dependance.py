@@ -25,6 +25,7 @@ from matplotlib.ticker import FuncFormatter
 import numpy as np
 import os
 import pandas as pd
+import seaborn as sns
 from StringIO import StringIO
 
 
@@ -95,9 +96,59 @@ def extract_dependance_gir_csv(simulation):
     return df
 
 
+def extract_incidence_csv(simulation):
+    directory = os.path.dirname(simulation.data_sink.output_path)
+    uniform_weight = simulation.uniform_weight
+    file_path = os.path.join(directory, 'dependance_incidence.csv')
+
+    input_file = open(file_path)
+    txt = input_file.readlines()[1:]
+    txt = [line for line in txt if not(
+        line.startswith('incidence') or
+        line.startswith('period') or
+        line.startswith(',,,') or
+        line.startswith(',,total')
+        )]
+
+    df = pd.read_csv(
+        StringIO('\n'.join(txt)),
+        header = None,
+        names = ['period', 'age', 'sexe', 'False', 'dependant', 'total'],
+        )
+    df.drop('False', axis = 1, inplace = True)
+    df.period = df.period.astype(int)
+    df.dependant = df.dependant * uniform_weight
+    df.total = df.total * uniform_weight
+    return df
+
+
+def extract_deces_csv(simulation):
+    directory = os.path.dirname(simulation.data_sink.output_path)
+    uniform_weight = simulation.uniform_weight
+    file_path = os.path.join(directory, 'dependance_deces.csv')
+
+    input_file = open(file_path)
+    txt = input_file.readlines()[1:]
+    txt = [line for line in txt if not(
+        line.startswith('period') or
+        line.startswith(',,,') or
+        line.startswith(',,total')
+        )]
+
+    df = pd.read_csv(
+        StringIO('\n'.join(txt)),
+        header = None,
+        names = ['period', 'age', 'sexe', 'False', 'deces', 'total'],
+        )
+    df.drop('False', axis = 1, inplace = True)
+    df.period = df.period.astype(int)
+    df.deces = df.deces * uniform_weight
+    df.total = df.total * uniform_weight
+    return df
+
+
 def plot_dependance_csv(simulation):
     figures_directory = create_or_get_figures_directory(simulation)
-
     panel_simulation = extract_dependance_csv(simulation)
     panel_simulation = panel_simulation.squeeze() / 1000
     panel_simulation.index.name = None
@@ -151,13 +202,11 @@ def plot_dependance_gir_csv(simulation):
     del ax, fig
 
 
-
-def plot_dependance_prevalence_by_age(simulation, years = None):
+def plot_dependance_prevalence_by_age(simulation, years = None, ax = None):
     assert years is not None
     figures_directory = create_or_get_figures_directory(simulation)
 
     data = extract_dependance_gir_csv(simulation)
-
     data = (data
         .groupby(['dependance_gir', 'period', 'age', 'sexe'])['total'].sum()
         .unstack(['dependance_gir'])
@@ -180,8 +229,10 @@ def plot_dependance_prevalence_by_age(simulation, years = None):
             )
         )[['age', 'period', 'prevalence', 'sexe']]
 
-    import seaborn as sns
-    fig, ax = plt.subplots()
+    if ax == None:
+        save_figure = False
+        fig, ax = plt.subplots()
+
     colors = [ipp_colors[name] for name in ['ipp_dark_blue', 'ipp_medium_blue', 'ipp_light_blue']]
     color_by_period = dict(zip(data_plot['period'].unique(), colors))
     legend_items = list()
@@ -197,3 +248,92 @@ def plot_dependance_prevalence_by_age(simulation, years = None):
 
     plt.legend(legend_items, loc='best')
 
+    if save_figure:
+        fig = ax.get_figure()
+        fig.savefig(os.path.join(figures_directory, 'prevalence.pdf'), bbox_inches='tight')
+        del fig
+
+
+def plot_dependance_incidence_by_age(simulation, years = None):
+    assert years is not None
+    figures_directory = create_or_get_figures_directory(simulation)
+
+    data = extract_incidence_csv(simulation)
+    data = (data
+        .set_index(['period', 'age', 'sexe'])
+        .eval('incidence = dependant / total', inplace = False)
+        .reset_index()
+        )
+    data.age = data.age.astype(int)
+    data['age_group'] = np.trunc((data.age - 60) / 5)
+    data.age_group = data.age_group.astype(int)
+
+    # data = data.query('age_group > 0').copy()
+
+    data_plot = (data
+        .query(
+            '(age > 60) and (period in @years)'
+            )
+        )[['age', 'period', 'incidence', 'sexe']]
+
+    fig, ax = plt.subplots()
+    colors = [ipp_colors[name] for name in ['ipp_dark_blue', 'ipp_medium_blue', 'ipp_light_blue']]
+    color_by_period = dict(zip(data_plot['period'].unique(), colors))
+    legend_items = list()
+    for grouped in data_plot.groupby(['period', 'sexe']):
+        print grouped[0]
+        period, sexe = grouped[0]
+        linestyle = '--' if sexe == 1 else "-"
+
+        grouped[1].plot(
+            x = 'age', y = 'incidence', kind = 'line', ax = ax,
+            linestyle = linestyle, color = color_by_period[period]
+            )
+        legend_items.append([sexe, period])
+
+    plt.legend(legend_items, loc='best')
+
+    fig = ax.get_figure()
+    fig.savefig(os.path.join(figures_directory, 'incidence.pdf'), bbox_inches='tight')
+    del fig
+    return ax
+
+def plot_mortalite_by_age(simulation, years = None):
+    assert years is not None
+    figures_directory = create_or_get_figures_directory(simulation)
+
+    data = extract_deces_csv(simulation)
+    data = (data
+        .set_index(['period', 'age', 'sexe'])
+        .eval('mortalite = deces / total', inplace = False)
+        .reset_index()
+        )
+    data.age = data.age.astype(int)
+
+    data_plot = (data
+        .query(
+            '(age > 60) and (period in @years)'
+            )
+        )[['age', 'period', 'mortalite', 'sexe']]
+
+    fig, ax = plt.subplots()
+    colors = [ipp_colors[name] for name in ['ipp_dark_blue', 'ipp_medium_blue', 'ipp_light_blue']]
+    color_by_period = dict(zip(data_plot['period'].unique(), colors))
+    legend_items = list()
+    for grouped in data_plot.groupby(['period', 'sexe']):
+        print grouped[0]
+        period, sexe = grouped[0]
+        linestyle = '--' if sexe == 1 else "-"
+
+        grouped[1].plot(
+            x = 'age', y = 'mortalite', kind = 'line', ax = ax,
+            linestyle = linestyle, color = color_by_period[period]
+            )
+        legend_items.append([sexe, period])
+
+    plt.legend(legend_items, loc='best')
+
+    fig = ax.get_figure()
+    fig.savefig(os.path.join(figures_directory, 'incidence.pdf'), bbox_inches='tight')
+    del fig
+    return ax

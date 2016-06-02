@@ -222,9 +222,8 @@ entities:
             dependance_niveau
             )
         # Transition GIR_3_4 vers GIR_1_2
-        - anc1: dependance_anciennete == 1  # anciennete d'un an dans la dependance
         - becoming_gir_1_2: logit_regr(
-            -.277 + 0.512 * lq + .731 * anc1,
+            -.277 + 0.512 * lq + .731 * (dependance_anciennete == 1),
             filter = ISMALE and ISGIR_3_4
             )
         - becoming_gir_1_2: logit_regr(

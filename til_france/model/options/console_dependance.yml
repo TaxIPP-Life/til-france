@@ -31,6 +31,9 @@ entities:
           - csv('dependance_gir_by_period',
                 fname = 'dependance_gir.csv'
                 )
+          - csv('incidence_by_period',
+                fname = 'incidence.csv'
+                )
 
       options_statistiques_fin_de_periode:
         - dependance_statistiques_fin_de_periode()
@@ -53,7 +56,19 @@ entities:
             fname = 'dependance_gir.csv',
             mode = 'a'
             )
+        - csv(
+            groupby(
+              period,
+              age,
+              sexe,
+              ((dependance_niveau == 1) or (dependance_niveau == 2)) and (dependance_anciennete == 0),
+              filter = (age >= 60)
+              ),
+            fname = 'dependance_incidence.csv',
+            mode = 'a'
+            )
+
 
 simulation:
-  periods: 31
+  periods: 11
   random_seed: 54321
