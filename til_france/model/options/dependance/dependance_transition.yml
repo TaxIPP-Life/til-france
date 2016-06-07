@@ -31,12 +31,12 @@ entities:
             individu2generation.qm_male,
             individu2generation.qm_female
             )
-        - qm1997: if(
+        - qm_2010: if(
             ISMALE,
-            individu2generation.qm_male_1997,
-            individu2generation.qm_female_1997
+            individu2generation.qm_male_2010,
+            individu2generation.qm_female_2010
             )
-        - lq: log((MU * qm + (1 - MU) * qm1997)) / (1 - (MU * qm + (1 - MU) * qm1997))
+        - lq: log((MU * qm + (1 - MU) * qm_2010)) / (1 - (MU * qm + (1 - MU) * qm_2010))
         - etudes: (education_niveau > individu2generation.education_niveau)
         - enf_2_3: if(
             ISMALE,
@@ -102,56 +102,17 @@ entities:
             if(being_very_dependant_score > uniform(), 2, 1),
             0
             )
-        # TODO: deal with data_origin
-        # On sépare ceux qui ont plus de dix ans d'ancienneté dans la dépendance des autres
-        # Femmes: dependance_anciennete_superieur_10 0: .48: , 1: .52
-        # Hommes: dependance_anciennete_superieur_10 0: .49: , 1: .51
-        - dependance_anciennete_superieur_10_score: 0
-        - dependance_anciennete_superieur_10_score: if(
-            ISFEMALE and being_dependant,
-            logit_score(1.0956 - 0.0118 * age),
-            dependance_anciennete_superieur_10_score
-            )
-        - dependance_anciennete_superieur_10_score: if(
-            ISMALE and being_dependant,
-            logit_score(.4318 - 0.0032 * age),
-            dependance_anciennete_superieur_10_score
-            )
-        - dependance_anciennete_superieur_10: if(
-            ISFEMALE,
-            align(
-              dependance_anciennete_superieur_10_score,
-              filter = ISFEMALE and being_dependant,
-              proportions = .52
-              ),
-            align(
-              dependance_anciennete_superieur_10_score,
-              filter = ISMALE and being_dependant,
-              proportions = .51)
+        - impute_dependance_anciennete_option: IMPUTE_DEPENDANCE_ANCIENNETE
+        - while impute_dependance_anciennete_option == 2:
+          - dependance_anciennete: impute_dependance_anciennete(being_dependant)
+          - impute_dependance_anciennete_option: 0
+        - while impute_dependance_anciennete_option == 1:
+          - dependance_anciennete: if(
+              being_dependant,
+              0,
+              -1
               )
-        - dependance_anciennete: if(
-            being_dependant,
-            if(
-              not(dependance_anciennete_superieur_10),
-              if(
-                ISFEMALE,
-                choice(
-                  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
-                  [0.03, 0.07, 0.12, 0.17, 0.10, 0.11, 0.14, 0.14, 0.06,
-                  1 - (0.03 + 0.07 + 0.12 + 0.17 + 0.10 + 0.11 + 0.14 + 0.14 + 0.06)]),
-                choice(
-                  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
-                  [0.02, 0.06, 0.13, 0.14, 0.14, 0.15, 0.14, 0.11, 0.07,
-                  1 - (0.02 + 0.06 + 0.13 + 0.14 + 0.14 + 0.15 + 0.14 + 0.11 + 0.07)])
-                ),
-              10
-              ),
-            -1
-            )
-        - show(
-            '\nNombre initial de dépendants selon leur ancienneté après alignement',
-            groupby(dependance_niveau, dependance_anciennete, data_origin)
-            )
+          - impute_dependance_anciennete_option: 0
         - show('\nNombre initial de (non) dépendants de niveau 0', round(count(dependance_niveau == 0) * uniform_weight))
         - show('\nNombre initial de dépendants de niveau 1', round(count(dependance_niveau == 1) * uniform_weight))
         - show('\nNombre initial de dépendants de niveau 2', round(count(dependance_niveau == 2) * uniform_weight))
@@ -172,12 +133,12 @@ entities:
             individu2generation.qm_male,
             individu2generation.qm_female
             )
-        - qm1997: if(
+        - qm_2010: if(
             ISMALE,
-            individu2generation.qm_male_1997,
-            individu2generation.qm_female_1997
+            individu2generation.qm_male_2010,
+            individu2generation.qm_female_2010
             )
-        - lq: log((MU * qm + (1 - MU) * qm1997)) / (1 - (MU * qm + (1 - MU) * qm1997))
+        - lq: log((MU * qm + (1 - MU) * qm_2010)) / (1 - (MU * qm + (1 - MU) * qm_2010))
         - etudes: (education_niveau > individu2generation.education_niveau)
         - enf_2_3: if(
             ISMALE,
@@ -198,43 +159,50 @@ entities:
             -1
             )
         - becoming_dependant_score: -1
+        - CALE: -1
         - becoming_dependant_score: if(
             ISMALE and (age >= 60) and (age < 75) and (not ISDEPENDANT),
             logit_score(
-                1.109 + 1.445 * lq - 0.484 * etudes
+                1.109 + 1.445 * lq - 0.484 * etudes + CALE
                 ),
             becoming_dependant_score
             )
         - becoming_dependant_score: if(
             ISMALE and (age >= 60) and (age >= 75) and (not ISDEPENDANT),
             logit_score(
-                .878 + 1.416 * lq - 1.095 * etudes
+                .878 + 1.416 * lq - 1.095 * etudes + CALE
                 ),
             becoming_dependant_score
             )
         - becoming_dependant_score: if(
             ISFEMALE and (age >= 60) and (age < 80) and (not ISDEPENDANT),
             logit_score(
-                .845 + 1.070 * lq - 0.455 * enf_2_3,
+                .845 + 1.070 * lq - 0.455 * enf_2_3 + CALE,
                 ),
             becoming_dependant_score
             )
         - becoming_dependant_score: if(
             ISFEMALE and (age >= 60) and (age >= 80) and (not ISDEPENDANT),
             logit_score(
-                .665 + 1.166 * lq,
+                .665 + 1.166 * lq + CALE,
                 ),
             becoming_dependant_score
             )
         - assertTrue(all(becoming_dependant_score == -1, filter = (age < 60)))
         - assertTrue(all(becoming_dependant_score == -1, filter = (ISDEPENDANT)))
+        - becoming_dependant: (1 - (1 - becoming_dependant_score) ** (1/2)) > uniform()
         - should_align: ALIGN_DEPENDANCE_PREVALENCE
-        - becoming_dependant: 1 - (1 - becoming_dependant_score) ** (1/2) > uniform()
         - while should_align:
           - becoming_dependant: align_becoming_dependant(becoming_dependant_score)
           - should_align: False
-        - show('\n Nombre de nouveaux dépendants selon score', sum(becoming_dependant_score * (becoming_dependant_score > 0)))
+        - show(
+            '\n Nombre de nouveaux dépendants selon score',
+             sum((1 - (1 - becoming_dependant_score) ** (1/2)) * (becoming_dependant_score > 0))
+            )
+        - show('\nNombre de dépendants hors nouveaux dépendants', sum(dependance_niveau > 0))
+        - show('\nNombre de dépendants hors nouveaux dépendants', sum(ISDEPENDANT))
         - show('\nNombre de nouveaux dépendants vraiement sélectionnés', sum(becoming_dependant))
+        - show('\nIncidence', sum(becoming_dependant) / sum(dependance_niveau > 0))
         - dependance_anciennete: if(
             becoming_dependant,
             0,
@@ -373,3 +341,57 @@ entities:
             )
         - show('\nNombre de nouveaux dépendants sélectionnés', count(becoming_dependant))
         - return becoming_dependant
+
+
+      impute_dependance_anciennete(being_dependant):
+        # TODO: deal with data_origin
+        # On sépare ceux qui ont plus de dix ans d'ancienneté dans la dépendance des autres
+        # Femmes: dependance_anciennete_superieur_10 0: .48: , 1: .52
+        # Hommes: dependance_anciennete_superieur_10 0: .49: , 1: .51
+        - dependance_anciennete_superieur_10_score: 0
+        - dependance_anciennete_superieur_10_score: if(
+            ISFEMALE and being_dependant,
+            logit_score(1.0956 - 0.0118 * age),
+            dependance_anciennete_superieur_10_score
+            )
+        - dependance_anciennete_superieur_10_score: if(
+            ISMALE and being_dependant,
+            logit_score(.4318 - 0.0032 * age),
+            dependance_anciennete_superieur_10_score
+            )
+        - dependance_anciennete_superieur_10: if(
+            ISFEMALE,
+            align(
+              dependance_anciennete_superieur_10_score,
+              filter = ISFEMALE and being_dependant,
+              proportions = .52
+              ),
+            align(
+              dependance_anciennete_superieur_10_score,
+              filter = ISMALE and being_dependant,
+              proportions = .51)
+              )
+        - dependance_anciennete: if(
+            being_dependant,
+            if(
+              not(dependance_anciennete_superieur_10),
+              if(
+                ISFEMALE,
+                choice(
+                  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+                  [0.03, 0.07, 0.12, 0.17, 0.10, 0.11, 0.14, 0.14, 0.06,
+                  1 - (0.03 + 0.07 + 0.12 + 0.17 + 0.10 + 0.11 + 0.14 + 0.14 + 0.06)]),
+                choice(
+                  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+                  [0.02, 0.06, 0.13, 0.14, 0.14, 0.15, 0.14, 0.11, 0.07,
+                  1 - (0.02 + 0.06 + 0.13 + 0.14 + 0.14 + 0.15 + 0.14 + 0.11 + 0.07)])
+                ),
+              10
+              ),
+            -1
+            )
+        - show(
+            '\nNombre initial de dépendants selon leur ancienneté après alignement',
+            groupby(dependance_niveau, dependance_anciennete, data_origin)
+            )
+        - return dependance_anciennete

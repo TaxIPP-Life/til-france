@@ -9,9 +9,11 @@ import:
    - dependance/dependance_transition.yml
 
 entities:
+
   individus:
     macros:
       ALIGN_DEPENDANCE_PREVALENCE: False
+      IMPUTE_DEPENDANCE_ANCIENNETE: 2
       MU: 1
 
     processes:
@@ -32,8 +34,15 @@ entities:
                 fname = 'dependance_gir.csv'
                 )
           - csv('incidence_by_period',
-                fname = 'incidence.csv'
+                fname = 'dependance_incidence.csv'
                 )
+          - csv('dependance_deces_by_period',
+                fname = 'dependance_deces.csv'
+                )
+          - csv('dependance_anciennete_by_period',
+                fname = 'dependance_anciennete.csv'
+                )
+
 
       options_statistiques_fin_de_periode:
         - dependance_statistiques_fin_de_periode()
@@ -67,8 +76,19 @@ entities:
             fname = 'dependance_incidence.csv',
             mode = 'a'
             )
-
+        - csv(
+            groupby(
+              period,
+              age,
+              sexe,
+              dependance_anciennete,
+              count(),
+              filter = (age >= 60)
+              ),
+            fname = 'dependance_anciennete.csv',
+            mode = 'a'
+            )
 
 simulation:
-  periods: 11
-  random_seed: 54321
+  periods: 31
+  random_seed: 12345

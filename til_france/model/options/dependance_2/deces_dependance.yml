@@ -13,12 +13,12 @@ entities:
         #     individu2generation.qm_male,
         #     individu2generation.qm_female
         #     )
-        # - qm1997: if(
+        # - qm_2010: if(
         #     ISMALE,
-        #     individu2generation.qm_male_1997,
-        #     individu2generation.qm_female_1997
+        #     individu2generation.qm_male_2010,
+        #     individu2generation.qm_female_2010
         #     )
-        # - lq: log((MU * qm + (1 - MU) * qm1997)) / (1 - (MU * qm + (1 - MU) * qm1997))
+        # - lq: log((MU * qm + (1 - MU) * qm_2010)) / (1 - (MU * qm + (1 - MU) * qm_2010))
 
 
         - decede: if(

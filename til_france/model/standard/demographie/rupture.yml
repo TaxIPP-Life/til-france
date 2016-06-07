@@ -4,19 +4,21 @@ entities:
       couple_rupture:
         - agediff: if(ISFEMALE and INCOUPLE, age - l_partner.age, 0)
         - enfants_du_couple: invl_mere.count(target_filter = (pere == l_mere.partner) )
+        - assertTrue(all(enfants_du_couple >= 0))
         - autres_enfants: invl_mere.count() - enfants_du_couple
+        - assertTrue(all(autres_enfants >= 0))
         # Michel DUÉE 2005
         # La modélisation des comportements démographiques dans le modèle de microsimulation DESTINIE
         # Document de travail INSEE
         # http://www.insee.fr/fr/publications-et-services/docs_doc_travail/G2005-15.pdf
         # TODO: séparer rupture et divorce, séparer ruputre de gens en couple et divorce
-        - etudes_courtes: findet < 20  # TODO age moyen de sa generation
+        - etudes_courtes: findet < 21  # TODO age moyen de sa generation
         - probabilite_rupture_femme: if(
             ISFEMALE and INCOUPLE and (duree_en_couple > 0),
             logistic(
-              -2.47 - 0.45 - 0.06 * agediff - 0.04 * duree_en_couple + 0.58 * (enfants_du_couple == 0) +
+              -2.47 - 0.45 - 0.04 * duree_en_couple - 0.06 * (age - duree_en_couple) + 0.58 * (enfants_du_couple == 0) +
               0.21 * (enfants_du_couple == 1) + 0.13 * (enfants_du_couple > 3) + 0.41 * (autres_enfants > 0)
-              + .09 * etudes_courtes ),
+              + .09 * etudes_courtes),
             0
             ) # Dans Duée 2005 on ne précise pas si ce sont les études courtes de l'homme ou de la femme
         - show('\nNombre de ruptures avant tirage', sum(probabilite_rupture_femme))

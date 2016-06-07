@@ -9,18 +9,7 @@ from webcolors import rgb_to_hex
 from til_core.config import Config
 from til_core.simulation import TilSimulation
 
-
-# RGB tuples
-ipp_colors_not_normalized = dict(
-    ipp_very_dark_blue = (0, 80, 101),
-    ipp_dark_blue = (0, 135, 152),
-    ipp_medium_blue = (146, 205, 220),
-    ipp_light_blue = (183, 222, 232),
-    ipp_very_light_blue = (218, 238, 243),
-    ipp_blue = (75, 172, 197)
-    )
-
-ipp_colors = dict((name, rgb_to_hex(rgb)) for name, rgb in ipp_colors_not_normalized.iteritems())
+from taxipp.utils import ipp_colors, to_percent_round_formatter
 
 
 til_france_path = os.path.join(
