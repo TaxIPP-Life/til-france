@@ -14,7 +14,7 @@ entities:
     macros:
       ALIGN_DEPENDANCE_PREVALENCE: False
       IMPUTE_DEPENDANCE_ANCIENNETE: 2
-      MU: 1
+      MU: 0
 
     processes:
       options_initialisation:

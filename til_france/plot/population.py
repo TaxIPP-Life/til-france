@@ -34,7 +34,8 @@ from til_france.tests.base import til_france_path, create_or_get_figures_directo
 from til_france.targets.population import get_data_frame_insee
 
 
-def extract_population_csv(simulation):
+def extract_population_csv(simulation, backup = None):
+    # TODO handle backup
     directory = os.path.dirname(simulation.data_sink.output_path)
     uniform_weight = simulation.uniform_weight
     file_path = os.path.join(directory, 'population2.csv')
@@ -76,8 +77,8 @@ def extract_population_csv(simulation):
     return panel * uniform_weight
 
 
-def extract_population_by_age_csv(simulation):
-    directory = os.path.dirname(simulation.data_sink.output_path)
+def extract_population_by_age_csv(simulation, backup = None):
+    directory = get_data_directory(simulation, backup = backup)
     uniform_weight = simulation.uniform_weight
     file_path = os.path.join(directory, 'population.csv')
 
@@ -182,10 +183,9 @@ def get_insee_projection(quantity, gender, function = None):
         return data_frame
 
 
-def plot_population2(simulation):
-    figures_directory = create_or_get_figures_directory(simulation)
-
-    panel_simulation = extract_population_csv(simulation)
+def plot_population2(simulation, backup = None):
+    figures_directory = create_or_get_figures_directory(simulation, backup = backup)
+    panel_simulation = extract_population_csv(simulation, backup = backup)
 
     for gender in ['total', 'male', 'female']:
         data_frame_insee = get_data_frame_insee(gender)
@@ -226,10 +226,10 @@ def plot_population2(simulation):
     del ax2, ax, fig
 
 
-def plot_ratio_demographique(simulation):
-    figures_directory = create_or_get_figures_directory(simulation)
+def plot_ratio_demographique(simulation, backup = None):
+    figures_directory = create_or_get_figures_directory(simulation, backup = backup)
 
-    panel_simulation = extract_population_by_age_csv(simulation)
+    panel_simulation = extract_population_by_age_csv(simulation, backup = backup)
     panel_simulation.drop('total', axis = 'major', inplace = True)
 
     def separate(age):
@@ -261,8 +261,8 @@ def plot_ratio_demographique(simulation):
     del ax, fig
 
 
-def population_diagnostic(simulation):
-    figures_directory = create_or_get_figures_directory(simulation)
+def population_diagnostic(simulation, backup = None):
+    figures_directory = create_or_get_figures_directory(simulation, backup = backup)
     directory = os.path.dirname(simulation.data_sink.output_path)
     uniform_weight = simulation.uniform_weight
 
@@ -315,19 +315,15 @@ def population_diagnostic(simulation):
     return population
 
 
+def plot_age_pyramid(age_min = 0, age_max = None, group_by = 1, year = 2010, backup = None):
 
-
-def plot_age_pyramid(age_min = 0, age_max = None, group_by = 1, year = 2010):
-
-
-    population = extract_population_by_age_csv(simulation)
+    population = extract_population_by_age_csv(simulation, backup = backup)
     data = population.to_frame()[['male', 'female']]
     data = (data.stack()
         .unstack('period')
         .get(year)
         .unstack()
-        .drop('total')
-        )
+        .drop('total'))
     data.index = data.index.astype(int)
     data.sort_index(inplace = True)
 

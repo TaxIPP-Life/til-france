@@ -12,7 +12,7 @@ entities:
 
   individus:
     macros:
-      ALIGN_DEPENDANCE_PREVALENCE: False
+      ALIGN_DEPENDANCE_PREVALENCE: True
       IMPUTE_DEPENDANCE_ANCIENNETE: 2
       MU: 1
 

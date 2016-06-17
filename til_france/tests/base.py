@@ -58,15 +58,35 @@ You should also check that the input path is correctly set in your config_local.
     return simulation
 
 
-def create_or_get_figures_directory(simulation):
-    figures_directory = os.path.join(
-        os.path.dirname(simulation.data_sink.output_path),
-        'figures',
-        )
+def create_or_get_figures_directory(simulation, backup = None):
+    if backup is not None:
+        figures_directory = os.path.join(
+            os.path.dirname(simulation.data_sink.output_path),
+            '..',
+            backup,
+            'figures',
+            )
+    else:
+        figures_directory = os.path.join(
+            os.path.dirname(simulation.data_sink.output_path),
+            'figures',
+            )
+
     if not os.path.exists(figures_directory):
         os.mkdir(figures_directory)
     assert os.path.exists(figures_directory)
     return figures_directory
+
+
+def get_data_directory(simulation, backup = None):
+    if backup:
+        return os.path.join(
+            os.path.dirname(simulation.data_sink.output_path),
+            '..',
+            backup,
+            )
+    else:
+        return os.path.dirname(simulation.data_sink.output_path)
 
 
 def line_prepender(filename, line):
