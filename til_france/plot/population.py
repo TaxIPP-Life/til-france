@@ -26,55 +26,102 @@ from __future__ import division
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
 import os
-import pandas
+import pandas as pd
 from StringIO import StringIO
 
 
-from til_france.tests.base import til_france_path, create_or_get_figures_directory, ipp_colors
+from til_france.tests.base import til_france_path, create_or_get_figures_directory, ipp_colors, get_data_directory
 from til_france.targets.population import get_data_frame_insee
 
 
-def extract_population_csv(simulation, backup = None):
-    # TODO handle backup
-    directory = os.path.dirname(simulation.data_sink.output_path)
+def extract(simulation, backup, csv_extract_function):
+    directory = get_data_directory(simulation, backup = backup)
     uniform_weight = simulation.uniform_weight
-    file_path = os.path.join(directory, 'population2.csv')
+    if os.path.exists(os.path.join(directory, 'replication_0')):
+        multiple = True
+        base_directory = directory
 
-    input_file = open(file_path)
-    txt = input_file.readlines()[1:]
-    txt = [line for line in txt if not line.startswith('population')]
-    date = None
-    data = None
-    data_by_date = dict()
-    data = []
-    is_period_line = False
-    for line in txt:
-        if is_period_line:
-            if date and data:
-                data_by_date.update({date: data})
-                data = []
-            date = int(line.strip())
-        elif line.startswith('period'):
-            pass
-        else:
-            data.append(line.strip())
-        is_period_line = True if line.startswith('period') else False
+    if multiple:
+        replication_number = 0
+        result = list()
+        while replication_number >= 0:
+            directory = os.path.join(base_directory, 'replication_{}'.format(replication_number))
+            if os.path.exists(directory):
+                result.append(csv_extract_function(directory, weight = uniform_weight))
+                replication_number += 1
 
-    proto_panel = None
-    for period, data in data_by_date.iteritems():
-        csv_string = StringIO('\n'.join(data_by_date[period]))
-        df = pandas.read_csv(csv_string)
-        df.set_index(df.columns[0], inplace = True)
-        df.index.name = 'age_group'
-        df.columns = df.iloc[0]
-        df.drop(df.index[0], axis = 0, inplace = True)
-        df.columns = ['male', 'female', 'total']
-        df.columns.name = "population"
-        df['period'] = period
-        proto_panel = pandas.concat([proto_panel, df]) if proto_panel is not None else df
+            else:
+                return result
 
-    panel = proto_panel.set_index(['period'], append = True).to_panel().fillna(0).astype(int)
-    return panel * uniform_weight
+    else:
+        return csv_extract_function(directory, weight = uniform_weight)
+
+
+def extract_population_csv(simulation, backup = None):
+
+    directory = get_data_directory(simulation, backup = backup)
+    uniform_weight = simulation.uniform_weight
+    if os.path.exists(os.path.join(directory, 'replication_0')):
+        multiple = True
+        base_directory = directory
+
+    def _extract_population_csv(directory, weight = None):
+        file_path = os.path.join(directory, 'population2.csv')
+        input_file = open(file_path)
+        txt = input_file.readlines()[1:]
+        txt = [line for line in txt if not line.startswith('population')]
+        date = None
+        data = None
+        data_by_date = dict()
+        data = []
+        is_period_line = False
+        for line in txt:
+            if is_period_line:
+                if date and data:
+                    data_by_date.update({date: data})
+                    data = []
+                date = int(line.strip())
+            elif line.startswith('period'):
+                pass
+            else:
+                data.append(line.strip())
+            is_period_line = True if line.startswith('period') else False
+
+        proto_panel = None
+        for period, data in data_by_date.iteritems():
+            csv_string = StringIO('\n'.join(data_by_date[period]))
+            df = pd.read_csv(csv_string)
+            df.set_index(df.columns[0], inplace = True)
+            df.index.name = 'age_group'
+            df.columns = df.iloc[0]
+            df.drop(df.index[0], axis = 0, inplace = True)
+            df.columns = ['male', 'female', 'total']
+            df.columns.name = "population"
+            df['period'] = period
+            proto_panel = pd.concat([proto_panel, df]) if proto_panel is not None else df
+
+
+        panel = proto_panel.reset_index()
+        panel = panel.set_index(['period', 'age_group']).astype('int')
+
+        return panel * weight
+
+
+
+    if multiple:
+        replication_number = 0
+        result = list()
+        while replication_number >= 0:
+            directory = os.path.join(base_directory, 'replication_{}'.format(replication_number))
+            if os.path.exists(directory):
+                result.append(_extract_population_csv(directory, weight = uniform_weight))
+                replication_number += 1
+
+            else:
+                return result
+
+    else:
+        return _extract_population_csv(directory, weight = uniform_weight)
 
 
 def extract_population_by_age_csv(simulation, backup = None):
@@ -105,7 +152,7 @@ def extract_population_by_age_csv(simulation, backup = None):
     proto_panel = None
     for period, data in data_by_date.iteritems():
         csv_string = StringIO('\n'.join(data_by_date[period]))
-        df = pandas.read_csv(csv_string)
+        df = pd.read_csv(csv_string)
         df.set_index(df.columns[0], inplace = True)
         df.index.name = 'age'
         df.columns = df.iloc[0]
@@ -113,7 +160,7 @@ def extract_population_by_age_csv(simulation, backup = None):
         df.columns = ['male', 'female', 'total']
         df.columns.name = "population"
         df['period'] = period
-        proto_panel = pandas.concat([proto_panel, df]) if proto_panel is not None else df
+        proto_panel = pd.concat([proto_panel, df]) if proto_panel is not None else df
 
     panel = proto_panel.set_index(['period'], append = True).to_panel().fillna(0).astype(int)
 
@@ -169,7 +216,7 @@ def get_insee_projection(quantity, gender, function = None):
             get_insee_projection(quantity, 'female', function = function)
             )
 
-    data_frame = pandas.read_excel(
+    data_frame = pd.read_excel(
         data_path, sheetname = sheetname, skiprows = 2, header = 2)[:row_end].set_index(
             age_label)
 
@@ -183,13 +230,21 @@ def get_insee_projection(quantity, gender, function = None):
         return data_frame
 
 
-def plot_population2(simulation, backup = None):
+def plot_population(simulation, backup = None):
     figures_directory = create_or_get_figures_directory(simulation, backup = backup)
     panel_simulation = extract_population_csv(simulation, backup = backup)
 
+    if isinstance(panel_simulation, list):
+        data_concat = pd.concat(panel_simulation)
+        print data_concat
+        by_row_index = data_concat.groupby(data_concat.index)
+        panel_simulation = by_row_index.mean()
+        multi_index = pd.MultiIndex.from_tuples(panel_simulation.index, names = ('period', 'age_group'))
+        panel_simulation = panel_simulation.reindex(multi_index)
+
     for gender in ['total', 'male', 'female']:
         data_frame_insee = get_data_frame_insee(gender)
-        data_frame_simulation = panel_simulation[gender].drop('total')
+        data_frame_simulation = panel_simulation[gender].unstack('period').drop('total').fillna(0)
         data_frame_simulation.index = data_frame_simulation.index.astype(int)
         data_frame_simulation.sort_index(inplace = True)
 
@@ -209,7 +264,7 @@ def plot_population2(simulation, backup = None):
 
     for gender in ['total', 'male', 'female']:
         data_frame_insee_total = get_data_frame_insee(gender).sum()
-        data_frame_simulation = panel_simulation[gender].drop('total')
+        data_frame_simulation = panel_simulation[gender].unstack('period').drop('total').fillna(0)
         data_frame_simulation.index = data_frame_simulation.index.astype(int)
         data_frame_simulation.sort_index(inplace = True)
         data_frame_simulation_total = data_frame_simulation.sum()
@@ -268,18 +323,18 @@ def population_diagnostic(simulation, backup = None):
 
     population = None
     for csv_file in ['naissances', 'deces', 'migrations']:
-        simulation_data_frame = pandas.read_csv(os.path.join(directory, csv_file + '.csv'))
+        simulation_data_frame = pd.read_csv(os.path.join(directory, csv_file + '.csv'))
         simulation_data_frame.period = (simulation_data_frame['period']).round().astype(int)
         simulation_data_frame.set_index('period', inplace = True)
 
-        insee_data_frame = pandas.DataFrame({
+        insee_data_frame = pd.DataFrame({
             '{}_insee'.format(csv_file): get_insee_projection(csv_file, 'total', function = 'sum')
             })
         insee_data_frame.index.name = 'period'
-        data_frame = pandas.concat([simulation_data_frame * uniform_weight, insee_data_frame], axis = 1)
+        data_frame = pd.concat([simulation_data_frame * uniform_weight, insee_data_frame], axis = 1)
 
         if population is not None:
-            population = pandas.concat([population, data_frame], axis = 1)
+            population = pd.concat([population, data_frame], axis = 1)
         else:
             population = data_frame
 

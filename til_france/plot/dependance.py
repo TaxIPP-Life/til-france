@@ -249,8 +249,8 @@ def plot_dependance_prevalence_by_age(simulation, years = None, ax = None, age_m
 
     data = clean_prevalence_csv(df)
 
-    # ylabel = u"taux de prévalence"
-    ylabel = "prevalence rate"
+    ylabel = u"taux de prévalence"
+    # ylabel = "prevalence rate"
     return _plot_and_or_save(ax = ax, data = data, figures_directory = figures_directory,
         name = 'prevalence', pdf_name = None, years = years, age_max = age_max, ylabel = ylabel)
 
@@ -267,8 +267,8 @@ def plot_dependance_incidence_by_age(simulation, years = None, ax = None, age_ma
 
     data = _apply_cleaning(_clean_data, data)
 
-    # ylabel = "taux d'incidence"
-    ylabel = "incidence rate"
+    ylabel = "taux d'incidence"
+    # ylabel = "incidence rate"
     return _plot_and_or_save(ax = ax, data = data, figures_directory = figures_directory,
                       name = 'incidence', pdf_name = None, years = years, age_max = age_max, ylabel = ylabel)
 
@@ -381,7 +381,7 @@ def _extract(simulation, filename, removed_lines_prefixes, columns, drop = None,
 
 
 def _plot_and_or_save(ax = None, data = None, figures_directory = None, name = None, pdf_name = None, years = None,
-        age_max = None, ylabel = None, english = True):
+        age_max = None, ylabel = None, english = False):
     assert name is not None
     assert data is not None
     assert years is not None
@@ -460,22 +460,37 @@ def plot_multi_dependance_csv(simulation, options, save_figure = True):
     df2 = df2['total'].unstack()
     df2['dependance_aligned'] = df2.dependance_aligned.shift()
 
+#    df2.rename(
+#        columns = {
+#            'dependance': 'optimistic ($\mu$ = 1)',
+#            'dependance_aligned': 'aligned',
+#            'dependance_pessimistic': 'pessimistic ($\mu$ = 0)',
+#            'dependance_medium': 'median ($\mu$ = 0)'
+#            },
+#        inplace = True,
+#        )
+
     df2.rename(
         columns = {
-            'dependance': 'optimistic ($\mu$ = 1)',
-            'dependance_aligned': 'aligned',
-            'dependance_pessimistic': 'pessimistic ($\mu$ = 0)',
-            'dependance_medium': 'median ($\mu$ = 0)'
+            'dependance': r'sc. optimiste ($\mu$ = 1)',
+            'dependance_aligned': r"sc. align$\acute{e}$",
+            'dependance_pessimistic': r'sc. pessimiste ($\mu$ = 0)',
+            'dependance_medium': r"m$\acute{e}$dian ($\mu$ = .5)"
             },
         inplace = True,
         )
-    plt.rc('text', usetex=True)
+
+
+    # plt.rc('text', usetex=True)
     df2.columns.name = None
     colors = [ipp_colors[cname] for cname in [
         'ipp_very_dark_blue', 'ipp_dark_blue', 'ipp_medium_blue', 'ipp_light_blue']]
     ax = df2.loc[df2.index >= 2010].plot(colors = colors)
-    ax.set_xlabel(u"year")  # TODO french
-    ax.set_ylabel("elderly disabled (thousands)")
+    #    ax.set_xlabel(u"year")  # TODO french
+    #    ax.set_ylabel("elderly disabled (thousands)")
+#    ax.set_xlabel(u"année")
+#    ax.set_ylabel(u"personnes dépendantes (milliers)")
+
     if save_figure:
         pdf_name = 'multi_dependance'
         ax.figure.savefig(os.path.join(figures_directory, '{}.pdf'.format(pdf_name)), bbox_inches='tight')

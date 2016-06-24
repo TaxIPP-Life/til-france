@@ -15,7 +15,7 @@ from til_france.plot.dependance import (
     plot_multi_prevalence_csv, plot_multi_dependance_csv
     )
 from til_france.plot.population import (
-    plot_population2, population_diagnostic, plot_ratio_demographique,
+    plot_population, population_diagnostic, plot_ratio_demographique,
     )
 
 
@@ -47,22 +47,28 @@ simulation = create_til_simulation(
     output_name_suffix = 'test_institutions',
     uniform_weight = 200,
     )
+
+#plot_population(simulation, backup = option)
+#
+#bim
 # plot_dependance_csv(simulation, backup = option)
 #options = ['dependance', 'dependance_aligned']
 #for option in options:
 #    plot_dependance_by_age_separate(
 #        simulation, backup = option, years = [2010, 2025, 2040], save = True, age_max = 95)
-
-
-# plot_dependance_gir_csv(simulation)
-
-# plot_dependance_by_age(simulation, years = [2010, 2020, 2030], save = True, age_max = 100)
-# plot_dependance_prevalence_by_age(simulation, years = [2010, 2025, 2040], age_max = 100)
-
-# plot_dependance_by_age_separate(simulation, years = [2010, 2025, 2040], save = True, age_max = 95)
+#
+#
+#plot_dependance_gir_csv(simulation)
+#
+#plot_dependance_by_age(simulation, years = [2010, 2020, 2030], save = True, age_max = 100)
+#plot_dependance_prevalence_by_age(simulation, years = [2010, 2025, 2040], age_max = 100)
+#
+#plot_dependance_by_age_separate(simulation, years = [2010, 2025, 2040], save = True, age_max = 95)
 
 # avec alignement 403
 # sans alignement
+
+
 
 options = ['dependance', 'dependance_aligned', 'dependance_pessimistic', 'dependance_medium']
 
@@ -75,10 +81,10 @@ bdadou
 
 
 
-def export_to_scor():
+def export_to_slides():
     options = ['dependance', 'dependance_aligned', 'dependance_pessimistic', 'dependance_medium']
     graphs = ['prevalence', 'incidence', 'mortalite']
-    destination_dir = "/home/benjello/Dropbox/Projet Dépendance - IPP (Dropbox)/Conférences/SCOR/Slides/Graphiques".decode('utf-8')
+    destination_dir = "/home/benjello/Graphiques".decode('utf-8')
     for graph in graphs:
         for option in options:
             source_path = '/home/benjello/data/til/output/{}/figures/{}.pdf'.format(
@@ -88,4 +94,4 @@ def export_to_scor():
                 ))
             shutil.copyfile(source_path, destination_path)
 
-export_to_scor()
+export_to_slides()
