@@ -41,10 +41,10 @@ def list_variables_with_missing_values(dataframe):
 
 
 def load_dataframe():
-    # set seed
+    # Set seed
     numpy.random.seed(12345)
 
-    # load data
+    # Load data
     survey_collection = SurveyCollection.load(
         collection = 'hsi', config_files_directory = config_files_directory)
 

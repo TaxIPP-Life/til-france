@@ -1,0 +1,99 @@
+entities:
+  individus:
+    processes:
+      vieillissement:
+        - ageing()
+        - deces()
+        - dependance()
+
+      deces_selection:
+        ############# Tirage ###########
+        - qm: if(
+            ISMALE,
+            individu2generation.qm_male,
+            individu2generation.qm_female
+            )
+        - qm_2010: if(
+            ISMALE,
+            individu2generation.qm_male_2010,
+            individu2generation.qm_female_2010
+            )
+        - lq: log((MU * qm + (1 - MU) * qm_2010)) / (1 - (MU * qm + (1 - MU) * qm_2010))
+        - etudes: (education_niveau > individu2generation.education_niveau)
+        # - assertTrue(all(dependance_anciennete < 0, filter = (dependance_niveau < 1)))
+        - decede_score: if(
+            ISMALE,
+            logit_score(
+              (dependance_niveau == 0) * (
+                (age < 85) * (1.538 + 1.358 * lq) + (age >= 85) * (2.696 + 2.107 * lq)
+                ) +
+              (dependance_niveau == 1) * (
+                (dependance_anciennete >= 10) * (1.510 + 1.228 * lq) +
+                ((dependance_anciennete >= 0) and (dependance_anciennete < 10)) * (.634 + .454 * lq)
+                ) +
+              (dependance_niveau == 2) * (1.815 + .752 * lq + .987 * (dependance_anciennete == 1)
+                )
+              ),
+            logit_score(
+              (dependance_niveau == 0) * (
+                etudes * (.397 + .967 * lq) + (not etudes) * (1.774 + 1.398 * lq)
+                ) +
+              (dependance_niveau == 1) * (.241 + .319 * lq - .079 * dependance_anciennete) +
+              (dependance_niveau == 2) * (
+                (dependance_anciennete >= 10) * (2.306 + 1.059 * lq) +
+                ((dependance_anciennete >= 0) and (dependance_anciennete < 10)) * (
+                  .695 + .390 * lq + .244 * (dependance_anciennete == 1)
+                  )
+                )
+              )
+            )
+        - decede_score: 1 - (1 - decede_score) ** (1 / 2)
+        - decede: if(
+            ISMALE,
+            align(decede_score, 'parameters/population/hyp_mortaliteH.csv'),
+            align(decede_score, 'parameters/population/hyp_mortaliteF.csv')
+            )
+        ### par simplicite pour l'heritage (parce que pour le reste ca marche)
+        ### on ne fait mourir qu une seule personne
+        ### A retirer pour tester, ca doit etre bon maintenant
+        - decede: if(l_partner.decede and l_partner.id < id, False, decede)
+        - decede: if(l_pere.decede, False, decede)
+        - decede: if(l_mere.decede, False, decede)
+        - show('Age moyen des partenaires', round(avg(l_partner.age, filter=l_partner.age>-1), 2))
+        - show('\nNombre de personne dépendante décédées', count(decede and (dependance_niveau > 0)) * uniform_weight)
+        - return decede
+
+      statistiques_deces(decede):
+        - csv(
+            period, count(decede),
+            fname = 'deces.csv', mode = 'a'
+            )
+        - show('\nNombre de décès (total = hommes + femmes)',
+            round(count(decede) * uniform_weight), " = ",
+            round(count(decede and ISMALE) * uniform_weight), " + ",
+            round(count(decede and ISFEMALE) * uniform_weight)
+            )
+        - show('\nAge moyen des hommes décédés', round(avg(age, filter=decede and ISMALE), 2))
+        - show('\nAge moyen des femmes décédées', round(avg(age, filter=decede and ISFEMALE), 2))
+        - show('\nNombre de veuves', round(sum(ISWIDOW) * uniform_weight))
+        - csv(
+            groupby(
+              period,
+              age,
+              sexe,
+              ((dependance_niveau == 1) or (dependance_niveau == 2)) and decede,
+              filter = (age >= 60)
+              ),
+            fname = 'dependance_deces.csv', mode = 'a'
+            )
+        - show('\nNombre de décès de dépendants (total = hommes + femmes)',
+            round(count(
+              ((dependance_niveau == 1) or (dependance_niveau == 2)) and decede) * uniform_weight), " = ",
+            round(count(
+              ((dependance_niveau == 1) or (dependance_niveau == 2)) and (decede and ISMALE)) * uniform_weight), " + ",
+            round(count(
+              ((dependance_niveau == 1) or (dependance_niveau == 2)) and (decede and ISFEMALE)) * uniform_weight)
+            )
+        - show('\nAge moyen des hommes décédés', round(avg(age, filter=decede and ISMALE), 2))
+        - show('\nAge moyen des femmes décédées', round(avg(age, filter=decede and ISFEMALE), 2))
+        - show('\nNombre de veuves', round(sum(ISWIDOW) * uniform_weight))

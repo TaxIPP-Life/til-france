@@ -1,0 +1,450 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+Cohort	til_france/data/data/Cohort.py	/^class Cohort(DataTil):$/;"	kind:class	line:18
+Cohort.py	til_france/data/data/Cohort.py	1;"	kind:file	line:1
+DataTil	til_france/data/DataTil.py	/^class DataTil(object):$/;"	kind:class	line:99
+DataTil.py	til_france/data/DataTil.py	1;"	kind:file	line:1
+Destinie	til_france/data/data/Destinie.py	/^class Destinie(DataTil):$/;"	kind:class	line:30
+Destinie	til_france/data/data/Destinie2.py	/^class Destinie(DataTil):$/;"	kind:class	line:22
+Destinie.py	til_france/data/data/Destinie.py	1;"	kind:file	line:1
+Destinie2.py	til_france/data/data/Destinie2.py	1;"	kind:file	line:1
+Patrimoine	til_france/data/data/Patrimoine.py	/^class Patrimoine(DataTil):$/;"	kind:class	line:25
+Patrimoine.py	til_france/data/data/Patrimoine.py	1;"	kind:file	line:1
+TaxBenefitSystem	til_france/tests/simple_test.py	/^TaxBenefitSystem = openfisca_france_data.init_country()$/;"	kind:variable	line:25
+_BioEmp_in_2	til_france/data/data/Destinie.py	/^        def _BioEmp_in_2():$/;"	kind:function	line:46
+_BioEmp_in_2	til_france/data/data/Destinie2.py	/^        def _BioEmp_in_2():$/;"	kind:function	line:49
+_Emp_clean	til_france/data/data/Destinie.py	/^        def _Emp_clean(ind, emp):$/;"	kind:function	line:159
+_Emp_clean	til_france/data/data/Destinie2.py	/^        def _Emp_clean(ind, emp):$/;"	kind:function	line:160
+__death_unic_event	til_france/data/data/Destinie.py	/^            def __death_unic_event(futur):$/;"	kind:function	line:272
+__death_unic_event	til_france/data/data/Destinie2.py	/^            def __death_unic_event(futur):$/;"	kind:function	line:261
+__deces_indicated_lastyearoflife	til_france/data/data/Destinie.py	/^            def __deces_indicated_lastyearoflife():$/;"	kind:function	line:251
+__deces_indicated_lastyearoflife	til_france/data/data/Destinie2.py	/^            def __deces_indicated_lastyearoflife():$/;"	kind:function	line:240
+__init__	til_france/data/DataTil.py	/^    def __init__(self):$/;"	kind:member	line:104
+__init__	til_france/data/data/Cohort.py	/^    def __init__(self, size=1000):$/;"	kind:member	line:23
+__init__	til_france/data/data/Destinie.py	/^    def __init__(self):$/;"	kind:member	line:32
+__init__	til_france/data/data/Destinie2.py	/^    def __init__(self):$/;"	kind:member	line:24
+__init__	til_france/data/data/Patrimoine.py	/^    def __init__(self):$/;"	kind:member	line:27
+__init__.py	til_france/__init__.py	1;"	kind:file	line:1
+__init__.py	til_france/data/__init__.py	1;"	kind:file	line:1
+__init__.py	til_france/data/data/__init__.py	1;"	kind:file	line:1
+__init__.py	til_france/model/__init__.py	1;"	kind:file	line:1
+__init__.py	til_france/pgm/Pension-Behaviour/__init__.py	1;"	kind:file	line:1
+__init__.py	til_france/pgm/__init__.py	1;"	kind:file	line:1
+__init__.py	til_france/plot/__init__.py	1;"	kind:file	line:1
+__init__.py	til_france/scripts/__init__.py	1;"	kind:file	line:1
+__init__.py	til_france/targets/__init__.py	1;"	kind:file	line:1
+__init__.py	til_france/tests/__init__.py	1;"	kind:file	line:1
+__version__	til_france/pgm/output/stat_final.py	/^__version__ = "0.0"$/;"	kind:variable	line:8
+_align_link	til_france/data/DataTil.py	/^        def _align_link(link_name, table_exp):$/;"	kind:function	line:402
+_apply_cleaning	til_france/plot/dependance.py	/^def _apply_cleaning(_clean_data, data):$/;"	kind:function	line:320
+_check_links	til_france/data/DataTil.py	/^    def _check_links(self, individus):$/;"	kind:member	line:511
+_clean_data	til_france/plot/dependance.py	/^    def _clean_data(df):$/;"	kind:function	line:190
+_clean_data	til_france/plot/dependance.py	/^    def _clean_data(df):$/;"	kind:function	line:226
+_clean_data	til_france/plot/dependance.py	/^    def _clean_data(df):$/;"	kind:function	line:263
+_clean_data	til_france/plot/dependance.py	/^    def _clean_data(df):$/;"	kind:function	line:281
+_clean_panel	til_france/plot/dependance.py	/^    def _clean_panel(panel):$/;"	kind:function	line:137
+_correction_carriere	til_france/data/data/Patrimoine.py	/^        def _correction_carriere(metro = True):$/;"	kind:function	line:228
+_extract	til_france/plot/dependance.py	/^def _extract(simulation, filename, removed_lines_prefixes, columns, drop = None, reweight = None, backup = None):$/;"	kind:function	line:336
+_extract_dependance_csv	til_france/plot/dependance.py	/^    def _extract_dependance_csv(directory):$/;"	kind:function	line:43
+_extract_population_csv	til_france/plot/population.py	/^    def _extract_population_csv(directory, weight = None):$/;"	kind:function	line:68
+_get_entity	til_france/pgm/liam2of.py	/^    def _get_entity(name):$/;"	kind:function	line:29
+_get_entity	til_france/pgm/of_on_liam.py	/^    def _get_entity(name):$/;"	kind:function	line:122
+_ind_in_3	til_france/data/data/Destinie.py	/^        def _ind_in_3(ind):$/;"	kind:function	line:203
+_ind_in_3	til_france/data/data/Destinie2.py	/^        def _ind_in_3(ind):$/;"	kind:function	line:205
+_ind_total	til_france/data/data/Destinie.py	/^        def _ind_total(BioFam, ind, emp):$/;"	kind:function	line:189
+_ind_total	til_france/data/data/Destinie2.py	/^        def _ind_total(BioFam, ind, emp):$/;"	kind:function	line:191
+_lecture_BioFam	til_france/data/data/Destinie.py	/^        def _lecture_BioFam():$/;"	kind:function	line:101
+_lecture_BioFam	til_france/data/data/Destinie2.py	/^        def _lecture_BioFam():$/;"	kind:function	line:103
+_name_var	til_france/data/DataTil.py	/^        def _name_var(individus_, menages_):$/;"	kind:function	line:184
+_output_name	til_france/data/DataTil.py	/^    def _output_name(self, extension='.h5'):$/;"	kind:member	line:646
+_output_name	til_france/data/data/Cohort.py	/^    def _output_name(self):$/;"	kind:member	line:49
+_output_name	til_france/data/data/Destinie2.py	/^    def _output_name(self):$/;"	kind:member	line:45
+_plot_and_or_save	til_france/plot/dependance.py	/^def _plot_and_or_save(ax = None, data = None, figures_directory = None, name = None, pdf_name = None, years = None,$/;"	kind:function	line:383
+_recode_sexe	til_france/data/data/Destinie.py	/^        def _recode_sexe(sexe):$/;"	kind:function	line:138
+_recode_sexe	til_france/data/data/Destinie2.py	/^        def _recode_sexe(sexe):$/;"	kind:function	line:139
+_single_extract	til_france/plot/dependance.py	/^    def _single_extract(directory, filename):$/;"	kind:function	line:345
+_work_on_futur	til_france/data/data/Destinie.py	/^        def _work_on_futur(futur, ind):$/;"	kind:function	line:247
+_work_on_futur	til_france/data/data/Destinie2.py	/^        def _work_on_futur(futur, ind):$/;"	kind:function	line:236
+add_futur	til_france/data/data/Destinie.py	/^    def add_futur(self):$/;"	kind:member	line:527
+add_futur	til_france/data/data/Destinie2.py	/^    def add_futur(self):$/;"	kind:member	line:440
+add_mortality_rates	til_france/data/mortality_rates.py	/^def add_mortality_rates(globals_node):$/;"	kind:function	line:19
+age_max	til_france/tests/test_til.py	/^age_max = 95$/;"	kind:variable	line:75
+aligned	til_france/tests/models/demographic_model/run_multiple.py	/^aligned = aligned.rename(columns = {0: 'annee', 1: 'deces'}).set_index('annee')$/;"	kind:variable	line:61
+aligned	til_france/tests/models/demographic_model/run_multiple.py	/^aligned = pandas.read_csv(os.path.join(output_path, 'deces.csv'), header = None)$/;"	kind:variable	line:60
+app_name	til_france/scripts/build_demographic_model_data.py	/^app_name = os.path.splitext(os.path.basename(__file__))[0]$/;"	kind:variable	line:19
+app_name	til_france/scripts/build_parameters.py	/^app_name = os.path.splitext(os.path.basename(__file__))[0]$/;"	kind:variable	line:13
+author	setup.py	/^    author = 'TaxIPP-Life (TIL) Team',$/;"	kind:variable	line:51
+author_email	setup.py	/^    author_email = 'alexis.eidelman.pro@gmail.com',$/;"	kind:variable	line:52
+ax	til_france/tests/models/demographic_model/run_multiple.py	/^ax = pivoted.plot(style = 'r-', legend = None)$/;"	kind:variable	line:50
+base	til_france/data/data/matching_eir.py	/^base = pd.read_csv(path_eic + 'EIC2009_base100.csv')$/;"	kind:variable	line:13
+base	til_france/pgm/output/statistics.py	/^base = 'entities\/' + nom$/;"	kind:variable	line:21
+base	til_france/pgm/output/statistics.py	/^base = 'entities\/' + nom$/;"	kind:variable	line:37
+base.py	til_france/tests/base.py	1;"	kind:file	line:1
+build_axes	til_france/data/data/gir_imputation.py	/^def build_axes(modb):$/;"	kind:function	line:75
+build_dataframe	til_france/scripts/build_demographic_model_data.py	/^def build_dataframe(year = 2010, weight_threshold = 200):$/;"	kind:function	line:23
+build_deaths	til_france/targets/population.py	/^def build_deaths(to_csv = False, input_dir = None, uniform_weight = 200):$/;"	kind:function	line:49
+build_demographic_model_data.py	til_france/scripts/build_demographic_model_data.py	1;"	kind:file	line:1
+build_mortality_rates	til_france/targets/population.py	/^def build_mortality_rates(to_csv = False, input_dir = None):$/;"	kind:function	line:100
+build_parameters.py	til_france/scripts/build_parameters.py	1;"	kind:file	line:1
+build_prevalence_2010	til_france/targets/dependance.py	/^def build_prevalence_2010(input_dir = None, uniform_weight = None):$/;"	kind:function	line:23
+build_prevalence_all_years	til_france/targets/dependance.py	/^def build_prevalence_all_years(globals_node = None, input_dir = None, to_csv = None):$/;"	kind:function	line:43
+cadres_ind	til_france/data/data/matching_eir.py	/^cadres_ind = comp200.loc[cadres, 'noind']$/;"	kind:variable	line:19
+cadres_select	til_france/data/data/matching_eir.py	/^    comp200.loc[comp200['noind'].isin(cadres_ind),$/;"	kind:variable	line:21
+calmar_demography	til_france/data/data/Patrimoine.py	/^    def calmar_demography(self):$/;"	kind:member	line:931
+capitalized_name	til_france/tests/til_simulation.py	/^        capitalized_name = 'Patrimoine_next_metro_200',$/;"	kind:variable	line:105
+champ	til_france/data/data/Patrimoine.py	/^    def champ(self, option='metropole'):$/;"	kind:member	line:102
+check_dependance_directory_existence	til_france/targets/dependance.py	/^def check_dependance_directory_existence(input_dir):$/;"	kind:function	line:66
+check_population_directory_existence	til_france/targets/population.py	/^def check_population_directory_existence(input_dir):$/;"	kind:function	line:223
+check_structure	til_france/pgm/of_on_liam.py	/^def check_structure(dataframe):$/;"	kind:function	line:24
+chemin	til_france/data/archives/Patrimoine/archives_R/Import/run_retro.py	/^chemin = 'C:\\\\Myliam2\\\\'$/;"	kind:variable	line:10
+chemin	til_france/data/archives/Patrimoine/archives_R/Import/run_retro.py	/^chemin = 'M:\\\\Myliam2\\\\'$/;"	kind:variable	line:9
+chemin	til_france/data/archives/Patrimoine/archives_R/lien_parent_enfant/run_lien.py	/^chemin = 'C:\\\\til\\\\'$/;"	kind:variable	line:17
+civilstate	til_france/pgm/output/statistics.py	/^civilstate = tab.groupby(['noi', 'civilstate'], sort=False).size()$/;"	kind:variable	line:74
+classifiers	setup.py	/^    classifiers = [classifier for classifier in classifiers.split('\\n') if classifier],$/;"	kind:variable	line:53
+clean_dependance_csv	til_france/plot/dependance.py	/^def clean_dependance_csv(panel_simulation):$/;"	kind:function	line:136
+clean_prevalence_csv	til_france/plot/dependance.py	/^def clean_prevalence_csv(data):$/;"	kind:function	line:225
+comp200	til_france/data/data/matching_eir.py	/^comp200 = pd.read_stata(path_eic + 'ano_eic200comp.dta')$/;"	kind:variable	line:15
+compute_nans_and_missing_values	til_france/data/data/handicap_incapacite_dependance.py	/^def compute_nans_and_missing_values(dataframe, column):$/;"	kind:function	line:23
+compute_nans_and_missing_values	til_france/data/data/handicap_sante_institutions.py	/^def compute_nans_and_missing_values(dataframe, column):$/;"	kind:function	line:22
+concatenated_ranges	til_france/pgm/utils.py	/^def concatenated_ranges(ranges_list):$/;"	kind:function	line:20
+config_files_directory	til_france/data/data/handicap_incapacite_dependance.py	/^config_files_directory = os.path.join($/;"	kind:variable	line:19
+config_files_directory	til_france/data/data/handicap_sante_institutions.py	/^config_files_directory = os.path.join($/;"	kind:variable	line:18
+config_files_directory	til_france/data/data/handicap_sante_menages.py	/^config_files_directory = os.path.join($/;"	kind:variable	line:18
+console_file	til_france/tests/base.py	/^    console_file = os.path.join(til_france_path, 'model', console_relative_path)$/;"	kind:variable	line:47
+console_file	til_france/tests/til_simulation.py	/^    console_file = os.path.join(til_france_path, 'console.yml')$/;"	kind:variable	line:60
+console_relative_path	til_france/tests/base.py	/^        console_relative_path = os.path.join('options', 'console_{}.yml'.format(option))$/;"	kind:variable	line:43
+console_relative_path	til_france/tests/base.py	/^        console_relative_path = os.path.join('standard', 'console.yml')$/;"	kind:variable	line:45
+corrections	til_france/data/data/Destinie.py	/^    def corrections(self):$/;"	kind:member	line:364
+corrections	til_france/data/data/Patrimoine.py	/^    def corrections(self):$/;"	kind:member	line:221
+create_hsi_data	til_france/data/data/handicap_sante_institutions.py	/^def create_hsi_data():$/;"	kind:function	line:191
+create_or_get_figures_directory	til_france/tests/base.py	/^def create_or_get_figures_directory(simulation, backup = None):$/;"	kind:function	line:61
+create_til_simulation	til_france/tests/base.py	/^def create_til_simulation(input_name = None, option = None, output_name_suffix = 'output', uniform_weight = None):$/;"	kind:function	line:21
+creation_child_out_of_house	til_france/data/DataTil.py	/^    def creation_child_out_of_house(self):$/;"	kind:member	line:294
+creation_child_out_of_house	til_france/data/data/Patrimoine.py	/^    def creation_child_out_of_house(self):$/;"	kind:member	line:607
+creation_foy	til_france/data/DataTil.py	/^    def creation_foy(self):$/;"	kind:member	line:153
+creation_menage	til_france/data/data/Destinie.py	/^    def creation_menage(self):$/;"	kind:member	line:394
+creation_menage	til_france/data/data/Destinie2.py	/^    def creation_menage(self):$/;"	kind:member	line:352
+cumul	til_france/pgm/output/statistics.py	/^cumul = indiv.sum()$/;"	kind:variable	line:69
+cumul	til_france/pgm/output/statistics.py	/^cumul = menag.sum()$/;"	kind:variable	line:82
+data	til_france/data/data/Cohort.py	/^    data = Cohort(1000)$/;"	kind:variable	line:78
+data	til_france/data/data/Destinie.py	/^    data = Destinie()$/;"	kind:variable	line:559
+data	til_france/data/data/Destinie2.py	/^    data = Destinie()$/;"	kind:variable	line:474
+data_origin	til_france/tests/til_simulation.py	/^    data_origin = simulation.get_variable(['data_origin'])$/;"	kind:variable	line:110
+data_path	til_france/tests/test_input_patrimoine_data.py	/^data_path = os.path.join(path_model, 'param', 'demo', 'projpop0760_FECcentESPcentMIGcent.xls')$/;"	kind:variable	line:27
+dataframe	til_france/tests/models/demographic_model/run_multiple.py	/^    dataframe = pandas.read_csv(os.path.join(replication_directory, 'deces.csv'), header = None)$/;"	kind:variable	line:41
+dataframe_by_replication	til_france/tests/models/demographic_model/run_multiple.py	/^dataframe_by_replication = dict()$/;"	kind:variable	line:39
+deal_with_qui	til_france/pgm/of_on_liam.py	/^def deal_with_qui(qui, ident):$/;"	kind:function	line:70
+deces	til_france/pgm/output/statistics.py	/^deces = reg_ind.max()['deces']$/;"	kind:variable	line:27
+decile	til_france/pgm/output/statistics.py	/^decile = tabm.groupby(['noi', 'decile'], sort=False).size()$/;"	kind:variable	line:85
+depart_retirement	til_france/pgm/depart_retirement.py	/^def depart_retirement(context, yearleg, time_step='year', to_check=False, behavior='taux_plein', cProfile=False):$/;"	kind:function	line:10
+depart_retirement.py	til_france/pgm/depart_retirement.py	1;"	kind:file	line:1
+dependance.py	til_france/plot/dependance.py	1;"	kind:file	line:1
+dependance.py	til_france/targets/dependance.py	1;"	kind:file	line:1
+dependance_niveau	til_france/tests/til_simulation.py	/^    dependance_niveau = simulation.get_variable(['dependance_niveau'])$/;"	kind:variable	line:109
+description	setup.py	/^    description = doc_lines[0],$/;"	kind:variable	line:54
+destinie_til	til_france/tests/test_input_patrimoine_data.py	/^destinie_til = store['\/entities\/individus']$/;"	kind:variable	line:69
+destinie_til_path	til_france/tests/test_input_patrimoine_data.py	/^destinie_til_path = os.path.join(path_model, 'Destinie.h5')$/;"	kind:variable	line:65
+destinie_uniform_weight	til_france/tests/test_input_patrimoine_data.py	/^destinie_uniform_weight = insee_proj_pop_total \/ (destinie_til.age >= 0).sum()$/;"	kind:variable	line:77
+df	til_france/data/data/handicap_sante_menages.py	/^    df = load_dataframe()/;"	kind:variable	line:55
+df	til_france/tests/models/demographic_model/run_multiple.py	/^df = pandas.concat(dataframe_by_replication.values())$/;"	kind:variable	line:46
+doc_lines	setup.py	/^doc_lines = __doc__.split('\\n')$/;"	kind:variable	line:44
+drees_excel_file_path	til_france/targets/dependance.py	/^drees_excel_file_path = os.path.join(til_france_path, 'param', 'demo', 'drees', 'dss43_horizon_2060.xls')$/;"	kind:variable	line:20
+drop_variable	til_france/data/DataTil.py	/^    def drop_variable(self, variables_by_entity_name=None, option='white'):$/;"	kind:member	line:127
+drop_variable	til_france/data/data/Patrimoine.py	/^    def drop_variable(self, dict_to_drop=None, option='white'):$/;"	kind:member	line:349
+dump	til_france/tests/simple_test.py	/^def dump(simulation, file_path = None, overwrite = False):$/;"	kind:function	line:28
+duree_vie	til_france/pgm/output/statistics.py	/^duree_vie = (deces > 0) * (deces - naiss)$/;"	kind:variable	line:28
+duree_vie_freq	til_france/pgm/output/statistics.py	/^duree_vie_freq = duree_vie.value_counts()$/;"	kind:variable	line:29
+enf_to_par	til_france/data/data/Destinie.py	/^    def enf_to_par(self):$/;"	kind:member	line:304
+enf_to_par	til_france/data/data/Destinie2.py	/^    def enf_to_par(self):$/;"	kind:member	line:294
+enfants	til_france/data/DataTil.py	/^    def enfants(self):$/;"	kind:member	line:144
+enfants	til_france/data/data/Patrimoine.py	/^    def enfants(self):$/;"	kind:member	line:484
+ent	til_france/pgm/output/statistics.py	/^ent = til_name_to_of[nom]$/;"	kind:variable	line:39
+error_margin	til_france/tests/test_input_patrimoine_data.py	/^error_margin = .01$/;"	kind:variable	line:23
+expand_data	til_france/data/DataTil.py	/^    def expand_data(self, weight_threshold=150, nb_ligne=None):$/;"	kind:member	line:320
+expand_data	til_france/data/data/handicap_sante_institutions.py	/^def expand_data(dataframe, weight_threshold):$/;"	kind:function	line:170
+export_to_slides	til_france/tests/test_til.py	/^def export_to_slides():$/;"	kind:function	line:84
+extract	til_france/plot/population.py	/^def extract(simulation, backup, csv_extract_function):$/;"	kind:function	line:37
+extract_deces_csv	til_france/plot/dependance.py	/^def extract_deces_csv(simulation, backup = None):$/;"	kind:function	line:124
+extract_dependance_csv	til_france/plot/dependance.py	/^def extract_dependance_csv(simulation, backup = None):$/;"	kind:function	line:35
+extract_dependance_gir_csv	til_france/plot/dependance.py	/^def extract_dependance_gir_csv(simulation, backup = None):$/;"	kind:function	line:100
+extract_incidence_csv	til_france/plot/dependance.py	/^def extract_incidence_csv(simulation, backup = None):$/;"	kind:function	line:112
+extract_population_by_age_csv	til_france/plot/population.py	/^def extract_population_by_age_csv(simulation, backup = None):$/;"	kind:function	line:127
+extract_population_csv	til_france/plot/population.py	/^def extract_population_csv(simulation, backup = None):$/;"	kind:function	line:60
+extras_require	setup.py	/^    extras_require = dict($/;"	kind:variable	line:59
+fichier	til_france/data/archives/Patrimoine/archives_R/Import/run_retro.py	/^fichier = chemin+'Patrimoine\\\\Past\\\\import.yml'$/;"	kind:variable	line:19
+fichier	til_france/data/archives/Patrimoine/archives_R/Import/run_retro.py	/^fichier = chemin+'Patrimoine\\\\Past\\\\retro.yml'$/;"	kind:variable	line:27
+fichier	til_france/data/archives/Patrimoine/archives_R/Import/run_retro.py	/^fichier = chemin+'Patrimoine\\\\lien_parent_enfant\\\\expand.yml'$/;"	kind:variable	line:39
+fichier	til_france/data/archives/Patrimoine/archives_R/Import/run_retro.py	/^fichier = chemin+'Patrimoine\\\\lien_parent_enfant\\\\match_par_enf.yml'$/;"	kind:variable	line:38
+fichier	til_france/data/archives/Patrimoine/archives_R/Import/run_retro.py	/^fichier = chemin+'Patrimoine\\\\lien_parent_enfant\\\\match_par_enf.yml'$/;"	kind:variable	line:40
+fichier	til_france/data/archives/Patrimoine/archives_R/Import/run_retro.py	/^fichier = chemin+'Patrimoine\\\\lien_parent_enfant\\\\match_score.yml'$/;"	kind:variable	line:26
+fichier	til_france/data/archives/Patrimoine/archives_R/Import/run_retro.py	/^fichier = chemin+'Patrimoine\\\\lien_parent_enfant\\\\match_score.yml'$/;"	kind:variable	line:41
+fichier	til_france/data/archives/Patrimoine/archives_R/lien_parent_enfant/run_lien.py	/^fichier = chemin+'Patrimoine\\\\lien_parent_enfant\\\\expand.yml'$/;"	kind:variable	line:35
+fichier	til_france/data/archives/Patrimoine/archives_R/lien_parent_enfant/run_lien.py	/^fichier = chemin+'Patrimoine\\\\lien_parent_enfant\\\\match_par_enf.yml'$/;"	kind:variable	line:34
+fichier	til_france/data/archives/Patrimoine/archives_R/lien_parent_enfant/run_lien.py	/^fichier = chemin+'Patrimoine\\\\lien_parent_enfant\\\\match_par_enf.yml'$/;"	kind:variable	line:36
+fichier	til_france/data/archives/Patrimoine/archives_R/lien_parent_enfant/run_lien.py	/^fichier = chemin+'Patrimoine\\\\lien_parent_enfant\\\\match_score.yml'$/;"	kind:variable	line:37
+fichier	til_france/data/archives/Patrimoine/archives_R/lien_parent_enfant/run_lien.py	/^fichier = chemin+'data\\\\Patrimoine\\\\lien_parent_enfant\\\\import.yml'$/;"	kind:variable	line:18
+fichier	til_france/data/archives/Patrimoine/archives_R/lien_parent_enfant/run_lien.py	/^fichier = chemin+'data\\\\Patrimoine\\\\lien_parent_enfant\\\\match_score.yml'$/;"	kind:variable	line:23
+final_check	til_france/data/DataTil.py	/^    def final_check(self):$/;"	kind:member	line:540
+format_initial	til_france/data/DataTil.py	/^    def format_initial(self):$/;"	kind:member	line:141
+format_initial	til_france/data/data/Destinie.py	/^    def format_initial(self):$/;"	kind:member	line:150
+format_initial	til_france/data/data/Destinie2.py	/^    def format_initial(self):$/;"	kind:member	line:151
+format_to_liam	til_france/data/DataTil.py	/^    def format_to_liam(self):$/;"	kind:member	line:448
+fpath	til_france/tests/models/demographic_model/run_multiple.py	/^fpath = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'console.yml')$/;"	kind:variable	line:57
+fpath	til_france/tests/models/demographic_model/run_multiple.py	/^fpath = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'console_unaligned.yml')$/;"	kind:variable	line:28
+futur_t	til_france/data/data/Destinie.py	/^    futur_t = time.time()$/;"	kind:variable	line:573
+futur_t	til_france/data/data/Destinie2.py	/^    futur_t = time.time()$/;"	kind:variable	line:488
+get_data_directory	til_france/tests/base.py	/^def get_data_directory(simulation, backup = None):$/;"	kind:function	line:81
+get_data_frame_insee	til_france/targets/population.py	/^def get_data_frame_insee(gender, by = 'age_group'):$/;"	kind:function	line:26
+get_dataframe	til_france/data/data/gir_imputation.py	/^def get_dataframe():$/;"	kind:function	line:27
+get_insee_projection	til_france/plot/population.py	/^def get_insee_projection(quantity, gender, function = None):$/;"	kind:function	line:170
+get_pension	til_france/pgm/run_pension.py	/^def get_pension(context, yearleg):$/;"	kind:function	line:14
+get_simulation	til_france/tests/til_simulation.py	/^def get_simulation(capitalized_name = None, output_name_suffix = 'til_output', uniform_weight = None):$/;"	kind:function	line:43
+gir_imputation.py	til_france/data/data/gir_imputation.py	1;"	kind:file	line:1
+groups	til_france/data/data/gir_imputation.py	/^groups = OrderedDict(sorted(groups.items(), key=lambda t: t[0]))$/;"	kind:variable	line:966
+groups	til_france/data/data/gir_imputation.py	/^groups = {$/;"	kind:variable	line:680
+handicap_incapacite_dependance.py	til_france/data/data/handicap_incapacite_dependance.py	1;"	kind:file	line:1
+handicap_sante_institutions.py	til_france/data/data/handicap_sante_institutions.py	1;"	kind:file	line:1
+handicap_sante_menages.py	til_france/data/data/handicap_sante_menages.py	1;"	kind:file	line:1
+id_to_row	til_france/pgm/of_on_liam.py	/^id_to_row = {}$/;"	kind:variable	line:67
+ids	til_france/pgm/output/statistics.py	/^ids = np.unique(table[ent]['noi'].values)$/;"	kind:variable	line:50
+imputations	til_france/data/data/Cohort.py	/^    def imputations(self):$/;"	kind:member	line:52
+impute_value	til_france/data/data/handicap_sante_institutions.py	/^def impute_value(dataframe, endogeneous_variable, exogeneous_variables):$/;"	kind:function	line:83
+indiv	til_france/pgm/output/statistics.py	/^indiv = register['id'].unique()$/;"	kind:variable	line:23
+indiv	til_france/pgm/output/statistics.py	/^indiv = tab.groupby(['noi'], sort=False)$/;"	kind:variable	line:68
+individus_patrimoine	til_france/tests/test_input_patrimoine_data.py	/^individus_patrimoine = individus_patrimoine[~individus_patrimoine['identmen'].isin(outre_mer)].copy()$/;"	kind:variable	line:53
+individus_patrimoine	til_france/tests/test_input_patrimoine_data.py	/^individus_patrimoine = pandas.read_csv($/;"	kind:variable	line:46
+individus_til	til_france/tests/test_input_patrimoine_data.py	/^individus_til = store['\/entities\/individus']$/;"	kind:variable	line:60
+ini_t	til_france/data/data/Destinie.py	/^    ini_t = time.time()$/;"	kind:variable	line:566
+ini_t	til_france/data/data/Destinie2.py	/^    ini_t = time.time()$/;"	kind:variable	line:481
+initial_dataframe	til_france/data/data/handicap_incapacite_dependance.py	/^    initial_dataframe = load_dataframe()$/;"	kind:variable	line:134
+input_dir	til_france/data/archives/Patrimoine/archives_R/Import/run_retro.py	/^                     input_dir=None,$/;"	kind:variable	line:31
+input_dir	til_france/data/archives/Patrimoine/archives_R/lien_parent_enfant/run_lien.py	/^                     input_dir=None,$/;"	kind:variable	line:27
+input_dir	til_france/tests/base.py	/^        input_dir = input_dir,$/;"	kind:variable	line:50
+input_dir	til_france/tests/til_simulation.py	/^        input_dir = input_dir,$/;"	kind:variable	line:63
+input_even_if_formula	til_france/pgm/of_on_liam.py	/^input_even_if_formula = ['age', 'age_en_mois']$/;"	kind:variable	line:59
+input_file	til_france/data/archives/Patrimoine/archives_R/Import/run_retro.py	/^                    input_file=None,$/;"	kind:variable	line:32
+input_file	til_france/data/archives/Patrimoine/archives_R/lien_parent_enfant/run_lien.py	/^                    input_file=None,$/;"	kind:variable	line:28
+input_file	til_france/tests/base.py	/^        input_file = input_file,$/;"	kind:variable	line:51
+input_file	til_france/tests/til_simulation.py	/^        input_file = input_file,$/;"	kind:variable	line:64
+input_name	til_france/tests/test_til.py	/^    input_name = 'patrimoine',$/;"	kind:variable	line:45
+insee_proj_pop_F	til_france/tests/test_input_patrimoine_data.py	/^insee_proj_pop_F = populationF.sum()$/;"	kind:variable	line:73
+insee_proj_pop_H	til_france/tests/test_input_patrimoine_data.py	/^insee_proj_pop_H = populationH.sum()$/;"	kind:variable	line:74
+insee_proj_pop_total	til_france/tests/test_input_patrimoine_data.py	/^insee_proj_pop_total = insee_proj_pop_F + insee_proj_pop_H$/;"	kind:variable	line:75
+install_requires	setup.py	/^    install_requires = [$/;"	kind:variable	line:68
+iterate_directory	til_france/tests/test_liam2.py	/^def iterate_directory(directory, dataset_creator, excluded_files):$/;"	kind:function	line:31
+keywords	setup.py	/^    keywords = 'benefit microsimulation social tax life-cycle',$/;"	kind:variable	line:55
+liam2of.py	til_france/pgm/liam2of.py	1;"	kind:file	line:1
+license	setup.py	/^    license = 'http:\/\/www.fsf.org\/licensing\/licenses\/agpl-3.0.html',$/;"	kind:variable	line:56
+line_prepender	til_france/tests/base.py	/^def line_prepender(filename, line):$/;"	kind:function	line:92
+links	til_france/data/data/Cohort.py	/^    def links(self):$/;"	kind:member	line:58
+list2drop	til_france/pgm/output/statistics.py	/^list2drop = [$/;"	kind:variable	line:62
+list2keep	til_france/pgm/output/statistics.py	/^list2keep = ['sexe', 'noi', 'findet', 'civilstate', 'workstate', 'salaire_imposable', 'rsti', 'choi']$/;"	kind:variable	line:65
+list_variables_with_missing_values	til_france/data/data/handicap_incapacite_dependance.py	/^def list_variables_with_missing_values(dataframe):$/;"	kind:function	line:39
+list_variables_with_missing_values	til_france/data/data/handicap_sante_institutions.py	/^def list_variables_with_missing_values(dataframe):$/;"	kind:function	line:38
+load	til_france/data/DataTil.py	/^    def load(self):$/;"	kind:member	line:117
+load	til_france/data/data/Cohort.py	/^    def load(self):$/;"	kind:member	line:30
+load	til_france/data/data/Destinie.py	/^    def load(self):$/;"	kind:member	line:45
+load	til_france/data/data/Destinie2.py	/^    def load(self):$/;"	kind:member	line:48
+load	til_france/data/data/Patrimoine.py	/^    def load(self):$/;"	kind:member	line:72
+load_dataframe	til_france/data/data/handicap_incapacite_dependance.py	/^def load_dataframe():$/;"	kind:function	line:44
+load_dataframe	til_france/data/data/handicap_sante_institutions.py	/^def load_dataframe():$/;"	kind:function	line:43
+load_dataframe	til_france/data/data/handicap_sante_menages.py	/^def load_dataframe():$/;"	kind:function	line:23
+log	til_france/data/DataTil.py	/^log = logging.getLogger(__name__)$/;"	kind:variable	line:23
+log	til_france/data/data/Destinie.py	/^log = logging.getLogger(__name__)$/;"	kind:variable	line:27
+log	til_france/data/data/Destinie2.py	/^log = logging.getLogger(__name__)$/;"	kind:variable	line:19
+log	til_france/data/data/Patrimoine.py	/^log = logging.getLogger(__name__)$/;"	kind:variable	line:22
+log	til_france/data/data/gir_imputation.py	/^log = logging.getLogger(__name__)$/;"	kind:variable	line:24
+log	til_france/data/data/handicap_incapacite_dependance.py	/^log = logging.getLogger(__name__)$/;"	kind:variable	line:17
+log	til_france/data/data/handicap_sante_institutions.py	/^log = logging.getLogger(__name__)$/;"	kind:variable	line:16
+log	til_france/data/data/handicap_sante_menages.py	/^log = logging.getLogger(__name__)$/;"	kind:variable	line:16
+log	til_france/data/mortality_rates.py	/^log = logging.getLogger(__name__)$/;"	kind:variable	line:16
+log	til_france/data/utils.py	/^log = logging.getLogger(__name__)$/;"	kind:variable	line:9
+log	til_france/scripts/build_demographic_model_data.py	/^log = logging.getLogger(app_name)$/;"	kind:variable	line:20
+log	til_france/scripts/build_parameters.py	/^log = logging.getLogger(app_name)$/;"	kind:variable	line:14
+log	til_france/targets/dependance.py	/^log = logging.getLogger(__name__)$/;"	kind:variable	line:17
+log	til_france/targets/population.py	/^log = logging.getLogger(__name__)$/;"	kind:variable	line:23
+log	til_france/tests/simple_test.py	/^log = logging.getLogger(__name__)$/;"	kind:variable	line:16
+long_description	setup.py	/^    long_description = '\\n'.join(doc_lines[2:]),$/;"	kind:variable	line:57
+main	til_france/pgm/of_on_liam.py	/^def main(liam, annee_leg=None, annee_base=None, mode_output='array'):$/;"	kind:function	line:88
+main	til_france/pgm/viewer.py	/^def main(args):$/;"	kind:function	line:40
+main	til_france/scripts/build_demographic_model_data.py	/^def main():$/;"	kind:function	line:56
+main	til_france/scripts/build_parameters.py	/^def main():$/;"	kind:function	line:27
+match_couple_hdom	til_france/data/DataTil.py	/^    def match_couple_hdom(self):$/;"	kind:member	line:307
+match_couple_hdom	til_france/data/data/Patrimoine.py	/^    def match_couple_hdom(self):$/;"	kind:member	line:868
+matching_eir.py	til_france/data/data/matching_eir.py	1;"	kind:file	line:1
+matching_par_enf	til_france/data/DataTil.py	/^    def matching_par_enf(self):$/;"	kind:member	line:301
+matching_par_enf	til_france/data/data/Patrimoine.py	/^    def matching_par_enf(self):$/;"	kind:member	line:735
+menag	til_france/pgm/output/statistics.py	/^menag = tabm.groupby(['noi'], sort=False)$/;"	kind:variable	line:81
+menages_patrimoine	til_france/tests/test_input_patrimoine_data.py	/^menages_patrimoine = pandas.read_csv($/;"	kind:variable	line:49
+mortality_rates.py	til_france/data/mortality_rates.py	1;"	kind:file	line:1
+moyenne	til_france/pgm/output/statistics.py	/^moyenne = cumul.div(nb_obs, axis=0)$/;"	kind:variable	line:71
+moyenne	til_france/pgm/output/statistics.py	/^moyenne = cumul.div(nb_obs, axis=0)$/;"	kind:variable	line:84
+multi_extract_dependance_csv	til_france/plot/dependance.py	/^def multi_extract_dependance_csv(simulation, backups = None):$/;"	kind:function	line:442
+multi_extract_prevalence_csv	til_france/plot/dependance.py	/^def multi_extract_prevalence_csv(simulation, backups = None):$/;"	kind:function	line:499
+naiss	til_france/pgm/output/statistics.py	/^naiss = reg_ind.max()['naiss']$/;"	kind:variable	line:26
+name	setup.py	/^    name = 'Til-France',$/;"	kind:variable	line:48
+nb_obs	til_france/pgm/output/statistics.py	/^nb_obs = indiv.size()$/;"	kind:variable	line:70
+nb_obs	til_france/pgm/output/statistics.py	/^nb_obs = menag.size()$/;"	kind:variable	line:83
+new_ident	til_france/pgm/of_on_liam.py	/^new_ident = {$/;"	kind:variable	line:61
+new_idmen	til_france/data/utils.py	/^def new_idmen(table, var):$/;"	kind:function	line:22
+new_link_with_men	til_france/data/utils.py	/^def new_link_with_men(table, table_exp, link_name):$/;"	kind:function	line:34
+nom	til_france/pgm/output/statistics.py	/^nom = 'person'$/;"	kind:variable	line:36
+nom	til_france/pgm/output/statistics.py	/^nom = 'register'$/;"	kind:variable	line:20
+of_name_to_til	til_france/data/utils.py	/^of_name_to_til = {$/;"	kind:variable	line:12
+of_name_to_til	til_france/pgm/utils.py	/^of_name_to_til = {$/;"	kind:variable	line:11
+of_on_liam.py	til_france/pgm/of_on_liam.py	1;"	kind:file	line:1
+option	til_france/tests/test_til.py	/^    option = option,$/;"	kind:variable	line:46
+option	til_france/tests/test_til.py	/^option = 'dependance'$/;"	kind:variable	line:43
+options	til_france/tests/test_til.py	/^options = ['dependance', 'dependance_aligned', 'dependance_pessimistic', 'dependance_medium']$/;"	kind:variable	line:73
+output_dir	til_france/data/archives/Patrimoine/archives_R/Import/run_retro.py	/^                    output_dir=None,                    $/;"	kind:variable	line:33
+output_dir	til_france/data/archives/Patrimoine/archives_R/lien_parent_enfant/run_lien.py	/^                    output_dir=None,                    $/;"	kind:variable	line:29
+output_dir	til_france/tests/base.py	/^        output_dir = output_dir,$/;"	kind:variable	line:52
+output_dir	til_france/tests/base.py	/^    output_dir = os.path.join(config.get('til', 'output_dir'), name)$/;"	kind:variable	line:37
+output_dir	til_france/tests/til_simulation.py	/^        output_dir = output_dir,$/;"	kind:variable	line:65
+output_dir	til_france/tests/til_simulation.py	/^    output_dir = os.path.join(config.get('til', 'output_dir'), name)$/;"	kind:variable	line:57
+output_file	til_france/data/archives/Patrimoine/archives_R/Import/run_retro.py	/^                    output_file=None)$/;"	kind:variable	line:34
+output_file	til_france/data/archives/Patrimoine/archives_R/lien_parent_enfant/run_lien.py	/^                    output_file=None)$/;"	kind:variable	line:30
+output_file	til_france/tests/base.py	/^        output_file = '{}_{}.h5'.format(name, output_name_suffix),$/;"	kind:variable	line:53
+output_file	til_france/tests/til_simulation.py	/^        output_file = '{}_{}.h5'.format(name, output_name_suffix),$/;"	kind:variable	line:66
+output_name_suffix	til_france/tests/test_til.py	/^    output_name_suffix = 'test_institutions',$/;"	kind:variable	line:47
+output_name_suffix	til_france/tests/til_simulation.py	/^        output_name_suffix = 'test_institutions',$/;"	kind:variable	line:106
+output_til_to_liam	til_france/pgm/utils.py	/^def output_til_to_liam(output_til, index_til, context_id):$/;"	kind:function	line:31
+packages	setup.py	/^    packages = find_packages(),$/;"	kind:variable	line:73
+partner	til_france/data/data/Patrimoine.py	/^    def partner(self):$/;"	kind:member	line:410
+passage	til_france/pgm/output/statistics.py	/^passage = table['ind'][['noi', 'period', 'idmen', 'idfoy', 'quifoy', 'quimen']]$/;"	kind:variable	line:76
+path_eic	til_france/data/data/matching_eir.py	/^path_eic = 'D:\\data\\EIC\\EIC 2009\\\\'$/;"	kind:variable	line:9
+path_model	til_france/tests/simple_test.py	/^path_model = os.path.join($/;"	kind:variable	line:19
+path_model	til_france/tests/test_input_patrimoine_data.py	/^path_model = os.path.join($/;"	kind:variable	line:16
+patrimoine_insee_path	til_france/tests/test_input_patrimoine_data.py	/^patrimoine_insee_path = "\/home\/benjello\/data\/til\/patrimoine"$/;"	kind:variable	line:45
+patrimoine_til_path	til_france/tests/test_input_patrimoine_data.py	/^patrimoine_til_path = os.path.join(path_model, 'Patrimoine_next_metro_{}.h5'.format(uniform_weight))$/;"	kind:variable	line:58
+pivoted	til_france/tests/models/demographic_model/run_multiple.py	/^pivoted = pandas.pivot_table(df, values='deces', columns='replication', index='annee')$/;"	kind:variable	line:48
+plot_age_pyramid	til_france/plot/population.py	/^def plot_age_pyramid(age_min = 0, age_max = None, group_by = 1, year = 2010, backup = None):$/;"	kind:function	line:373
+plot_csv	til_france/tests/base.py	/^def plot_csv(simulation):$/;"	kind:function	line:99
+plot_dependance_by_age	til_france/plot/dependance.py	/^def plot_dependance_by_age(simulation, years = None, age_max = None, save = True, backup = None):$/;"	kind:function	line:292
+plot_dependance_by_age_separate	til_france/plot/dependance.py	/^def plot_dependance_by_age_separate(simulation, years = None, age_max = None, save = True, backup = None):$/;"	kind:function	line:310
+plot_dependance_csv	til_france/plot/dependance.py	/^def plot_dependance_csv(simulation, backup = None):$/;"	kind:function	line:163
+plot_dependance_gir_csv	til_france/plot/dependance.py	/^def plot_dependance_gir_csv(simulation, backup = None):$/;"	kind:function	line:186
+plot_dependance_incidence_by_age	til_france/plot/dependance.py	/^def plot_dependance_incidence_by_age(simulation, years = None, ax = None, age_max = None, backup = None):$/;"	kind:function	line:258
+plot_dependance_mortalite_by_age	til_france/plot/dependance.py	/^def plot_dependance_mortalite_by_age(simulation, years = None, ax = None, age_max = None, backup = None):$/;"	kind:function	line:276
+plot_dependance_prevalence_by_age	til_france/plot/dependance.py	/^def plot_dependance_prevalence_by_age(simulation, years = None, ax = None, age_max = None, backup = None):$/;"	kind:function	line:244
+plot_multi_dependance_csv	til_france/plot/dependance.py	/^def plot_multi_dependance_csv(simulation, options, save_figure = True):$/;"	kind:function	line:455
+plot_multi_prevalence_csv	til_france/plot/dependance.py	/^def plot_multi_prevalence_csv(simulation, options = None, save_figure = True, years = None, age_max = None,$/;"	kind:function	line:512
+plot_population	til_france/plot/population.py	/^def plot_population(simulation, backup = None):$/;"	kind:function	line:233
+plot_ratio_demographique	til_france/plot/population.py	/^def plot_ratio_demographique(simulation, backup = None):$/;"	kind:function	line:284
+population	til_france/tests/test_input_patrimoine_data.py	/^population = population.reset_index(name = 'total')$/;"	kind:variable	line:103
+population	til_france/tests/test_input_patrimoine_data.py	/^population = population[['age_group', 'total']].groupby('age_group').sum()$/;"	kind:variable	line:106
+population	til_france/tests/test_input_patrimoine_data.py	/^population = population_insee_by_gender['total'][year]$/;"	kind:variable	line:42
+population.py	til_france/plot/population.py	1;"	kind:file	line:1
+population.py	til_france/targets/population.py	1;"	kind:file	line:1
+populationF	til_france/tests/test_input_patrimoine_data.py	/^populationF = population_insee_by_gender['female'][year]$/;"	kind:variable	line:40
+populationH	til_france/tests/test_input_patrimoine_data.py	/^populationH = population_insee_by_gender['male'][year]$/;"	kind:variable	line:41
+population_destinie	til_france/tests/test_input_patrimoine_data.py	/^population_destinie = destinie_til.loc[$/;"	kind:variable	line:122
+population_diagnostic	til_france/plot/population.py	/^def population_diagnostic(simulation, backup = None):$/;"	kind:function	line:319
+population_insee_by_gender	til_france/tests/test_input_patrimoine_data.py	/^population_insee_by_gender = dict($/;"	kind:variable	line:32
+population_patrimoine	til_france/tests/test_input_patrimoine_data.py	/^population_patrimoine = individus_patrimoine.loc[$/;"	kind:variable	line:109
+population_til	til_france/tests/test_input_patrimoine_data.py	/^population_til = individus_til.loc[$/;"	kind:variable	line:116
+reg_ind	til_france/pgm/output/statistics.py	/^reg_ind = register.groupby('id')$/;"	kind:variable	line:24
+register	til_france/pgm/output/statistics.py	/^register = simul[str(base)]$/;"	kind:variable	line:22
+rename_variables	til_france/data/data/handicap_sante_institutions.py	/^def rename_variables(dataframe):$/;"	kind:function	line:129
+rename_variables	til_france/pgm/of_on_liam.py	/^rename_variables = {$/;"	kind:variable	line:48
+replication_directories	til_france/tests/models/demographic_model/run_multiple.py	/^replication_directories = [$/;"	kind:variable	line:34
+replications	til_france/tests/models/demographic_model/run_multiple.py	/^replications = 30$/;"	kind:variable	line:31
+res_size	til_france/pgm/output/statistics.py	/^res_size = len(ids)$/;"	kind:variable	line:55
+rescale_migration	til_france/targets/population.py	/^def rescale_migration(input_dir = None):$/;"	kind:function	line:152
+rescale_migration	til_france/tests/rescale_migration.py	/^def rescale_migration():$/;"	kind:function	line:16
+rescale_migration.py	til_france/tests/rescale_migration.py	1;"	kind:file	line:1
+run_all	til_france/data/DataTil.py	/^    def run_all(self):$/;"	kind:member	line:757
+run_all	til_france/scripts/build_parameters.py	/^def run_all(input_dir = None, uniform_weight = None):$/;"	kind:function	line:17
+run_file	til_france/tests/test_liam2.py	/^def run_file(test_file):$/;"	kind:function	line:20
+run_lien.py	til_france/data/archives/Patrimoine/archives_R/lien_parent_enfant/run_lien.py	1;"	kind:file	line:1
+run_multiple.py	til_france/tests/models/demographic_model/run_multiple.py	1;"	kind:file	line:1
+run_pension.py	til_france/pgm/run_pension.py	1;"	kind:file	line:1
+run_retro.py	til_france/data/archives/Patrimoine/archives_R/Import/run_retro.py	1;"	kind:file	line:1
+run_time	til_france/data/archives/Patrimoine/test_matching.py	/^def run_time(n):$/;"	kind:function	line:67
+run_time_cell	til_france/data/archives/Patrimoine/test_matching.py	/^def run_time_cell(n):$/;"	kind:function	line:89
+run_time_np	til_france/data/archives/Patrimoine/test_matching.py	/^def run_time_np(n):$/;"	kind:function	line:123
+run_time_np_cell	til_france/data/archives/Patrimoine/test_matching.py	/^def run_time_np_cell(n):$/;"	kind:function	line:145
+save	til_france/data/data/handicap_incapacite_dependance.py	/^def save(dataframe):$/;"	kind:function	line:125
+save	til_france/data/data/handicap_sante_institutions.py	/^def save(dataframe):$/;"	kind:function	line:185
+save	til_france/data/data/handicap_sante_menages.py	/^def save(dataframe):$/;"	kind:function	line:46
+separate	til_france/plot/population.py	/^    def separate(age):$/;"	kind:function	line:290
+setup.py	setup.py	1;"	kind:file	line:1
+sheetname_by_gender	til_france/tests/test_input_patrimoine_data.py	/^sheetname_by_gender = dict(zip($/;"	kind:variable	line:28
+simple_test.py	til_france/tests/simple_test.py	1;"	kind:file	line:1
+simul	til_france/pgm/output/statistics.py	/^simul = "C:\/til\/output\/simul.h5"$/;"	kind:variable	line:15
+simul	til_france/pgm/output/statistics.py	/^simul = HDFStore(simul)$/;"	kind:variable	line:18
+simulate_replications	til_france/tests/models/demographic_model/run_multiple.py	/^def simulate_replications(fpath, output_path, replications):$/;"	kind:function	line:15
+simulation	til_france/data/archives/Patrimoine/archives_R/Import/run_retro.py	/^simulation= Simulation.from_yaml($/;"	kind:variable	line:29
+simulation	til_france/data/archives/Patrimoine/archives_R/lien_parent_enfant/run_lien.py	/^simulation= Simulation.from_yaml($/;"	kind:variable	line:25
+simulation	til_france/tests/base.py	/^    simulation = TilSimulation.from_yaml($/;"	kind:variable	line:48
+simulation	til_france/tests/simple_test.py	/^    simulation = test()$/;"	kind:variable	line:101
+simulation	til_france/tests/test_destinie.py	/^simulation = create_til_simulation(capitalized_name = 'Destinie', uniform_weight = 1922.721)$/;"	kind:variable	line:7
+simulation	til_france/tests/test_til.py	/^simulation = create_til_simulation($/;"	kind:variable	line:44
+simulation	til_france/tests/til_simulation.py	/^    simulation = TilSimulation.from_yaml($/;"	kind:variable	line:61
+simulation	til_france/tests/til_simulation.py	/^    simulation = get_simulation($/;"	kind:variable	line:104
+sizes	til_france/data/archives/Patrimoine/test_matching.py	/^sizes = [500000, 1500000, 2000000, 1000000, 2500000]$/;"	kind:variable	line:186
+start_t	til_france/data/data/Cohort.py	/^    start_t = time.time()$/;"	kind:variable	line:77
+start_t	til_france/data/data/Destinie.py	/^    start_t = time.time()$/;"	kind:variable	line:560
+start_t	til_france/data/data/Destinie2.py	/^    start_t = time.time()$/;"	kind:variable	line:475
+stat	til_france/pgm/output/stat_final.py	/^def stat(year):$/;"	kind:function	line:11
+stat_final.py	til_france/pgm/output/stat_final.py	1;"	kind:file	line:1
+statistics.py	til_france/pgm/output/statistics.py	1;"	kind:file	line:1
+store	til_france/data/DataTil.py	/^    def store(self):$/;"	kind:member	line:752
+store	til_france/tests/test_input_patrimoine_data.py	/^store = pandas.HDFStore(destinie_til_path)$/;"	kind:variable	line:66
+store	til_france/tests/test_input_patrimoine_data.py	/^store = pandas.HDFStore(patrimoine_til_path)$/;"	kind:variable	line:59
+store_to_liam	til_france/data/DataTil.py	/^    def store_to_liam(self):$/;"	kind:member	line:655
+summary	til_france/tests/test_input_patrimoine_data.py	/^summary = pandas.concat([population_patrimoine, population_til, population_destinie, population], axis = 1)$/;"	kind:variable	line:130
+summary	til_france/tests/test_input_patrimoine_data.py	/^summary = summary.append(summary.sum(), ignore_index = True)$/;"	kind:variable	line:131
+tab	til_france/pgm/output/statistics.py	/^tab = table['ind'][list2keep]$/;"	kind:variable	line:67
+table	til_france/pgm/output/statistics.py	/^table = {}$/;"	kind:variable	line:35
+table_for_of	til_france/pgm/liam2of.py	/^def table_for_of(simulation, period=None, check_validity=False, save_tables=False):$/;"	kind:function	line:18
+table_initial	til_france/data/DataTil.py	/^    def table_initial(self):$/;"	kind:member	line:150
+tabm	til_france/pgm/output/statistics.py	/^tabm = merge(passage, tabm, how='right', on=['period', 'idmen'], sort=False)$/;"	kind:variable	line:79
+tabm	til_france/pgm/output/statistics.py	/^tabm = output['men']$/;"	kind:variable	line:78
+target	til_france/tests/test_input_patrimoine_data.py	/^target = 'total_destinie'$/;"	kind:variable	line:134
+temps	til_france/data/archives/Patrimoine/test_matching.py	/^temps = {}$/;"	kind:variable	line:185
+temps	til_france/pgm/output/statistics.py	/^temps = time.clock()$/;"	kind:variable	line:14
+test	setup.py	/^        test = [$/;"	kind:variable	line:60
+test	til_france/tests/simple_test.py	/^def test(regenerate_hdf_file = False, test_case = False):$/;"	kind:function	line:55
+test2	til_france/data/data/matching_eir.py	/^test2 = comp.groupby(['noind'])['cc'].mean()$/;"	kind:variable	line:24
+test_build	til_france/data/data/Patrimoine.py	/^def test_build():$/;"	kind:function	line:986
+test_build_parameters	til_france/tests/test_build_parameters.py	/^def test_build_parameters():$/;"	kind:function	line:10
+test_build_parameters.py	til_france/tests/test_build_parameters.py	1;"	kind:file	line:1
+test_csv	til_france/tests/til_simulation.py	/^def test_csv():$/;"	kind:function	line:88
+test_demographic_model	til_france/tests/test_liam2.py	/^def test_demographic_model():$/;"	kind:function	line:40
+test_destinie.py	til_france/tests/test_destinie.py	1;"	kind:file	line:1
+test_input_patrimoine_data.py	til_france/tests/test_input_patrimoine_data.py	1;"	kind:file	line:1
+test_liam2.py	til_france/tests/test_liam2.py	1;"	kind:file	line:1
+test_matching.py	til_france/data/archives/Patrimoine/test_matching.py	1;"	kind:file	line:1
+test_panel	til_france/tests/til_simulation.py	/^def test_panel():$/;"	kind:function	line:75
+test_root	til_france/tests/test_liam2.py	/^test_root = os.path.join($/;"	kind:variable	line:12
+test_suite	setup.py	/^    test_suite = 'nose.collector',$/;"	kind:variable	line:74
+test_til.py	til_france/tests/test_til.py	1;"	kind:file	line:1
+test_variables	til_france/tests/simple_test.py	/^def test_variables():$/;"	kind:function	line:89
+til_france_path	til_france/targets/population.py	/^til_france_path = os.path.join($/;"	kind:variable	line:17
+til_france_path	til_france/tests/base.py	/^til_france_path = os.path.join($/;"	kind:variable	line:15
+til_france_path	til_france/tests/til_simulation.py	/^til_france_path = os.path.join($/;"	kind:variable	line:37
+til_name_to_of	til_france/pgm/utils.py	/^til_name_to_of = dict((v, k) for k, v in of_name_to_til.items())$/;"	kind:variable	line:17
+til_pension	til_france/pgm/run_pension.py	/^    til_pension = None$/;"	kind:variable	line:11
+til_simulation.py	til_france/tests/til_simulation.py	1;"	kind:file	line:1
+to_DataTil_format	til_france/data/data/Patrimoine.py	/^    def to_DataTil_format(self):$/;"	kind:member	line:119
+traduc_entities	til_france/pgm/of_on_liam.py	/^traduc_entities = {$/;"	kind:variable	line:53
+uniform_weight	til_france/tests/base.py	/^        uniform_weight = uniform_weight,$/;"	kind:variable	line:54
+uniform_weight	til_france/tests/test_input_patrimoine_data.py	/^uniform_weight = 200$/;"	kind:variable	line:21
+uniform_weight	til_france/tests/test_til.py	/^    uniform_weight = 200,$/;"	kind:variable	line:48
+uniform_weight	til_france/tests/til_simulation.py	/^        uniform_weight = 200$/;"	kind:variable	line:107
+url	setup.py	/^    url = 'https:\/\/github.com\/TaxIPP-Life\/til-france',$/;"	kind:variable	line:58
+use_travis	til_france/tests/test_liam2.py	/^use_travis = os.environ.get('USE_TRAVIS', None) == 'true'$/;"	kind:variable	line:10
+utils.py	til_france/data/utils.py	1;"	kind:file	line:1
+utils.py	til_france/pgm/utils.py	1;"	kind:file	line:1
+variables_til	til_france/data/DataTil.py	/^variables_til = {$/;"	kind:variable	line:28
+version	setup.py	/^    version = '0.1.dev0',$/;"	kind:variable	line:49
+viewer.py	til_france/pgm/viewer.py	1;"	kind:file	line:1
+work_on_past	til_france/data/data/Patrimoine.py	/^    def work_on_past(self, method='from_data'):$/;"	kind:member	line:224
+workstate	til_france/pgm/output/statistics.py	/^workstate = tab.groupby(['noi', 'workstate'], sort=False).size()$/;"	kind:variable	line:73
+year	til_france/tests/test_input_patrimoine_data.py	/^year = 2010$/;"	kind:variable	line:22
+years	til_france/pgm/output/statistics.py	/^years = np.unique(table[ent]['period'].values)$/;"	kind:variable	line:48
