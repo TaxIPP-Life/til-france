@@ -45,12 +45,12 @@ entities:
         - dependance_niveau: 0
         - dependance_niveau: if(
             ISMALE and (age < 75),  # TODO age min ?
-            compute_dependance_niveau_homme_inf_75(educ_1, educ_3, child_0, child_3_more, partner, lq),
+            compute_dependance_niveau_homme_inf_75(child_0, child_3_more, educ_1, educ_3, lq, partner),
             dependance_niveau
             )
         - dependance_niveau: if(
             ISMALE and (age >= 75),
-            compute_dependance_niveau_homme_sup_75(educ_1, educ_3, nb_children, lq),
+            compute_dependance_niveau_homme_sup_75(educ_1, educ_3, nb_children, partner, lq),
             dependance_niveau
             )
         - dependance_niveau: if(
@@ -70,12 +70,6 @@ entities:
             )
         - show('\nNombre initial de dépendants avant alignement', groupby(being_dependant, data_origin))
         # TODO parameters/dependance/dependance_prevalence_2010.csv depends on weight
-        - being_dependant: align_abs(
-            being_dependance_niveau, need = 'parameters/dependance/dependance_prevalence_2010.csv',
-            filter = (age_category >= 1)
-            )
-        # - show('\nNombre initial de dépendants après alignement', groupby(being_dependant, data_origin))
-        # - assertTrue(all(dependance_anciennete < 0, filter = (dependance_niveau < 1)))
 
       dependance:  # TODO
         - dependance_niveau: if(
