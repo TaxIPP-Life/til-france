@@ -16,6 +16,8 @@ til_france/tests/models/demographic_model/output/*.h5
 
 config_local.ini
 
+tags
+
 #################
 ## Eclipse
 #################
