@@ -1,0 +1,19 @@
+entities:
+  individus:
+    processes:
+      compute_dependance_niveau_femme_inf_80(lq, nb_enfants):
+      - value: -0.148325517774 * INCOUPLE + -0.210589900613 * (education_niveau >= 4) + 0.210969701409 * (education_niveau == 1) + 0.415847092867 * lq + 0.0436756461859 * nb_enfants
+      - dependance_niveau: if(value > 0.345586270094, 5, if(value > -0.752748131752, 4, if(value > -1.63887965679, 3, if(value > -2.96239829063, 2, 1))))
+      - return dependance_niveau
+      compute_dependance_niveau_femme_sup_80(lq, nb_enfants):
+      - value: 0.0328282825649 * nb_enfants + 0.365593343973 * (education_niveau == 1) + 0.570705294609 * lq
+      - dependance_niveau: if(value > 0.386178523302, 5, if(value > -0.918372452259, 4, if(value > -2.06319403648, 3, if(value > -3.27338337898, 2, 1))))
+      - return dependance_niveau
+      compute_dependance_niveau_homme_inf_75(lq, nb_enfants):
+      - value: -0.182540893555 * INCOUPLE + 0.238729968667 * (education_niveau == 1) + 0.33676853776 * (nb_enfants <= 0) + -0.182955890894 * (education_niveau >= 4) + 0.488338798285 * lq + 0.116741716862 * (nb_enfants >= 3)
+      - dependance_niveau: if(value > 0.18929502368, 5, if(value > -0.781691431999, 4, if(value > -1.20197892189, 3, if(value > -2.68665957451, 2, 1))))
+      - return dependance_niveau
+      compute_dependance_niveau_homme_sup_75(lq, nb_enfants):
+      - value: -0.233807131648 * (education_niveau >= 4) + 0.43638548255 * lq + 0.204622343183 * (education_niveau == 1) + 0.0565388202667 * nb_enfants
+      - dependance_niveau: if(value > 0.763492822647, 5, if(value > -0.335378706455, 4, if(value > -0.972817063332, 3, if(value > -2.42592477798, 2, 1))))
+      - return dependance_niveau

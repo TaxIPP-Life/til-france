@@ -21,7 +21,6 @@ entities:
       #  Etat 5 : décès
       - dependance_niveau: {type: int, initialdata: true}
 
-
     processes:
       dependance_initialisation:
         - qm: if(
@@ -45,22 +44,22 @@ entities:
         - dependance_niveau: 0
         - dependance_niveau: if(
             ISMALE and (age < 75),  # TODO age min ?
-            compute_dependance_niveau_homme_inf_75(child_0, child_3_more, educ_1, educ_3, lq, partner),
+            compute_dependance_niveau_homme_inf_75(lq, nb_enfants),
             dependance_niveau
             )
         - dependance_niveau: if(
             ISMALE and (age >= 75),
-            compute_dependance_niveau_homme_sup_75(educ_1, educ_3, nb_children, partner, lq),
+            compute_dependance_niveau_homme_sup_75(lq, nb_enfants),
             dependance_niveau
             )
         - dependance_niveau: if(
             ISFEMALE and (age < 80),  # TODO age min ?
-            compute_dependance_niveau_femme_inf_80(educ_1, educ_3, nb_children,	partner, lq),
+            compute_dependance_niveau_femme_inf_80(lq, nb_enfants),
             dependance_niveau
             )
         - dependance_niveau: if(
             ISFEMALE and (age >= 80),
-            compute_dependance_niveau_femme_sup_80(educ_1, nb_children,	lq),
+            compute_dependance_niveau_femme_sup_80(lq, nb_enfants),
             dependance_niveau
             )
         - age_category: if(
@@ -68,7 +67,7 @@ entities:
             min(trunc(age / 5) - 12 + 1, 6),
             0
             )
-        - show('\nNombre initial de dépendants avant alignement', groupby(being_dependant, data_origin))
+        - show('\nNombre initial de dépendants avant alignement', groupby(dependance_niveau, data_origin))
         # TODO parameters/dependance/dependance_prevalence_2010.csv depends on weight
 
       dependance:  # TODO

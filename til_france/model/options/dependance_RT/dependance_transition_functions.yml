@@ -1,0 +1,28 @@
+entities:
+  individus:
+    processes:
+      etat_0:
+        etat_0: 0
+        etat_1: -2.97071789209 + -0.452752096937 * (age >= 99) + -0.717907737056 * (education_niveau >= 4) + 0.593941511397 * (age >= 80) + -0.294987999295 * ISFEMALE + 1.06561058551 * (age >= 90) + -0.0176362046131 * (not INCOUPLE) + 0.213506629609 * ((education_niveau >= 2) & (education_niveau <= 3))
+        etat_4: -18.7438724581 + 13.8740955621 * (age >= 99) + 0.632657927117 * (education_niveau >= 4) + 13.5620867059 * (age >= 80) + 0.089684634444 * ISFEMALE + 12.6784028566 * (age >= 90) + -0.285620590783 * (not INCOUPLE) + 0.399093015393 * ((education_niveau >= 2) & (education_niveau <= 3))
+        etat_5: -4.28665608353 + 2.66979356715 * (age >= 99) + -0.294637166516 * (education_niveau >= 4) + 1.31701868254 * (age >= 80) + -0.5945369337 * ISFEMALE + 2.11588541315 * (age >= 90) + -0.297932089622 * (not INCOUPLE) + -0.0343675280401 * ((education_niveau >= 2) & (education_niveau <= 3))
+      etat_1:
+        etat_0: 0
+        etat_1: -1.5754037169 + -22.1733714103 * (age >= 99) + -0.881789823911 * (education_niveau >= 4) + 0.601300945489 * (age >= 80) + 0.344081405693 * ISFEMALE + 1.03638184757 * (age >= 90) + -0.00395684238889 * (not INCOUPLE) + -0.245669264303 * ((education_niveau >= 2) & (education_niveau <= 3))
+        etat_2: -2.23285451151 + 1.29154065085 * (age >= 99) + 0.129761483102 * (education_niveau >= 4) + 0.910847260499 * (age >= 80) + 0.697397072863 * ISFEMALE + 1.6155642228 * (age >= 90) + -0.0232967729707 * (not INCOUPLE) + 0.0783957785413 * ((education_niveau >= 2) & (education_niveau <= 3))
+        etat_4: -21.046130989 + -3.52382619423 * (age >= 99) + -14.2614454558 * (education_niveau >= 4) + 15.0247695672 * (age >= 80) + 1.72393738488 * ISFEMALE + 17.0434069196 * (age >= 90) + -14.5459256796 * (not INCOUPLE) + 1.50764883192 * ((education_niveau >= 2) & (education_niveau <= 3))
+        etat_5: -19.0297199128 + 18.5206098439 * (age >= 99) + 0.436043754787 * (education_niveau >= 4) + 15.8005997724 * (age >= 80) + -1.45549549733 * ISFEMALE + 17.6872611731 * (age >= 90) + -0.347092515519 * (not INCOUPLE) + 0.716600834554 * ((education_niveau >= 2) & (education_niveau <= 3))
+      etat_2:
+        etat_1: 0
+        etat_2: -2.36005856193 + -1.36837395965 * (age >= 99) + 0.900597343568 * (education_niveau >= 4) + -0.842447062792 * (age >= 80) + -0.0291687299666 * ISFEMALE + -1.24480540355 * (age >= 90) + -0.0494364963757 * (not INCOUPLE) + -0.127554792375 * ((education_niveau >= 2) & (education_niveau <= 3))
+        etat_3: -3.86708008162 + 2.14466493976 * (age >= 99) + 0.0235241692469 * (education_niveau >= 4) + 1.8012126572 * (age >= 80) + -0.0898745692394 * ISFEMALE + 2.50939506188 * (age >= 90) + -0.141719645359 * (not INCOUPLE) + -0.00224967892573 * ((education_niveau >= 2) & (education_niveau <= 3))
+        etat_4: -17.5859877315 + 14.0181621652 * (age >= 99) + -0.096750828348 * (education_niveau >= 4) + 13.0406112801 * (age >= 80) + 0.0376701960716 * ISFEMALE + 14.1671513834 * (age >= 90) + -0.135996910588 * (not INCOUPLE) + -0.193173892286 * ((education_niveau >= 2) & (education_niveau <= 3))
+        etat_5: -3.52238328017 + 2.98981987474 * (age >= 99) + 0.38200522481 * (education_niveau >= 4) + 1.50504382562 * (age >= 80) + -0.800669255624 * ISFEMALE + 2.19232382575 * (age >= 90) + -0.0898739419364 * (not INCOUPLE) + 0.2636613231 * ((education_niveau >= 2) & (education_niveau <= 3))
+      etat_3:
+        etat_2: 0
+        etat_3: -2.11215945903 + -0.544078832581 * (age >= 99) + 0.395212702351 * (education_niveau >= 4) + -0.097806237479 * (age >= 80) + 0.727255427004 * ISFEMALE + -0.502544945064 * (age >= 90) + 0.0404456366264 * (not INCOUPLE) + 0.490551599562 * ((education_niveau >= 2) & (education_niveau <= 3))
+        etat_4: -14.320116254 + 12.1367525938 * (age >= 99) + 0.178505032358 * (education_niveau >= 4) + 11.7409412307 * (age >= 80) + -0.00410691171048 * ISFEMALE + 12.5107474901 * (age >= 90) + -0.488820082184 * (not INCOUPLE) + 0.678299409768 * ((education_niveau >= 2) & (education_niveau <= 3))
+        etat_5: -1.39204432081 + 1.40121315412 * (age >= 99) + -0.0526135373309 * (education_niveau >= 4) + -0.280714882234 * (age >= 80) + -0.345936191549 * ISFEMALE + 0.635896320239 * (age >= 90) + -1.02113180831 * (not INCOUPLE) + 0.445160141746 * ((education_niveau >= 2) & (education_niveau <= 3))
+      etat_4:
+        etat_4: 0
+        etat_5: 0.442674875297 + 0.207259723499 * (age >= 99) + 0.0135010380365 * (education_niveau >= 4) + -1.02519535436 * (age >= 80) + -0.442674875297 * ISFEMALE + -0.225091314418 * (age >= 90) + -0.790080410347 * (not INCOUPLE) + -0.0661731671139 * ((education_niveau >= 2) & (education_niveau <= 3))
