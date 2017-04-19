@@ -1,4 +1,4 @@
-IGNORE_OPT=--ignore-files='(simple_test.py|test_destinie.py|test_input_patrimoine_data.py)'
+IGNORE_OPT=--ignore-files='(simple_test.py|test_destinie.py|test_input_patrimoine_data.py|test_til.py)'
 TESTS_DIR=til_france/tests
 
 all: flake8 test
