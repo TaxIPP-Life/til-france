@@ -75,7 +75,6 @@ options = ['dependance', 'dependance_aligned', 'dependance_pessimistic', 'depend
 age_max = 95
 plot_multi_dependance_csv(simulation, options = options, save_figure = True)
 
-bdadou
 #plot_multi_prevalence_csv(
 #    simulation, options = options, save_figure = True, years = years, age_max = age_max)
 

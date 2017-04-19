@@ -41,7 +41,7 @@ def test_demographic_model():
     excluded = ()
     # if use_travis:
     #     excluded += None
-    for test_file in iterate_directory('demographic_model', 'demo_import.yml', excluded):
+    for test_file in iterate_directory('demographic_model', 'import.yml', excluded):
         yield run_file, test_file
 
 
