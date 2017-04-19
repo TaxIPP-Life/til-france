@@ -139,7 +139,7 @@ file_path_by_state = dict(
 
 for initial_state, file_path in file_path_by_state.iteritems():
     variables_by_final_state = pd.read_excel(file_path).to_dict()
-    print '*', initial_state
+    print('*', initial_state)
     initial_state_dict = dict()
     processes_dict['etat_{}'.format(initial_state)] = initial_state_dict
     for final_state, variables in variables_by_final_state.iteritems():

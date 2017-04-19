@@ -1,0 +1,44 @@
+# This is a LIAM2 simulation file. In this first example, we will see how to
+# define an extremely simple simulation, how to run it and explore the results.
+
+# Please note that any line starting with a # sign is a comment and is ignored.
+
+# First, we define all our entities, their fields and functions (processes).
+# In this case, we define only one 'person' entity, but LIAM2 can work with any
+# kind of entity and any number of them.
+
+
+import: ../demographic_model/demo01.yml
+
+
+simulation:
+    # the functions listed in this section are only executed *once* in
+    # start_period - 1 (that is 2015 in this case), instead of once per period.
+    # init:
+    #     - individus: []
+
+    processes:
+        - individus: [ageing]
+
+    input:
+          file: ../demographic_model/input/demo.h5
+    output:
+        # all output files will be in the output subdirectory (this path is
+        # relative to the path of the simulation file). This is optional.
+        path: output
+        file: simul.h5
+
+    assertions: raise       # raise (default), warn, skip
+    skip_shows: False
+    logging:                # optional
+        timings: True       # optional
+        level: functions    # optional
+
+    random_seed: 12345       # optional
+
+    start_period: 2016  #01
+    # first simulated period is start_period + 1 but the start period data is saved
+
+    # Number of periods includes initial period
+    periods: 30
+    # last period = periods + start_period - 1 = 45 + 2016 -1 = 2060
