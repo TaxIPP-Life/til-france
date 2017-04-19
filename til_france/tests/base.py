@@ -4,13 +4,9 @@ import os
 import pkg_resources
 
 import pandas
-from webcolors import rgb_to_hex
 
 from til_core.config import Config
 from til_core.simulation import TilSimulation
-
-from taxipp.utils import ipp_colors, to_percent_round_formatter
-
 
 til_france_path = os.path.join(
     pkg_resources.get_distribution('Til-France').location,
