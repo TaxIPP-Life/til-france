@@ -45,7 +45,7 @@ sheetnames_by_function = {
 
 
 def build_function_str(function_name, cuts, variables):
-    header = function_name
+    # header = function_name
     value_formula = " + ".join([
         "{value} * {key}".
         format(key = key, value = value)
@@ -109,7 +109,6 @@ def create_initialisation():
         # renamed_vars += variables.keys()
         processes_dict[function_name + '(lq, nb_enfants)'] = build_function_str(function_name, cuts, variables)
 
-
     with open(dependance_functions_yml_path, 'w') as outfile:
         yaml.dump(main, outfile, default_flow_style = False, width = 1000)
 
@@ -151,11 +150,10 @@ for initial_state, file_path in file_path_by_state.iteritems():
             ])
         if 'cons' in variables and variables['cons'] != 0:
             value_formula = '{} + {}'.format(variables['cons'], value_formula)
-        print value_formula
+        print(value_formula)
         if value_formula == '':
             value_formula = 0
         initial_state_dict[str(final_state)] = value_formula
 
 with open(dependance_transition_yml_path, 'w') as outfile:
     yaml.dump(main, outfile, default_flow_style = False, width = 1000)
-
