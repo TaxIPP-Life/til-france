@@ -97,8 +97,8 @@ def separate_cuts_from_variables(parameters_value_by_name):
 def create_initialisation():
     # renamed_vars = []
     # vars = []
-    processes_dict = dict()
-    processes = dict(processes = processes_dict)
+    process_by_initial_state = dict()
+    processes = dict(processes = process_by_initial_state)
     individus = dict(individus = processes)
     main = dict(entities = individus)
     for function_name, sheetname in sheetnames_by_function.iteritems():
@@ -107,7 +107,7 @@ def create_initialisation():
         # vars += variables.keys()
         variables = rename_variables(variables)
         # renamed_vars += variables.keys()
-        processes_dict[function_name + '(lq, nb_enfants)'] = build_function_str(function_name, cuts, variables)
+        process_by_initial_state[function_name + '(lq, nb_enfants)'] = build_function_str(function_name, cuts, variables)
 
     with open(dependance_functions_yml_path, 'w') as outfile:
         yaml.dump(main, outfile, default_flow_style = False, width = 1000)
@@ -116,8 +116,8 @@ def create_initialisation():
     # print list(set(renamed_vars))
 
 
-processes_dict = dict()
-processes = dict(processes = processes_dict)
+process_by_initial_state = dict()
+processes = dict(processes = process_by_initial_state)
 individus = dict(individus = processes)
 main = dict(entities = individus)
 file_path_by_state = dict(
@@ -139,8 +139,8 @@ file_path_by_state = dict(
 for initial_state, file_path in file_path_by_state.iteritems():
     variables_by_final_state = pd.read_excel(file_path).to_dict()
     print('*', initial_state)
-    initial_state_dict = dict()
-    processes_dict['etat_{}'.format(initial_state)] = initial_state_dict
+    initial_state_actions = list()
+    process_by_initial_state['etat_{}'.format(initial_state)] = initial_state_actions
     for final_state, variables in variables_by_final_state.iteritems():
         variables = rename_variables(variables)
         value_formula = " + ".join([
@@ -153,7 +153,22 @@ for initial_state, file_path in file_path_by_state.iteritems():
         print(value_formula)
         if value_formula == '':
             value_formula = 0
-        initial_state_dict[str(final_state)] = value_formula
+        initial_state_actions.append({
+            str(final_state): "exp({})".format(value_formula)
+            })
+
+    initial_state_actions.append({
+        "z": " + ".join([
+            str(final_state)
+            for final_state in variables_by_final_state.keys()
+            ])
+        })
+
+    for final_state in variables_by_final_state.keys():
+        initial_state_actions.append({
+            str(final_state): "{} / z".format(final_state)
+            })
+
 
 with open(dependance_transition_yml_path, 'w') as outfile:
     yaml.dump(main, outfile, default_flow_style = False, width = 1000)

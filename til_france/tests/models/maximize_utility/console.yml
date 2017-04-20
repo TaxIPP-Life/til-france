@@ -11,6 +11,45 @@
 import: ../demographic_model/demo01.yml
 
 
+entities:
+    individus:
+
+        macros:
+            ISMALE: not sexe
+            ISFEMALE: sexe
+
+        processes:
+            compute_utility:
+                - utility_young_male: ISMALE * 1 + (age <= 30) * 10
+                - utility_old_male: ISMALE * 1 + (age > 30) * 10
+                - utility_young_female: ISFEMALE * 1 + (age <= 30) * 10
+                - utility_old_female: ISFEMALE * 1 + (age > 30) * 10
+                - utility_array: array([utility_young_male, utility_young_female, utility_old_male, utility_old_female])
+                - utility_outcome: utility_array.argmax(axis = 0)
+                - assertTrue(all(utility_outcome == 0, filter = ISMALE & (age <= 30)))
+                - assertTrue(all(utility_outcome == 2, filter = ISMALE & (age > 30)))
+                - assertTrue(all(utility_outcome == 1, filter = ISFEMALE & (age <= 30)))
+                - assertTrue(all(utility_outcome == 3, filter = ISFEMALE & (age > 30)))
+                - show(groupby(sexe, trunc(age / 10), utility_outcome))
+
+            compute_choice:
+                - prob_0: ISMALE * (2 / 3)
+                - prob_1: ISMALE * (1 - (2 / 3))
+                - prob_2: ISFEMALE * (2 / 3)
+                - prob_3: ISFEMALE * (1 - (2 / 3))
+                - choice_outcome: choice([0, 1, 2, 3], [prob_0, prob_1, prob_2, prob_3])
+                - stats: groupby(sexe, choice_outcome, percent=True)
+                - assertTrue(all(stats[0, 2] == 0))
+                - assertTrue(all(stats[0, 3] == 0))
+                - show(stats[0, 1])
+                - assertTrue(32 < stats[0, 0] and stats[0, 1] < 33)
+                - assertTrue(16 < stats[0, 1] and stats[0, 2] < 17)
+                - assertTrue(stats[1, 0] == 0)
+                - assertTrue(stats[1, 1] == 0)
+                - assertTrue(34 < stats[1, 2] and stats[1, 2] < 35)
+                - assertTrue(17 < stats[1, 3] and stats[1, 3] < 18)
+                - show(groupby(sexe, choice_outcome, percent=True))
+
 simulation:
     # the functions listed in this section are only executed *once* in
     # start_period - 1 (that is 2015 in this case), instead of once per period.
@@ -18,7 +57,7 @@ simulation:
     #     - individus: []
 
     processes:
-        - individus: [ageing]
+        - individus: [ageing, compute_choice]
 
     input:
           file: ../demographic_model/input/demo.h5
@@ -40,5 +79,5 @@ simulation:
     # first simulated period is start_period + 1 but the start period data is saved
 
     # Number of periods includes initial period
-    periods: 30
-    # last period = periods + start_period - 1 = 45 + 2016 -1 = 2060
+    periods: 2
+    # last period = periods + start_period - 1 = 2 + 2016 - 1 = 2017
