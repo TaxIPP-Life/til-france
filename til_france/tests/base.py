@@ -1,12 +1,55 @@
 # -*- coding:utf-8 -*-
 
+import matplotlib
 import os
-import pkg_resources
-
 import pandas
+import pkg_resources
+from webcolors import rgb_to_hex
+
 
 from til_core.config import Config
 from til_core.simulation import TilSimulation
+
+
+__all__ = [
+    'create_or_get_figures_directory',
+    'create_til_simulation',
+    'get_data_directory',
+    'ipp_colors',
+    'line_prepender',
+    'plot_csv',
+    'til_france_path',
+    'to_percent_round_formatter',
+    ]
+
+
+# RGB tuples
+ipp_colors_not_normalized = dict(
+    ipp_very_dark_blue = (0, 80, 101),
+    ipp_dark_blue = (0, 135, 152),
+    ipp_medium_blue = (146, 205, 220),
+    ipp_light_blue = (183, 222, 232),
+    ipp_very_light_blue = (218, 238, 243),
+    ipp_blue = (75, 172, 197)
+    )
+
+ipp_colors = dict((name, rgb_to_hex(rgb)) for name, rgb in ipp_colors_not_normalized.iteritems())
+
+
+def to_percent_round(y, position):
+    # Ignore the passed in position. This has the effect of scaling the default
+    # tick locations.
+    s = str(int(round(100 * y)))
+
+    # The percent symbol needs escaping in latex
+    if matplotlib.rcParams['text.usetex']:
+        return s + r'$\%$'
+    else:
+        return s + '%'
+
+
+to_percent_round_formatter = matplotlib.ticker.FuncFormatter(to_percent_round)
+
 
 til_france_path = os.path.join(
     pkg_resources.get_distribution('Til-France').location,
@@ -56,10 +99,16 @@ You should also check that the input path is correctly set in your config_local.
 
 def create_or_get_figures_directory(simulation, backup = None):
     if backup is not None:
-        figures_directory = os.path.join(
+        output_directory = os.path.join(
             os.path.dirname(simulation.data_sink.output_path),
             '..',
             backup,
+            )
+        if not os.path.exists(output_directory):
+            os.mkdir(output_directory)
+
+        figures_directory = os.path.join(
+            output_directory,
             'figures',
             )
     else:

@@ -8,7 +8,6 @@ from liam2.simulation import Simulation
 from liam2.importer import csv2h5
 
 
-# TODO mutualize with liam2
 use_travis = os.environ.get('USE_TRAVIS', None) == 'true'
 
 test_root = os.path.join(

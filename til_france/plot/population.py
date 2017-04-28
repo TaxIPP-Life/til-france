@@ -1,25 +1,6 @@
 # -*- coding:utf-8 -*-
 
 
-# Copyright (C) 2011, 2012, 2013, 2014, 2015 OpenFisca Team
-# https://github.com/openfisca
-#
-# This file is part of OpenFisca.
-#
-# OpenFisca is free software; you can redistribute it and/or modify
-# it under the terms of the GNU Affero General Public License as
-# published by the Free Software Foundation, either version 3 of the
-# License, or (at your option) any later version.
-#
-# OpenFisca is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Affero General Public License for more details.
-#
-# You should have received a copy of the GNU Affero General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-
 from __future__ import division
 
 
@@ -64,6 +45,8 @@ def extract_population_csv(simulation, backup = None):
     if os.path.exists(os.path.join(directory, 'replication_0')):
         multiple = True
         base_directory = directory
+    else:
+        multiple = False
 
     def _extract_population_csv(directory, weight = None):
         file_path = os.path.join(directory, 'population2.csv')
@@ -100,13 +83,10 @@ def extract_population_csv(simulation, backup = None):
             df['period'] = period
             proto_panel = pd.concat([proto_panel, df]) if proto_panel is not None else df
 
-
         panel = proto_panel.reset_index()
         panel = panel.set_index(['period', 'age_group']).astype('int')
 
         return panel * weight
-
-
 
     if multiple:
         replication_number = 0
@@ -236,7 +216,7 @@ def plot_population(simulation, backup = None):
 
     if isinstance(panel_simulation, list):
         data_concat = pd.concat(panel_simulation)
-        print data_concat
+        print(data_concat)
         by_row_index = data_concat.groupby(data_concat.index)
         panel_simulation = by_row_index.mean()
         multi_index = pd.MultiIndex.from_tuples(panel_simulation.index, names = ('period', 'age_group'))
@@ -251,7 +231,6 @@ def plot_population(simulation, backup = None):
         absolute_diff = (
             data_frame_simulation - data_frame_insee[data_frame_simulation.columns]
             )
-
         relative_diff = (
             data_frame_simulation - data_frame_insee[data_frame_simulation.columns]
             ) / data_frame_insee[data_frame_simulation.columns]
