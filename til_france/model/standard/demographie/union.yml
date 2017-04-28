@@ -1,8 +1,8 @@
 entities:
   individus:
     fields:
-      - duree_en_couple: {type: float, initialdata: false, default 0}
-      - duree_hors_couple: {type: int, initialdata: false, default 0}
+      - duree_en_couple: {type: float, initialdata: false, default -1}
+      - duree_hors_couple: {type: int, initialdata: false, default -1}
       - civilstate: {type: int, initialdata: false}
 
     macros:
@@ -26,14 +26,18 @@ entities:
         - duree_en_couple: if(
             INCOUPLE,
             max(((age + l_partner.age) / 2 - 20), 0),
-            0
+            -1
             )
         - assertTrue(all((duree_en_couple == l_partner.duree_en_couple) or (l_partner.partner == UNSET)))
-        - duree_hors_couple: 0  # TODO mieux initialiser cela
+        - duree_hors_couple: if(
+            not INCOUPLE,
+            2,
+            -1
+            )  # TODO mieux initialiser cela
       # Michel DUÉE 2005
       # La modélisation des comportements démographiques dans le modèle de microsimulation DESTINIE
       # Document de travail INSEE
-      # http://www.insee.fr/fr/publications-et-services/docs_doc_travail/G2005-15.pdf
+      # https://www.epsilon.insee.fr/jspui/bitstream/1/5867/1/g2005-15.pdf
       couple_formation:
         - nb_children_ind: invl_mere.count() + invl_pere.count()
         - candidat_couple: 0
@@ -78,7 +82,9 @@ entities:
             round(sum(candidat_couple * ISMALE * uniform_weight)),
             ' ou les femmes ', round(sum(candidat_couple * ISFEMALE * uniform_weight))
             )
-        - candidat_couple_selectionne: align_abs(candidat_couple, method = "sidewalk", need = sum(candidat_couple))
+        - need: sum(candidat_couple)
+        - show("\nNombre de mises en couple", need)
+        - candidat_couple_selectionne: align_abs(candidat_couple, method = "sidewalk", need = need)
         - show('\nNombre de mises en couple potentielles espérées avant sélection', sum(candidat_couple * uniform_weight))
         - show('\nNombre de mises en couple potentielles espérées après sélection', count(candidat_couple_selectionne * uniform_weight))
         - difficult_match: if(
@@ -100,19 +106,29 @@ entities:
         # on corrige les incestes qui n'ont pas ete interdit dans le matching
         # ca n'est pas bcp de cas, donc on considère que ça ne change pas les marges
         # et puis entre les marges et un tabou universel, on sacrifie les marges
-        - partner: if((partner == pere or partner == mere), UNSET, partner)
-        - partner: if((l_partner.pere == pere and pere > -1), UNSET, partner)
-        - partner: if((l_partner.mere == mere and mere > -1), UNSET, partner)
+        - partner: if((partner == pere) or (partner == mere), UNSET, partner)
+        - partner: if((l_partner.pere == pere) and (pere > -1), UNSET, partner)
+        - partner: if((l_partner.mere == mere) and (mere > -1), UNSET, partner)
         - partner: if(l_partner.partner == UNSET, UNSET, partner)
-        - show('\nFlux brut de personnes nouvellement en couple', count(candidat_couple_selectionne & INCOUPLE) * uniform_weight)
+        - show('\nFlux brut de personnes nouvellement en couple', count(candidat_couple_selectionne and INCOUPLE) * uniform_weight)
         - show('\nNombre de personnes en couple', count(INCOUPLE) * uniform_weight)
-        # - in_new_couple: if(INCOUPLE and (duree_en_couple == 0), True, False)
-        # - duree_en_couple: if(INCOUPLE and not(in_new_couple), duree_en_couple + 1, 0)
-        # - duree_en_couple: if(in_new_couple, 0, duree_en_couple)
-        - duree_en_couple: if(INCOUPLE, duree_en_couple + 1, 0)
-        - duree_hors_couple: if(INCOUPLE, 0, duree_hors_couple) # NOTE : duree_hors_couple is incremented in rupture
+        - in_new_couple: if(INCOUPLE and (duree_en_couple == 0), True, False)
+        - duree_en_couple: if(INCOUPLE and not(in_new_couple), duree_en_couple + 1, 0)
+        - duree_en_couple: if(in_new_couple, 0, duree_en_couple)
+        # - duree_en_couple: if(INCOUPLE, duree_en_couple + 1, 0)
         - assertEqual(count(partner > -1) , count(l_partner.partner > -1))
+        - show("\nMismatch", sum((duree_en_couple != l_partner.duree_en_couple) and (partner != UNSET)))
+        - duree_hors_couple: if(INCOUPLE, -1, duree_hors_couple) # NOTE : duree_hors_couple is incremented in rupture
         - assertTrue(all((duree_en_couple == l_partner.duree_en_couple) or (partner == UNSET)))
+        # - show(dump(
+        #     l_partner.id,
+        #     age,
+        #     l_partner.age,
+        #     duree_en_couple,
+        #     duree_hors_couple,
+        #     l_partner.duree_en_couple,
+        #     filter = (duree_en_couple != l_partner.duree_en_couple) and (partner != UNSET)
+        #     ))
 
 
       move_together:
