@@ -14,7 +14,7 @@ entities:
         # TODO: séparer rupture et divorce, séparer ruputre de gens en couple et divorce
         - etudes_courtes: findet < 21  # TODO age moyen de sa generation
         - probabilite_rupture_femme: if(
-            ISFEMALE and INCOUPLE and (duree_en_couple > 0),
+            ISFEMALE and INCOUPLE and (duree_en_couple >= 0),
             logistic(
               -2.47 - 0.45 - 0.04 * duree_en_couple - 0.06 * (age - duree_en_couple) + 0.58 * (enfants_du_couple == 0) +
               0.21 * (enfants_du_couple == 1) + 0.13 * (enfants_du_couple > 3) + 0.41 * (autres_enfants > 0)
@@ -25,7 +25,7 @@ entities:
         - rupture_femme: align_abs(
             probabilite_rupture_femme,
             need = sum(probabilite_rupture_femme),
-            filter = ISFEMALE and INCOUPLE and (duree_en_couple > 0),
+            filter = ISFEMALE and INCOUPLE and (duree_en_couple >= 0),
             method = "sidewalk"
             )
         - show('\nNombre de ruptures', sum(rupture_femme * uniform_weight))
@@ -126,9 +126,20 @@ entities:
         - idfoy: new_foy
         - civilstate: if(rupture and LEGAL_UNION, DIVORCED, civilstate)
         - partner: if(rupture, UNSET, partner)
-        - duree_en_couple: if(not INCOUPLE, -1, duree_en_couple)
-        - duree_hors_couple: if(rupture, 0, duree_hors_couple) # note : duree_en_couple est incrementée dans union
-        - duree_hors_couple: if(not INCOUPLE, duree_hors_couple + 1, 0) # note : duree_en_couple est incrementée dans union
+        - duree_en_couple: if(not INCOUPLE, -1, duree_en_couple)  # note : duree_en_couple est incrementée dans union
+        # On incrémente la durée des personnes hors couple depuis au moins une periode
+        - duree_hors_couple: if(
+            (not INCOUPLE) and (duree_hors_couple >= 0),
+            duree_hors_couple + 1,
+            -1
+            )
+        # Et on met à zéro la duree_hors_couple de celle venant de rompre
+        - duree_hors_couple: if(rupture, 0, duree_hors_couple)
+        - assertTrue(all(
+            (rupture and (duree_en_couple < 0))
+            or
+            (not rupture)
+            ))
 
         # remplacera les etapes d'actualisation menage et foyers_fiscaux quand fonctionnel
         # - l_men.set(pref = individus.max(id, quimen==0)

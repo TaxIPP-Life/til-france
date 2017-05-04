@@ -1,8 +1,8 @@
 entities:
   individus:
     fields:
-      - duree_en_couple: {type: float, initialdata: false, default -1}
-      - duree_hors_couple: {type: int, initialdata: false, default -1}
+      - duree_en_couple: {type: float, initialdata: false, default: -1.0}
+      - duree_hors_couple: {type: float, initialdata: false, default: -1.0}
       - civilstate: {type: int, initialdata: false}
 
     macros:
@@ -31,22 +31,28 @@ entities:
         - assertTrue(all((duree_en_couple == l_partner.duree_en_couple) or (l_partner.partner == UNSET)))
         - duree_hors_couple: if(
             not INCOUPLE,
-            2,
-            -1
-            )  # TODO mieux initialiser cela
+            -1,
+            if(
+              ISDIVORCED or ISWIDOW,
+              2,
+              -1
+              )
+            ) # TODO mieux initialiser cela, gérer l'hétérogénéïté'
+
       # Michel DUÉE 2005
       # La modélisation des comportements démographiques dans le modèle de microsimulation DESTINIE
       # Document de travail INSEE
       # https://www.epsilon.insee.fr/jspui/bitstream/1/5867/1/g2005-15.pdf
       couple_formation:
         - nb_children_ind: invl_mere.count() + invl_pere.count()
-        - candidat_couple: 0
+        - candidat_couple_score: 0  # Will be used by sidewalk thus should be 0
+        - candidat_couple: False
         - age_corrige: age - (findet - 16) / 2  # On corrige l'age de fin d'etude
         - etudes_courtes: findet <= 20  # TODO: age moyen de sa generation
         - etudes_longues: findet > 20
         # Première mise en couple .264 est une cale destinie
-        - candidat_couple: if(
-            (age >= 18) and (age <= 90) and (not INCOUPLE) and ISSINGLE,
+        - candidat_couple_score: if(
+            (age >= 18) and (age <= 90) and (not INCOUPLE) and ISSINGLE and (duree_en_couple == -1),
             if(
               ISMALE,
               logit_score(
@@ -58,13 +64,13 @@ entities:
                 - 6.91 / 100000 * (age_corrige ** 4) - 0.06 * etudes_longues
                 )
               ),
-            candidat_couple
+            candidat_couple_score
             )
         # age à la séparation
         - age_separation: age - duree_hors_couple
         # Remise en couple
-        - candidat_couple: if(
-            (age >= 18) and (age <= 90) and (not INCOUPLE) and (not ISSINGLE),
+        - candidat_couple_score: if(
+            (age >= 18) and (age <= 90) and (not INCOUPLE) and (not ISSINGLE) and (duree_en_couple < 0),
             if(
               ISMALE,
               logit_score(
@@ -76,24 +82,36 @@ entities:
                 - 0.57 * ISWIDOW
                 )
               ),
-            candidat_couple
+            candidat_couple_score
             )
         - show("\nNombre de mises en couple potentielles pour les hommes",
-            round(sum(candidat_couple * ISMALE * uniform_weight)),
-            ' ou les femmes ', round(sum(candidat_couple * ISFEMALE * uniform_weight))
+            round(sum((candidat_couple_score > 0) * candidat_couple_score * ISMALE * uniform_weight)),
+            ' ou les femmes ', round(sum((candidat_couple_score > 0) * candidat_couple_score * ISFEMALE * uniform_weight))
             )
-        - need: sum(candidat_couple)
-        - show("\nNombre de mises en couple", need)
-        - candidat_couple_selectionne: align_abs(candidat_couple, method = "sidewalk", need = need)
-        - show('\nNombre de mises en couple potentielles espérées avant sélection', sum(candidat_couple * uniform_weight))
-        - show('\nNombre de mises en couple potentielles espérées après sélection', count(candidat_couple_selectionne * uniform_weight))
+        - need_male: sum((candidat_couple_score > 0) * candidat_couple_score * ISMALE)
+        - need_female: sum((candidat_couple_score > 0) * candidat_couple_score * ISFEMALE)
+        - show("\nNombre de mises en couple (hommes, femmes)", need_male, need_female)
+        - candidat_couple: if(
+            ISFEMALE,
+            align_abs(candidat_couple_score * ISFEMALE, method = "sidewalk", need = need_female),
+            align_abs(candidat_couple_score * ISMALE, method = "sidewalk", need = need_male)
+            )
+        - show("\nNombre de mises en couple potentielles espérées avant sélection (hommes, femmes) ",
+            sum(candidat_couple_score * (candidat_couple_score > 0) * ISMALE),
+            sum(candidat_couple_score * (candidat_couple_score > 0) * ISFEMALE)
+            )
+        - show(
+            "\nNombre de mises en couple potentielles espérées après sélection (hommes, femmes)",
+            groupby(candidat_couple, sexe)
+            )
+        - show('\nNombre de mises en couple potentielles espérées et pondérées après sélection', count(candidat_couple * uniform_weight))
         - difficult_match: if(
-            (candidat_couple_selectionne == 1) and ISFEMALE,
-            abs(age - avg(age, filter = (candidat_couple_selectionne == 1) and ISMALE)),
+            candidat_couple and ISFEMALE,
+            abs(age - avg(age, filter = (candidat_couple and ISMALE))),
             nan
             )
         - partner: if(
-            candidat_couple_selectionne,
+            candidat_couple,
             matching(
               set1filter = ISFEMALE,
               set2filter = ISMALE,
@@ -102,39 +120,26 @@ entities:
               ),
             partner
             )
-        # - show('\nNombre de mises en couple réalisées (incestes conmpris)', count(candidat_couple_selectionne & INCOUPLE) * uniform_weight / 2)
+        # - show('\nNombre de mises en couple réalisées (incestes conmpris)', count(candidat_couple & INCOUPLE) * uniform_weight / 2)
         # on corrige les incestes qui n'ont pas ete interdit dans le matching
         # ca n'est pas bcp de cas, donc on considère que ça ne change pas les marges
         # et puis entre les marges et un tabou universel, on sacrifie les marges
-        - partner: if((partner == pere) or (partner == mere), UNSET, partner)
-        - partner: if((l_partner.pere == pere) and (pere > -1), UNSET, partner)
-        - partner: if((l_partner.mere == mere) and (mere > -1), UNSET, partner)
+        - partner: if((partner == pere) or (partner == mere), UNSET, partner)  # inceste parent-enfant
+        - partner: if((l_partner.pere == pere) and (pere > -1), UNSET, partner)  # inceste frere-soeur
+        - partner: if((l_partner.mere == mere) and (mere > -1), UNSET, partner)  # inceste frere-soeur
         - partner: if(l_partner.partner == UNSET, UNSET, partner)
-        - show('\nFlux brut de personnes nouvellement en couple', count(candidat_couple_selectionne and INCOUPLE) * uniform_weight)
+        - nouveau_couple: if(INCOUPLE and (candidat_couple and l_partner.candidat_couple), True, False)
+        - show('\nFlux brut de personnes nouvellement en couple', count(nouveau_couple) * uniform_weight)
         - show('\nNombre de personnes en couple', count(INCOUPLE) * uniform_weight)
-        - in_new_couple: if(INCOUPLE and (duree_en_couple == 0), True, False)
-        - duree_en_couple: if(INCOUPLE and not(in_new_couple), duree_en_couple + 1, 0)
-        - duree_en_couple: if(in_new_couple, 0, duree_en_couple)
-        # - duree_en_couple: if(INCOUPLE, duree_en_couple + 1, 0)
-        - assertEqual(count(partner > -1) , count(l_partner.partner > -1))
-        - show("\nMismatch", sum((duree_en_couple != l_partner.duree_en_couple) and (partner != UNSET)))
+        - duree_en_couple: if(INCOUPLE and not(nouveau_couple), duree_en_couple + 1, 0)
+        - duree_en_couple: if(nouveau_couple, 0, duree_en_couple)
         - duree_hors_couple: if(INCOUPLE, -1, duree_hors_couple) # NOTE : duree_hors_couple is incremented in rupture
-        - assertTrue(all((duree_en_couple == l_partner.duree_en_couple) or (partner == UNSET)))
-        # - show(dump(
-        #     l_partner.id,
-        #     age,
-        #     l_partner.age,
-        #     duree_en_couple,
-        #     duree_hors_couple,
-        #     l_partner.duree_en_couple,
-        #     filter = (duree_en_couple != l_partner.duree_en_couple) and (partner != UNSET)
-        #     ))
 
 
       move_together:
         # on emmenage en fonction de la durée du couple (faire jouer l'age ?)
         # si un des deux est pref et pas l'autre ou si on est un homme et que l'autre est pref
-        - to_move_together: INCOUPLE and (duree_en_couple > 1)
+        - to_move_together: INCOUPLE and (duree_en_couple > 0)
         - assertTrue(all((to_move_together == l_partner.to_move_together) or (l_partner.partner == UNSET)))
         # on s'assure qu'on ne vit pas déjà ensemble
         - to_move_together: if((quimen==1 or l_partner.quimen==1) and to_move_together and l_partner.to_move_together, False, to_move_together)
@@ -204,7 +209,7 @@ entities:
 
       legal_union:
         # on s'assure qu'on n'en n'a pas déjà un (voir plus tard pour le passage de pacs à mariage) TODO:
-        - to_move_together: INCOUPLE and (not LEGAL_UNION) and (duree_en_couple > 2)
+        - to_move_together: INCOUPLE and (not LEGAL_UNION) and (duree_en_couple > 1)
         # select who move into the other's house
         # if only one is quifoy==0 it's she or he, otherwise, we select the smallest ID.
         # - csv(dump(id, to_move_together, sexe, l_partner.id, l_partner.age, duree_en_couple, quifoy , l_partner.duree_en_couple, l_partner.quifoy,  l_partner.to_move_together, civilstate, l_partner.civilstate))

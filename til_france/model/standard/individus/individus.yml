@@ -30,7 +30,7 @@ entities:
       - start_retirement: {type: int, initialdata: false}
 
     links:
-      l_men: {type: many2one, target: menages,field: idmen}
+      l_men: {type: many2one, target: menages, field: idmen}
       l_foy: {type: many2one, target: foyers_fiscaux, field: idfoy}
       l_mere: {type: many2one, target: individus, field: mere}
       l_pere: {type: many2one, target: individus, field: pere}
@@ -163,9 +163,43 @@ entities:
         - 0
 
       check:
-          - assertEqual(count((pere == l_partner.pere) and (pere > -1)), 0)
-          - assertEqual(count((mere == l_partner.mere) and (mere > -1)), 0)
-          - assertEqual(count((pere == partner) and (pere > -1)), 0)
-          - assertEqual(count((mere == partner) and (mere > -1)), 0)
-          - assertEqual(count(id != l_partner.partner and partner > -1), 0)
-          - assertEqual(count(civilstate != l_partner.civilstate and LEGAL_UNION), 0)
+          - assertFalse(any(
+            (pere == l_partner.pere) and (pere > -1)
+            ))
+          - assertFalse(any(
+            (mere == l_partner.mere) and (mere > -1)
+            ))
+          - assertFalse(any(
+            (pere == partner) and (pere > -1)
+            ))
+          - assertFalse(any(
+            (mere == partner) and (mere > -1)
+            ))
+          # - errors: sum((id != l_partner.partner) and (partner > -1))
+          # - show(errors)
+          # - while (errors > 0):
+          #   - show(dump(
+          #       id,
+          #       partner,
+          #       l_partner.partner,
+          #       id != l_partner.partner,
+          #       partner > -1,
+          #       civilstate,
+          #       duree_hors_couple,
+          #       duree_en_couple,
+          #       sexe,
+          #       filter = (
+          #         (id != l_partner.partner) and (partner > -1)
+          #         )
+          #       ))
+          #   - assertTrue(False)
+          - assertTrue(all((duree_en_couple == l_partner.duree_en_couple) or (partner == UNSET)))
+          - assertTrue(all(
+            ((duree_hors_couple >= 0) and (duree_en_couple < 0))
+            or
+            (duree_hors_couple < 0)
+            ))
+          - assertTrue(all((id == l_partner.partner) or (partner == UNSET)))
+          - assertFalse(any(
+            (civilstate != l_partner.civilstate) and LEGAL_UNION
+            ))

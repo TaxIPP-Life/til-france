@@ -35,8 +35,11 @@ entities:
                     migrant = True,
                     quimen = 0,
                     quifoy = 0,
-                    duree_en_couple = -1
+                    duree_en_couple = -1,
+                    duree_hors_couple = -1
                     )
+                    # TODO mieux initialiser duree_hors_couple, gerer le divorce
+
                     # select = 2
                     # naiss = naiss
                 - new(
