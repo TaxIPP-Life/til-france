@@ -64,6 +64,7 @@ simulation:
     - foyers_fiscaux: [cases, empty_declar]
     ## 4. Mises en couple
     - individus: [couple_formation]
+    - individus: [check]
     - individus: [move_together]
     - individus: [check]
     - individus: [legal_union]
@@ -78,7 +79,7 @@ simulation:
     - menages: [composition_mise_a_jour]
     - foyers_fiscaux: [cases, empty_declar]
     # Education - Marché du travail
-    - individus: [ineducation, emploi_sortie, emploi_entree, retire, chomage, salaire , retraite
+    - individus: [ineducation, emploi_sortie, emploi_entree, retire, chomage, salaire, retraite
         # dump_all
         ]
     - individus: [check]
