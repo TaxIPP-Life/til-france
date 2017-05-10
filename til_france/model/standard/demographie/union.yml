@@ -16,8 +16,8 @@ entities:
       ISDIVORCED: civilstate == 3
       ISWIDOW: civilstate == 4
       ISPACS: civilstate == 5
-      LEGAL_UNION: civilstate == 1 or civilstate == 5
-      LEGAL_CELIB: civilstate == 2 or civilstate == 3 or civilstate == 4
+      LEGAL_UNION: (civilstate == 1) or (civilstate == 5)
+      LEGAL_CELIB: (civilstate == 2) or (civilstate == 3) or (civilstate == 4)
       INCOUPLE: (partner > -1)
 
     processes:
@@ -30,7 +30,7 @@ entities:
             )
         - assertTrue(all((duree_en_couple == l_partner.duree_en_couple) or (l_partner.partner == UNSET)))
         - duree_hors_couple: if(
-            not INCOUPLE,
+            INCOUPLE,
             -1,
             if(
               ISDIVORCED or ISWIDOW,
@@ -131,7 +131,7 @@ entities:
         - nouveau_couple: if(INCOUPLE and (candidat_couple and l_partner.candidat_couple), True, False)
         - show('\nFlux brut de personnes nouvellement en couple', count(nouveau_couple) * uniform_weight)
         - show('\nNombre de personnes en couple', count(INCOUPLE) * uniform_weight)
-        - duree_en_couple: if(INCOUPLE and not(nouveau_couple), duree_en_couple + 1, 0)
+        - duree_en_couple: if(INCOUPLE and not(nouveau_couple), duree_en_couple + 1, -1)
         - duree_en_couple: if(nouveau_couple, 0, duree_en_couple)
         - duree_hors_couple: if(INCOUPLE, -1, duree_hors_couple) # NOTE : duree_hors_couple is incremented in rupture
 

@@ -66,7 +66,7 @@ def rename_variables(variables):
         'child_0': '(nb_enfants <= 0)',
         'child_3_more': '(nb_enfants >= 3)',
         'educ_1': '(education_niveau == 1)',
-        'educ_2': '((education_niveau >= 2) & (education_niveau <= 3))',
+        'educ_2': '((education_niveau >= 2) and (education_niveau <= 3))',
         'educ_3': '(education_niveau >= 4)',
         'age_80': '(age >= 80)',
         'age_90': '(age >= 90)',
@@ -112,9 +112,6 @@ def create_initialisation():
     with open(dependance_functions_yml_path, 'w') as outfile:
         yaml.dump(main, outfile, default_flow_style = False, width = 1000)
 
-    # print list(set(vars))
-    # print list(set(renamed_vars))
-
 
 process_by_initial_state = dict()
 processes = dict(processes = process_by_initial_state)
@@ -138,9 +135,8 @@ file_path_by_state = dict(
 
 for initial_state, file_path in file_path_by_state.iteritems():
     variables_by_final_state = pd.read_excel(file_path).to_dict()
-    print('*', initial_state)
     initial_state_actions = list()
-    process_by_initial_state['etat_{}'.format(initial_state)] = initial_state_actions
+    process_by_initial_state['etat_{}()'.format(initial_state)] = initial_state_actions
     for final_state, variables in variables_by_final_state.iteritems():
         variables = rename_variables(variables)
         value_formula = " + ".join([
@@ -150,25 +146,35 @@ for initial_state, file_path in file_path_by_state.iteritems():
             ])
         if 'cons' in variables and variables['cons'] != 0:
             value_formula = '{} + {}'.format(variables['cons'], value_formula)
-        print(value_formula)
         if value_formula == '':
             value_formula = 0
         initial_state_actions.append({
-            str(final_state): "exp({})".format(value_formula)
+            "prob_" + str(final_state): "exp({})".format(value_formula)
             })
 
     initial_state_actions.append({
         "z": " + ".join([
-            str(final_state)
+            "prob_" + str(final_state)
             for final_state in variables_by_final_state.keys()
             ])
         })
 
     for final_state in variables_by_final_state.keys():
         initial_state_actions.append({
-            str(final_state): "{} / z".format(final_state)
+            "prob_" + str(final_state): "prob_{} / z".format(final_state)
             })
 
+    prob_final_states = ["prob_" + final_state for final_state in variables_by_final_state.keys()]
+    probabilities_list_str = "[" + ", ".join(prob_final_states) + "]"
+    final_states_index_list_str = [
+        int(final_state[-1:]) for final_state in prob_final_states
+        ]
+    initial_state_actions.append(
+        "return choice({}, {})".format(
+            final_states_index_list_str,
+            probabilities_list_str
+            )
+        )
 
 with open(dependance_transition_yml_path, 'w') as outfile:
     yaml.dump(main, outfile, default_flow_style = False, width = 1000)

@@ -28,6 +28,7 @@ simulation:
     - individus: [
       init_weight_ind,
       couple_initialisation,
+      check,
       education_niveau_initialisation,
       chomage_initialisation,
       productivite_initialisation

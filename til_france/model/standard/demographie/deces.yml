@@ -207,7 +207,7 @@ entities:
         # Suppression du decédé
         # enregistrement dans le registre et élimination de la table individus
         - civilstate: if(l_partner.decede and LEGAL_UNION, WIDOW, civilstate)
-        - duree_en_couple: if(l_partner.decede, 0, duree_en_couple)
+        - duree_en_couple: if(l_partner.decede, -1, duree_en_couple)
         - partner: if(l_partner.decede, UNSET, partner)
         - mere: if(l_mere.decede, UNSET, mere)
         - pere: if(l_pere.decede, UNSET, pere)

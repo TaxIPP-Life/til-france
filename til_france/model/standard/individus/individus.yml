@@ -163,43 +163,45 @@ entities:
         - 0
 
       check:
-          - assertFalse(any(
-            (pere == l_partner.pere) and (pere > -1)
-            ))
-          - assertFalse(any(
-            (mere == l_partner.mere) and (mere > -1)
-            ))
-          - assertFalse(any(
-            (pere == partner) and (pere > -1)
-            ))
-          - assertFalse(any(
-            (mere == partner) and (mere > -1)
-            ))
-          # - errors: sum((id != l_partner.partner) and (partner > -1))
-          # - show(errors)
-          # - while (errors > 0):
-          #   - show(dump(
-          #       id,
-          #       partner,
-          #       l_partner.partner,
-          #       id != l_partner.partner,
-          #       partner > -1,
-          #       civilstate,
-          #       duree_hors_couple,
-          #       duree_en_couple,
-          #       sexe,
-          #       filter = (
-          #         (id != l_partner.partner) and (partner > -1)
-          #         )
-          #       ))
-          #   - assertTrue(False)
-          - assertTrue(all((duree_en_couple == l_partner.duree_en_couple) or (partner == UNSET)))
-          - assertTrue(all(
-            ((duree_hors_couple >= 0) and (duree_en_couple < 0))
-            or
-            (duree_hors_couple < 0)
-            ))
-          - assertTrue(all((id == l_partner.partner) or (partner == UNSET)))
-          - assertFalse(any(
-            (civilstate != l_partner.civilstate) and LEGAL_UNION
-            ))
+        - assertFalse(any(
+          (pere == l_partner.pere) and (pere > -1)
+          ))
+        - assertFalse(any(
+          (mere == l_partner.mere) and (mere > -1)
+          ))
+        - assertFalse(any(
+          (pere == partner) and (pere > -1)
+          ))
+        - assertFalse(any(
+          (mere == partner) and (mere > -1)
+          ))
+        # - errors: sum((id != l_partner.partner) and (partner > -1))
+        # - show(errors)
+        # - while (errors > 0):
+        #   - show(dump(
+        #       id,
+        #       partner,
+        #       l_partner.partner,
+        #       id != l_partner.partner,
+        #       partner > -1,
+        #       civilstate,
+        #       duree_hors_couple,
+        #       duree_en_couple,
+        #       sexe,
+        #       filter = (
+        #         (id != l_partner.partner) and (partner > -1)
+        #         )
+        #       ))
+        #   - assertTrue(False)
+        - assertTrue(all((duree_en_couple == l_partner.duree_en_couple) or (partner == UNSET)))
+        - durees_incoherentes: sum(not(((duree_hors_couple >= 0) and (duree_en_couple < 0)) or (duree_hors_couple < 0)))
+        - while (durees_incoherentes > 0):
+          - show(groupby(civilstate, duree_hors_couple > -1))
+          - show(groupby(civilstate, duree_en_couple > -1))
+          - show(groupby(civilstate, duree_hors_couple > -1, duree_en_couple > -1))
+          - show("\nDurees incoherentes à la période ", period)
+          - assertTrue(False)
+        - assertTrue(all((id == l_partner.partner) or (partner == UNSET)))
+        - assertFalse(any(
+          (civilstate != l_partner.civilstate) and LEGAL_UNION
+          ))
