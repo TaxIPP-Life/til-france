@@ -55,7 +55,7 @@ entities:
         - decede: if(l_pere.decede, False, decede)
         - decede: if(l_mere.decede, False, decede)
         - show('Age moyen des partenaires', round(avg(l_partner.age, filter = l_partner.age > -1), 2))
-        # - show('\nNombre de personne dépendante décédées', count(decede and (dependance_niveau > 0)) * uniform_weight)
+        - show('\nNombre de personne dépendante décédées', count(decede and (dependance_niveau > 0)) * uniform_weight)
         - return decede
 
       statistiques_deces(decede):
@@ -63,33 +63,32 @@ entities:
             period, count(decede),
             fname = 'deces.csv', mode = 'a'
             )
-        # - show('\nNombre de décès (total = hommes + femmes)',
-        #     round(count(decede) * uniform_weight), " = ",
-        #     round(count(decede and ISMALE) * uniform_weight), " + ",
-        #     round(count(decede and ISFEMALE) * uniform_weight)
-        #     )
-        # - show('\nAge moyen des hommes décédés', round(avg(age, filter=decede and ISMALE), 2))
-        # - show('\nAge moyen des femmes décédées', round(avg(age, filter=decede and ISFEMALE), 2))
-        # - show('\nNombre de veuves', round(sum(ISWIDOW) * uniform_weight))
-        # - csv(
-        #     groupby(
-        #       period,
-        #       age,
-        #       sexe,
-        #       dependance_niveau,
-        #       decede,
-        #       filter = (age >= 60)
-        #       ),
-        #     fname = 'dependance_deces.csv', mode = 'a'
-        #     )
-        # - show('\nNombre de décès de dépendants (total = hommes + femmes)',
-        #     round(count(
-        #       (dependance_niveau > 1) and decede) * uniform_weight), " = ",
-        #     round(count(
-        #       (dependance_niveau > 1) and (decede and ISMALE)) * uniform_weight), " + ",
-        #     round(count(
-        #       (dependance_niveau > 1) and (decede and ISFEMALE)) * uniform_weight)
-        #     )
-        # - show('\nAge moyen des hommes décédés', round(avg(age, filter=decede and ISMALE), 2))
-        # - show('\nAge moyen des femmes décédées', round(avg(age, filter=decede and ISFEMALE), 2))
-        # - show('\nNombre de veuves', round(sum(ISWIDOW) * uniform_weight))
+        - show('\nNombre de décès (total = hommes + femmes)',
+            round(count(decede) * uniform_weight), " = ",
+            round(count(decede and ISMALE) * uniform_weight), " + ",
+            round(count(decede and ISFEMALE) * uniform_weight)
+            )
+        - show('\nAge moyen des hommes décédés', round(avg(age, filter=decede and ISMALE), 2))
+        - show('\nAge moyen des femmes décédées', round(avg(age, filter=decede and ISFEMALE), 2))
+        - show('\nNombre de veuves', round(sum(ISWIDOW) * uniform_weight))
+        - csv(
+            groupby(
+              period,
+              age,
+              sexe,
+              (dependance_niveau >= 1) and decede,
+              filter = (age >= 60)
+              ),
+            fname = 'dependance_deces.csv', mode = 'a'
+            )
+        - show('\nNombre de décès de dépendants (total = hommes + femmes)',
+            round(count(
+              (dependance_niveau > 1) and decede) * uniform_weight), " = ",
+            round(count(
+              (dependance_niveau > 1) and (decede and ISMALE)) * uniform_weight), " + ",
+            round(count(
+              (dependance_niveau > 1) and (decede and ISFEMALE)) * uniform_weight)
+            )
+        - show('\nAge moyen des hommes décédés', round(avg(age, filter=decede and ISMALE), 2))
+        - show('\nAge moyen des femmes décédées', round(avg(age, filter=decede and ISFEMALE), 2))
+        - show('\nNombre de veuves', round(sum(ISWIDOW) * uniform_weight))

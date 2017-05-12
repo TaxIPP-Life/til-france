@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 
 
+import logging
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
 import numpy as np
@@ -14,6 +15,9 @@ from til_france.tests.base import (
     )
 
 
+log = logging.getLogger(__name__)
+
+
 def extract_dependance_csv(simulation, backup = None):
     directory = get_data_directory(simulation, backup = backup)
     uniform_weight = simulation.uniform_weight
@@ -21,10 +25,11 @@ def extract_dependance_csv(simulation, backup = None):
     if os.path.exists(os.path.join(directory, 'replication_0')):
         multiple = True
         base_directory = directory
+    else:
+        multiple = False
 
     def _extract_dependance_csv(directory):
         file_path = os.path.join(directory, 'dependance.csv')
-
         input_file = open(file_path)
         txt = input_file.readlines()[1:]
         txt = [line for line in txt if not line.startswith('dependance')]
@@ -85,6 +90,18 @@ def extract_dependance_gir_csv(simulation, backup = None):
         filename = 'dependance_gir',
         removed_lines_prefixes = ['dependance', 'period', ',,'],
         columns = ['period', 'age', 'sexe', 'dependance_gir', 'total', 'total_global'],
+        drop = ['total_global'],
+        reweight = ['total'],
+        backup = backup,
+        )
+
+
+def extract_dependance_niveau_csv(simulation, backup = None):
+    return _extract(
+        simulation,
+        filename = 'dependance_niveau',
+        removed_lines_prefixes = ['dependance', 'period', ',,'],
+        columns = ['period', 'age', 'sexe', 'dependance_niveau', 'total', 'total_global'],
         drop = ['total_global'],
         reweight = ['total'],
         backup = backup,
@@ -205,14 +222,34 @@ def plot_dependance_gir_csv(simulation, backup = None):
 
 
 def clean_prevalence_csv(data):
+
+    columns = data[0].columns if isinstance(data, list) else data.columns
+
+    if 'dependance_gir' in columns:
+        dependance_level_variable = 'dependance_gir'
+        dependance_levels_number = 4
+        log.debug("Cleaning girs")
+
+    elif 'dependance_niveau' in columns:
+        dependance_level_variable = 'dependance_niveau'
+        dependance_levels_number = 4
+        log.debug("Cleaning dependance_niveau")
+
+    else:
+        raise
+
     def _clean_data(df):
         df = (df
-            .groupby(['dependance_gir', 'period', 'age', 'sexe'])['total'].sum()
-            .unstack(['dependance_gir']))
+            .groupby([dependance_level_variable, 'period', 'age', 'sexe'])['total'].sum()
+            .unstack([dependance_level_variable]))
         df[0] = df[-1] + df[0]
         df.drop(-1, axis = 1, inplace = True)
-        df['prevalence'] = sum([df[i] for i in range(1, 5)]) / sum([df[i] for i in range(5)])
-        df.drop(range(5), axis = 1, inplace = True)
+        df['prevalence'] = sum(
+            [df[i] for i in range(1, dependance_levels_number + 1)]
+            ) / sum(
+                [df[i] for i in range(dependance_levels_number + 1)]
+                )
+        df.drop(range(dependance_levels_number + 1), axis = 1, inplace = True)
 
         df = df.reset_index()
         df.age = df.age.astype(int)
@@ -227,7 +264,13 @@ def plot_dependance_prevalence_by_age(simulation, years = None, ax = None, age_m
     assert years is not None
     figures_directory = create_or_get_figures_directory(simulation, backup = backup)
 
-    df = extract_dependance_gir_csv(simulation, backup = backup)
+    try:
+        df = extract_dependance_gir_csv(simulation, backup = backup)
+        log.debug("Extracting girs")
+    except IOError:
+        log.debug("Abrot extracting girs because irrelevant")
+        df = extract_dependance_niveau_csv(simulation, backup = backup)
+        log.debug("Extracting dependance_niveau")
 
     data = clean_prevalence_csv(df)
 
@@ -252,7 +295,7 @@ def plot_dependance_incidence_by_age(simulation, years = None, ax = None, age_ma
     ylabel = "taux d'incidence"
     # ylabel = "incidence rate"
     return _plot_and_or_save(ax = ax, data = data, figures_directory = figures_directory,
-                      name = 'incidence', pdf_name = None, years = years, age_max = age_max, ylabel = ylabel)
+        name = 'incidence', pdf_name = None, years = years, age_max = age_max, ylabel = ylabel)
 
 
 def plot_dependance_mortalite_by_age(simulation, years = None, ax = None, age_max = None, backup = None):
@@ -266,9 +309,11 @@ def plot_dependance_mortalite_by_age(simulation, years = None, ax = None, age_ma
             .eval('mortalite = deces / total', inplace = False))
 
     data = _apply_cleaning(_clean_data, data)
+    data.fillna(0, inplace = True)
+    print(data)
     ylabel = u"quotient de mortalité des personnes dépendantes"
     return _plot_and_or_save(ax = ax, data = data, figures_directory = figures_directory,
-                      name = 'mortalite', pdf_name = None, years = years, age_max = age_max, ylabel = ylabel)
+      name = 'mortalite', pdf_name = None, years = years, age_max = age_max, ylabel = ylabel)
 
 
 def plot_dependance_by_age(simulation, years = None, age_max = None, save = True, backup = None):
@@ -305,6 +350,7 @@ def _apply_cleaning(_clean_data, data):
         for df in data:
             clean_data.append(_clean_data(df))
     else:
+        df = data
         clean_data.append(_clean_data(df))
 
     data_concat = pd.concat(clean_data)
@@ -323,10 +369,14 @@ def _extract(simulation, filename, removed_lines_prefixes, columns, drop = None,
         multiple = True
         base_directory = directory
         del directory
+    else:
+        multiple = False
+
 
     def _single_extract(directory, filename):
         assert filename[-4:] != '.csv', 'filename should not contain extension'
         file_path = os.path.join(directory, '{}.csv'.format(filename))
+        log.debug("Extracting data from file {}".format(file_path))
         input_file = open(file_path)
         txt = input_file.readlines()[1:]
         for prefix in removed_lines_prefixes:

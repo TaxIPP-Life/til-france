@@ -24,7 +24,12 @@ log = logging.getLogger(__name__)
 
 
 def get_data_frame_insee(gender, by = 'age_group'):
-    data_path = os.path.join(til_france_path, 'param/demo/projpop0760_FECcentESPcentMIGcent.xls')
+    data_path = os.path.join(
+        til_france_path,
+        'param',
+        'demo',
+        'projpop0760_FECcentESPcentMIGcent.xls'
+        )
     sheetname_by_gender = dict(zip(
         ['total', 'male', 'female'],
         ['populationTot', 'populationH', 'populationF']
@@ -154,7 +159,7 @@ def rescale_migration(input_dir = None):
     Les valeurs sont stockées dans parameters/input/hyp_soldemig[HF]_custom.csv
     '''
     # Data from INSEE projections
-    data_path = os.path.join(til_france_path, 'param/demo')
+    data_path = os.path.join(til_france_path, 'param', 'demo')
 
     sheetname_by_gender = dict(zip(
         ['total', 'male', 'female'],

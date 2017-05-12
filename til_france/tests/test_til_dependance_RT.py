@@ -1,7 +1,8 @@
 # -*- coding:utf-8 -*-
 
-import os
-import shutil
+
+import logging
+import sys
 
 import seaborn as sns
 sns.set_style("whitegrid")
@@ -18,55 +19,56 @@ from til_france.plot.population import (
     )
 
 
+log = logging.getLogger(__name__)
+
+
 option = 'dependance_RT'
-simulation = create_til_simulation(
-    input_name = 'patrimoine',
-    option = option,
-    uniform_weight = 200,
-    )
 
 
-# plot_population(simulation, backup = option)
-simulation.run(True)
-bim
+def get_simulation(run = False, option = option):
+    simulation = create_til_simulation(
+        input_name = 'patrimoine',
+        option = option,
+        uniform_weight = 200,
+        )
 
-plot_dependance_csv(simulation, backup = option)
-# options = ['dependance', 'dependance_aligned']
-# for option in options:
-    # plot_dependance_by_age_separate(
-        # simulation, backup = option, years = [2010, 2025, 2040], save = True, age_max = 95)
-#
-#
-# plot_dependance_gir_csv(simulation)
-#
-# plot_dependance_by_age(simulation, years = [2010, 2020, 2030], save = True, age_max = 100)
-# plot_dependance_prevalence_by_age(simulation, years = [2010, 2025, 2040], age_max = 100)
-#
-# plot_dependance_by_age_separate(simulation, years = [2010, 2025, 2040], save = True, age_max = 95)
-#  avec alignement 403
-#  sans alignement
-
-options = ['dependance', 'dependance_aligned', 'dependance_pessimistic', 'dependance_medium']
-
-age_max = 95
-plot_multi_dependance_csv(simulation, options = options, save_figure = True)
-
-# plot_multi_prevalence_csv(
-#   simulation, options = options, save_figure = True, years = years, age_max = age_max)
+    if run:
+        simulation.run()
+        simulation.backup(option, erase = True)
+    return simulation
 
 
-def export_to_slides():
+def plot_results(simulation, option = option):
+    plot_population(simulation, backup = option)
+    plot_dependance_csv(simulation, backup = option)
+
+    plot_dependance_by_age_separate(
+        simulation,
+        backup = option,
+        years = [2010, 2025, 2040],
+        save = True,
+        age_max = 95)
+    #
+    Boum
+
+
+    # plot_dependance_by_age(simulation, years = [2010, 2020, 2030], save = True, age_max = 100)
+    # plot_dependance_prevalence_by_age(simulation, years = [2010, 2025, 2040], age_max = 100)
+    #
+    # plot_dependance_by_age_separate(simulation, years = [2010, 2025, 2040], save = True, age_max = 95)
+    #  avec alignement 403
+    #  sans alignement
+
     options = ['dependance', 'dependance_aligned', 'dependance_pessimistic', 'dependance_medium']
-    graphs = ['prevalence', 'incidence', 'mortalite']
-    destination_dir = "/home/benjello/Graphiques".decode('utf-8')
-    for graph in graphs:
-        for option in options:
-            source_path = '/home/benjello/data/til/output/{}/figures/{}.pdf'.format(
-                option, graph)
-            destination_path = os.path.join(destination_dir, "{}_{}.pdf".format(
-                graph, option[11:]
-                ))
-            shutil.copyfile(source_path, destination_path)
+
+    age_max = 95
+    plot_multi_dependance_csv(simulation, options = options, save_figure = True)
+
+    # plot_multi_prevalence_csv(
+    #   simulation, options = options, save_figure = True, years = years, age_max = age_max)
 
 
-export_to_slides()
+if __name__ == '__main__':
+    logging.basicConfig(level = logging.DEBUG, stream = sys.stdout)
+    simulation = get_simulation(run = False)
+    plot_results(simulation, option = option)

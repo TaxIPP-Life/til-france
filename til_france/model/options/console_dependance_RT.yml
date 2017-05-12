@@ -21,74 +21,42 @@ entities:
         - dependance_initialisation()
 
       options_statistiques_initialisation:
-         - dependance_statistiques_initialisation()
+        - dependance_statistiques_initialisation()
 
       dependance_statistiques_initialisation:
-      #     - csv('dependance_by_period',
-      #           fname = 'dependance.csv'
-      #           )
-      #     - csv('dependance_by_period',
-      #           fname = 'dependance2.csv'
-      #           )
-      #     - csv('dependance_gir_by_period',
-      #           fname = 'dependance_gir.csv'
-      #           )
-      #     - csv('incidence_by_period',
-      #           fname = 'dependance_incidence.csv'
-      #           )
-          - csv('dependance_deces_by_period',
-                fname = 'dependance_deces.csv'
-                )
-      #     - csv('dependance_anciennete_by_period',
-      #           fname = 'dependance_anciennete.csv'
-      #           )
+        - csv('dependance_by_period', fname = 'dependance.csv')
+        - csv('dependance_niveau_by_period', fname = 'dependance_niveau.csv')
+        - csv('incidence_by_period', fname = 'dependance_incidence.csv')
+        - csv('dependance_deces_by_period', fname = 'dependance_deces.csv')
 
+      options_statistiques_fin_de_periode:
+        - dependance_statistiques_fin_de_periode()
 
-      # options_statistiques_fin_de_periode:
-      #    - dependance_statistiques_fin_de_periode()
+      dependance_statistiques_fin_de_periode:
+        - csv('period', period, 'dependance', groupby(
+            age, sexe, expr = count(dependance_niveau >= 1)
+            ),
+            fname = 'dependance.csv',
+            mode = 'a'
+            )
+        - csv(
+            groupby(period, age, sexe, dependance_niveau, count()),
+            fname = 'dependance_niveau.csv',
+            mode = 'a'
+            )
+        - csv(
+            groupby(
+              period,
+              age,
+              sexe,
+              (dependance_niveau >= 1) and (dependance_anciennete == 0),
+              filter = (age >= 60)
+              ),
+            fname = 'dependance_incidence.csv',
+            mode = 'a'
+            )
 
-      # dependance_statistiques_fin_de_periode:
-      #   - csv('period', period, 'dependance', groupby(
-      #       age, sexe, expr = count((dependance_niveau == 1) or (dependance_niveau == 2))
-      #       ),
-      #       fname = 'dependance.csv',
-      #       mode = 'a'
-      #       )
-      #   - csv('period', period, 'dependance', groupby(
-      #       age, data_origin, expr = count((dependance_niveau == 1) or (dependance_niveau == 2))
-      #       ),
-      #       fname = 'dependance2.csv',
-      #       mode = 'a'
-      #       )
-      #   - csv(
-      #       groupby(period, age, sexe, dependance_gir, count()),
-      #       fname = 'dependance_gir.csv',
-      #       mode = 'a'
-      #       )
-      #   - csv(
-      #       groupby(
-      #         period,
-      #         age,
-      #         sexe,
-      #         ((dependance_niveau == 1) or (dependance_niveau == 2)) and (dependance_anciennete == 0),
-      #         filter = (age >= 60)
-      #         ),
-      #       fname = 'dependance_incidence.csv',
-      #       mode = 'a'
-      #       )
-      #   - csv(
-      #       groupby(
-      #         period,
-      #         age,
-      #         sexe,
-      #         dependance_anciennete,
-      #         count(),
-      #         filter = (age >= 60)
-      #         ),
-      #       fname = 'dependance_anciennete.csv',
-      #       mode = 'a'
-      #       )
 
 simulation:
-  periods: 30
+  periods: 31
   random_seed: 12345

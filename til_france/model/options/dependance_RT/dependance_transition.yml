@@ -3,12 +3,6 @@ import:
   - dependance_transition_functions.yml
 
 globals:
-  # periodic:
-  #     path: param\demo\dependance_prevalence_all_years.csv
-  #     fields:
-  #         # PERIOD is implicit
-  #         - DEPENDANTS: float
-
   # periodic do not work
   dependance_prevalence_all_years:
     type: float
@@ -23,6 +17,7 @@ entities:
       #  Etat 3 : restrictions dans les ADL (Echelle de Katz) ´
       #  Etat 4 : restrictions dans les ADL les plus sévères ´
       #  Etat 5 : décès
+      - dependance_anciennete: {type: int, initialdata: false, default: -1}
       - dependance_niveau: {type: int, initialdata: true}
 
     processes:
@@ -73,6 +68,7 @@ entities:
             min(trunc(age / 5) - 12 + 1, 6),
             0
             )
+        - dependance_anciennete: if(dependance_niveau >= 1, 1, -1)
         - show('\nNombre initial de dépendants avant alignement', groupby(dependance_niveau, data_origin))
         # TODO parameters/dependance/dependance_prevalence_2010.csv depends on weight
 
@@ -100,3 +96,4 @@ entities:
                 )
               )
             )
+        - dependance_anciennete: if(dependance_niveau >= 1, dependance_anciennete + 1, -1)
