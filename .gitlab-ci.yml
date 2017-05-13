@@ -5,12 +5,13 @@ before_script:
   - apt-get -qq install apt-utils
   # Note: openssh-client contains ssh-agent, that it is required by Docker.
   - apt-get -qq install --no-install-recommends ca-certificates python python-pip
+  - pip install -e .
 
-job_convert_to_yaml_raw:
+test_til_france:
   only:
     - gitlab-runner
   script:
     - cd /home/ipp
-    - ls .
+    - ls . | cat
 
   stage: build
