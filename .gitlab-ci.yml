@@ -11,6 +11,11 @@ test_til_france:
   only:
     - gitlab-runner
   script:
+    # Install til-core
+    - git clone git@github.com:benjello/Til.git ../til-core
+    - pip install -e ../til-core/.
+    # Install til-france
+    - pip install -e .
     - cd /home/ipp
     - ls . | cat
 
