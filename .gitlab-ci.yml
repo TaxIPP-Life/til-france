@@ -1,0 +1,16 @@
+image: debian:stable-slim
+before_script:
+  - export DEBIAN_FRONTEND=noninteractive
+  - apt -qq update
+  - apt-get -qq install apt-utils
+  # Note: openssh-client contains ssh-agent, that it is required by Docker.
+  - apt-get -qq install --no-install-recommends ca-certificates python python-pip
+
+job_convert_to_yaml_raw:
+  only:
+    - gitlab-runner
+  script:
+    - cd /home/ipp
+    - ls .
+
+  stage: build
