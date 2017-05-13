@@ -5,7 +5,6 @@ before_script:
   - apt-get -qq install apt-utils
   # Note: openssh-client contains ssh-agent, that it is required by Docker.
   - apt-get -qq install --no-install-recommends ca-certificates python python-pip
-  - pip install -e .
 
 test_til_france:
   only:
