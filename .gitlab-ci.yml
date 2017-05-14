@@ -17,6 +17,7 @@ test_til_france:
     - git clone https://github.com/benjello/liam2.git ../liam2
     - git --git-dir=../liam2/.git --work-tree=../liam2 checkout global_parameter
     - pip install -e ../liam2/.
+    - python ../liam2/setup.py build_ext --inplace
     # Install til-france
     - pip install -e .
     - cd /home/ipp
