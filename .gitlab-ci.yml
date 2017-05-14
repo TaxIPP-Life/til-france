@@ -13,6 +13,10 @@ test_til_france:
     # Install til-core
     - git clone https://github.com/benjello/Til.git ../til-core
     - pip install -e ../til-core/.
+    # Install liam2
+    - git clone git@github.com:benjello/liam2.git ../liam2
+    - git --git-dir=../liam2/.git --work-tree=../liam2 checkout global_parameter
+    - pip install -e .
     # Install til-france
     - pip install -e .
     - cd /home/ipp
