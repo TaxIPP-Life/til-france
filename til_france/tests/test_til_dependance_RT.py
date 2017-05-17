@@ -70,5 +70,5 @@ def plot_results(simulation, option = option):
 
 if __name__ == '__main__':
     logging.basicConfig(level = logging.DEBUG, stream = sys.stdout)
-    simulation = get_simulation(run = False)
+    simulation = get_simulation(run = True)
     plot_results(simulation, option = option)

@@ -52,13 +52,33 @@ def build_function_str(function_name, cuts, variables):
         for key, value in variables.iteritems()
         ])
     value_expr = {'value': value_formula}
-    cut_expr = {
-        'dependance_niveau': "if(value > {cut_4}, 5, if(value > {cut_3}, 4, if(value > {cut_2}, 3, if(value > {cut_1}, 2, 1))))".format(**cuts)
+    probabilities = [
+        {'probabilite_0': "Phi({cut_1} - value)".format(**cuts)},
+        {'probabilite_1': "Phi({cut_2} - value) - probabilite_0".format(**cuts)},
+        {'probabilite_2': "Phi({cut_3} - value) - (probabilite_0 + probabilite_1)".format(**cuts)},
+        {'probabilite_3': "Phi({cut_4} - value) - (probabilite_0 + probabilite_1 + probabilite_2)".format(**cuts)},
+        {'probabilite_4': "1 - (probabilite_0 + probabilite_1 + probabilite_2 + probabilite_3)".format(**cuts)},
+        ]
+    # cut_expr = {
+    #     'dependance_niveau': "if(value > {cut_4}, 5, if(value > {cut_3}, 4, if(value > {cut_2}, 3, if(value > {cut_1}, 2, 1))))".format(**cuts)
+    #     }
+    dependance_expr = {
+        "dependance_niveau": "choice([0, 1, 2, 3, 4], [probabilite_0, probabilite_1, probabilite_2, probabilite_3, probabilite_4])"
         }
-    return [value_expr, cut_expr, 'return dependance_niveau']
+    return [value_expr] + probabilities + [dependance_expr, 'return dependance_niveau']
+    # return [value_expr, cut_expr, 'return dependance_niveau']
 
 
 def rename_variables(variables):
+    # PAQUID +65 ans
+    # gen age_70 = 0
+    # replace age_70 = 1 if age < 70
+    # gen age_80 = 0
+    # replace age_80 = 1 if age>= 70 & age < 80
+    # gen age_90 = 0
+    # replace age_90 = 1 if age>= 80 & age < 90
+    # gen age_more90 = 0
+    # replace age_more90 = 1 if age >=90
     new_by_old_variable = {
         'lqm_2008': 'lq',
         'nb_children': 'nb_enfants',
@@ -68,9 +88,9 @@ def rename_variables(variables):
         'educ_1': '(education_niveau == 1)',
         'educ_2': '((education_niveau >= 2) and (education_niveau <= 3))',
         'educ_3': '(education_niveau >= 4)',
-        'age_80': '(age >= 80)',
-        'age_90': '(age >= 90)',
-        'age_more90': '(age >= 99)',
+        'age_80': '((age >= 70) and (age < 80))',
+        'age_90': '((age >= 80) and (age < 90))',
+        'age_more90': '(age >= 90)',
         'seul': '(not INCOUPLE)',
         'femme': 'ISFEMALE',
         }
@@ -100,6 +120,10 @@ def create_initialisation():
     process_by_initial_state = dict()
     processes = dict(processes = process_by_initial_state)
     individus = dict(individus = processes)
+    process_by_initial_state["Phi(x)"] = [
+        {"x_adjusted": "x / 1.41421356237"},
+        "return (1.0 + 0.5 * erf(x_adjusted))",
+        ]
     main = dict(entities = individus)
     for function_name, sheetname in sheetnames_by_function.iteritems():
         parameters_value_by_name = pd.read_excel(prevalence_coef_path, sheetname = sheetname).transpose().to_dict()[0]
@@ -107,74 +131,81 @@ def create_initialisation():
         # vars += variables.keys()
         variables = rename_variables(variables)
         # renamed_vars += variables.keys()
-        process_by_initial_state[function_name + '(lq, nb_enfants)'] = build_function_str(function_name, cuts, variables)
+        process_by_initial_state[function_name + '(lq, nb_enfants)'] = build_function_str(
+            function_name, cuts, variables)
 
     with open(dependance_functions_yml_path, 'w') as outfile:
         yaml.dump(main, outfile, default_flow_style = False, width = 1000)
 
 
-process_by_initial_state = dict()
-processes = dict(processes = process_by_initial_state)
-individus = dict(individus = processes)
-main = dict(entities = individus)
-file_path_by_state = dict(
-    [
-        (
-            state,
-            os.path.join(
-                pkg_resources.get_distribution('til-france').location,
-                'til_france',
-                'model',
-                'options',
-                'dependance_RT',
-                'assets',
-                'etat_initial_{}.xlsx'.format(state)
+def create_transiton():
+    process_by_initial_state = dict()
+    processes = dict(processes = process_by_initial_state)
+    individus = dict(individus = processes)
+    main = dict(entities = individus)
+    file_path_by_state = dict(
+        [
+            (
+                state,
+                os.path.join(
+                    pkg_resources.get_distribution('til-france').location,
+                    'til_france',
+                    'model',
+                    'options',
+                    'dependance_RT',
+                    'assets',
+                    'etat_initial_{}.xlsx'.format(state)
+                    )
+                ) for state in range(5)
+        ])
+
+    for initial_state, file_path in file_path_by_state.iteritems():
+        variables_by_final_state = pd.read_excel(file_path).to_dict()
+        initial_state_actions = list()
+        process_by_initial_state['etat_{}()'.format(initial_state)] = initial_state_actions
+        for final_state, variables in variables_by_final_state.iteritems():
+            variables = rename_variables(variables)
+            value_formula = " + ".join([
+                "{value} * {key}".format(key = key, value = value)
+                for key, value in variables.iteritems()
+                if (key != 'cons') & (value != 0)
+                ])
+            if 'cons' in variables and variables['cons'] != 0:
+                value_formula = '{} + {}'.format(variables['cons'], value_formula)
+            if value_formula == '':
+                value_formula = 0
+            initial_state_actions.append({
+                "prob_" + str(final_state): "exp({})".format(value_formula)
+                })
+
+        initial_state_actions.append({
+            "z": " + ".join([
+                "prob_" + str(final_state)
+                for final_state in variables_by_final_state.keys()
+                ])
+            })
+
+        for final_state in variables_by_final_state.keys():
+            initial_state_actions.append({
+                "prob_" + str(final_state): "prob_{} / z".format(final_state)
+                })
+
+        prob_final_states = ["prob_" + final_state for final_state in variables_by_final_state.keys()]
+        probabilities_list_str = "[" + ", ".join(prob_final_states) + "]"
+        final_states_index_list_str = [
+            int(final_state[-1:]) for final_state in prob_final_states
+            ]
+        initial_state_actions.append(
+            "return choice({}, {})".format(
+                final_states_index_list_str,
+                probabilities_list_str
                 )
-            ) for state in range(5)
-    ])
-
-for initial_state, file_path in file_path_by_state.iteritems():
-    variables_by_final_state = pd.read_excel(file_path).to_dict()
-    initial_state_actions = list()
-    process_by_initial_state['etat_{}()'.format(initial_state)] = initial_state_actions
-    for final_state, variables in variables_by_final_state.iteritems():
-        variables = rename_variables(variables)
-        value_formula = " + ".join([
-            "{value} * {key}".format(key = key, value = value)
-            for key, value in variables.iteritems()
-            if (key != 'cons') & (value != 0)
-            ])
-        if 'cons' in variables and variables['cons'] != 0:
-            value_formula = '{} + {}'.format(variables['cons'], value_formula)
-        if value_formula == '':
-            value_formula = 0
-        initial_state_actions.append({
-            "prob_" + str(final_state): "exp({})".format(value_formula)
-            })
-
-    initial_state_actions.append({
-        "z": " + ".join([
-            "prob_" + str(final_state)
-            for final_state in variables_by_final_state.keys()
-            ])
-        })
-
-    for final_state in variables_by_final_state.keys():
-        initial_state_actions.append({
-            "prob_" + str(final_state): "prob_{} / z".format(final_state)
-            })
-
-    prob_final_states = ["prob_" + final_state for final_state in variables_by_final_state.keys()]
-    probabilities_list_str = "[" + ", ".join(prob_final_states) + "]"
-    final_states_index_list_str = [
-        int(final_state[-1:]) for final_state in prob_final_states
-        ]
-    initial_state_actions.append(
-        "return choice({}, {})".format(
-            final_states_index_list_str,
-            probabilities_list_str
             )
-        )
 
-with open(dependance_transition_yml_path, 'w') as outfile:
-    yaml.dump(main, outfile, default_flow_style = False, width = 1000)
+    with open(dependance_transition_yml_path, 'w') as outfile:
+        yaml.dump(main, outfile, default_flow_style = False, width = 1000)
+
+
+if __name__ == "__main__":
+    create_initialisation()
+    create_transiton()

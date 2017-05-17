@@ -1,5 +1,5 @@
 import:
-  - dependance_functions.yml
+  - dependance_initialisation_functions.yml
   - dependance_transition_functions.yml
 
 globals:
@@ -42,24 +42,30 @@ entities:
             )
         - dependance_niveau: 0
         # TODO age min ?
+        - show("\ncompute_dependance_niveau_homme_inf_75 free")
+        - compute_dependance_niveau_homme_inf_75(lq, nb_enfants)
+        - show("\ncompute_dependance_niveau_homme_inf_75")
         - dependance_niveau: if(
-            ISMALE and (age < 75),
+            (age >= 60) and ISMALE and (age < 75),
             compute_dependance_niveau_homme_inf_75(lq, nb_enfants),
             dependance_niveau
             )
+        - show("compute_dependance_niveau_homme_sup_75")
         - dependance_niveau: if(
-            ISMALE and (age >= 75),
+            (age >= 60) and ISMALE and (age >= 75),
             compute_dependance_niveau_homme_sup_75(lq, nb_enfants),
             dependance_niveau
             )
         # TODO age min ?
+        - show("compute_dependance_niveau_femme_inf_80")
         - dependance_niveau: if(
-            ISFEMALE and (age < 80),
+            (age >= 60) and ISFEMALE and (age < 80),
             compute_dependance_niveau_femme_inf_80(lq, nb_enfants),
             dependance_niveau
             )
+        - show("compute_dependance_niveau_femme_sup_80")
         - dependance_niveau: if(
-            ISFEMALE and (age >= 80),
+            (age >= 60) and ISFEMALE and (age >= 80),
             compute_dependance_niveau_femme_sup_80(lq, nb_enfants),
             dependance_niveau
             )
@@ -80,20 +86,24 @@ entities:
         - dependance_niveau_from_3: etat_3()
         - dependance_niveau_from_4: etat_4()
         - dependance_niveau: if(
-            dependance_niveau == 0,
-            dependance_niveau_from_0,
+            age >= 60,
             if(
-              dependance_niveau == 1,
-              dependance_niveau_from_1,
-              if(
-                dependance_niveau == 2,
-                dependance_niveau_from_2,
+                dependance_niveau == 0,
+                dependance_niveau_from_0,
                 if(
-                  dependance_niveau == 3,
-                  dependance_niveau_from_3,
-                  dependance_niveau_from_4
-                  )
+                dependance_niveau == 1,
+                dependance_niveau_from_1,
+                if(
+                    dependance_niveau == 2,
+                    dependance_niveau_from_2,
+                    if(
+                    dependance_niveau == 3,
+                    dependance_niveau_from_3,
+                    dependance_niveau_from_4
+                    )
+                    )
                 )
-              )
+                ),
+            0
             )
         - dependance_anciennete: if(dependance_niveau >= 1, dependance_anciennete + 1, -1)
