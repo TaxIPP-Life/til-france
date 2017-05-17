@@ -70,7 +70,7 @@ def build_function_str(function_name, cuts, variables):
 
 
 def rename_variables(variables):
-    # PAQUID +65 ans
+    # PAQUID +65 ans
     # gen age_70 = 0
     # replace age_70 = 1 if age < 70
     # gen age_80 = 0
