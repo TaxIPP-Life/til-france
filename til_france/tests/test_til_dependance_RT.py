@@ -38,7 +38,7 @@ def get_simulation(run = False, option = option):
     return simulation
 
 
-def plot_results(simulation, option = option):
+def plot_results(simulation, option = option, age_max = None):
     plot_population(simulation, backup = option)
     plot_dependance_csv(simulation, backup = option)
 
@@ -47,7 +47,7 @@ def plot_results(simulation, option = option):
         backup = option,
         years = [2010, 2025, 2040],
         save = True,
-        age_max = 95)
+        age_max = age_max)
     #
     Boum
 
@@ -71,4 +71,4 @@ def plot_results(simulation, option = option):
 if __name__ == '__main__':
     logging.basicConfig(level = logging.DEBUG, stream = sys.stdout)
     simulation = get_simulation(run = True)
-    plot_results(simulation, option = option)
+    plot_results(simulation, option = option, age_max = 95)
