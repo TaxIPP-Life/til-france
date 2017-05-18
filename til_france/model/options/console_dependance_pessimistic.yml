@@ -1,5 +1,4 @@
-  # second entity, links, link methods, init, procedures, local variables,
-# dump's suffix argument, choice
+# MU = 0
 
 import:
    - ../standard/console.yml
