@@ -1,12 +1,7 @@
-import:
-  - dependance_initialisation_functions.yml
-  - dependance_transition_functions.yml
-
 globals:
   # periodic do not work
   dependance_prevalence_all_years:
     type: float
-
 
 entities:
   individus:
@@ -80,13 +75,14 @@ entities:
 
       dependance:
         # Transitions depuis les états initiaux suivants
+        - period_modulo: period % 2
         - dependance_niveau_from_0: etat_0()
         - dependance_niveau_from_1: etat_1()
         - dependance_niveau_from_2: etat_2()
         - dependance_niveau_from_3: etat_3()
         - dependance_niveau_from_4: etat_4()
         - dependance_niveau: if(
-            age >= 60,
+            (age >= 60) & ((id % 2) == period_modulo),
             if(
                 dependance_niveau == 0,
                 dependance_niveau_from_0,

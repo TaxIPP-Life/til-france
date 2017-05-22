@@ -22,10 +22,9 @@ from til_france.plot.population import (
 log = logging.getLogger(__name__)
 
 
-option = 'dependance_RT'
 
-
-def get_simulation(run = False, option = option):
+def get_simulation(run = False, option = None):
+    assert option is not None
     simulation = create_til_simulation(
         input_name = 'patrimoine',
         option = option,
@@ -38,7 +37,8 @@ def get_simulation(run = False, option = option):
     return simulation
 
 
-def plot_results(simulation, option = option, age_max = None):
+def plot_results(simulation, option = None, age_max = None):
+    assert option is not None
     plot_population(simulation, backup = option)
     plot_dependance_csv(simulation, backup = option)
 
@@ -52,23 +52,9 @@ def plot_results(simulation, option = option, age_max = None):
     Boum
 
 
-    # plot_dependance_by_age(simulation, years = [2010, 2020, 2030], save = True, age_max = 100)
-    # plot_dependance_prevalence_by_age(simulation, years = [2010, 2025, 2040], age_max = 100)
-    #
-    # plot_dependance_by_age_separate(simulation, years = [2010, 2025, 2040], save = True, age_max = 95)
-    #  avec alignement 403
-    #  sans alignement
-
-    options = ['dependance', 'dependance_aligned', 'dependance_pessimistic', 'dependance_medium']
-
-    age_max = 95
-    plot_multi_dependance_csv(simulation, options = options, save_figure = True)
-
-    # plot_multi_prevalence_csv(
-    #   simulation, options = options, save_figure = True, years = years, age_max = age_max)
-
 
 if __name__ == '__main__':
     logging.basicConfig(level = logging.DEBUG, stream = sys.stdout)
-    simulation = get_simulation(run = True)
+    option = 'dependance_RT_3c'
+    simulation = get_simulation(run = True, option = option)
     plot_results(simulation, option = option, age_max = 95)

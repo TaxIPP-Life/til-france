@@ -17,15 +17,6 @@ dependance_functions_yml_path = os.path.join(
     )
 
 
-dependance_transition_yml_path = os.path.join(
-    pkg_resources.get_distribution('til-france').location,
-    'til_france',
-    'model',
-    'options',
-    'dependance_RT',
-    'dependance_transition_functions.yml'
-    )
-
 prevalence_coef_path = os.path.join(
     pkg_resources.get_distribution('til-france').location,
     'til_france',
@@ -138,7 +129,8 @@ def create_initialisation():
         yaml.dump(main, outfile, default_flow_style = False, width = 1000)
 
 
-def create_transiton():
+def create_transiton(cohort = None):
+    assert cohort in ['paquid', '3c']
     process_by_initial_state = dict()
     processes = dict(processes = process_by_initial_state)
     individus = dict(individus = processes)
@@ -154,6 +146,7 @@ def create_transiton():
                     'options',
                     'dependance_RT',
                     'assets',
+                    cohort,
                     'etat_initial_{}.xlsx'.format(state)
                     )
                 ) for state in range(5)
@@ -202,10 +195,20 @@ def create_transiton():
                 )
             )
 
+    dependance_transition_yml_path = os.path.join(
+        pkg_resources.get_distribution('til-france').location,
+        'til_france',
+        'model',
+        'options',
+        'dependance_RT',
+        'dependance_{}_transition_functions.yml'.format(cohort)
+        )
+
     with open(dependance_transition_yml_path, 'w') as outfile:
         yaml.dump(main, outfile, default_flow_style = False, width = 1000)
 
 
 if __name__ == "__main__":
     create_initialisation()
-    create_transiton()
+    create_transiton(cohort = "paquid")
+    create_transiton(cohort = "3c")

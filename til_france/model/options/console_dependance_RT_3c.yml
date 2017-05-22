@@ -1,0 +1,17 @@
+# Using 3C cohort matrix
+
+import:
+   # dependance
+   - ./dependance_RT/dependance_RT_common_console.yml
+   - dependance_RT/dependance_3c_transition_functions.yml
+
+entities:
+
+  individus:
+    macros:
+      MU: 1
+
+
+simulation:
+  periods: 31
+  random_seed: 12345

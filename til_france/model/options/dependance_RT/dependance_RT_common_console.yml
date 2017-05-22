@@ -1,19 +1,16 @@
-  # second entity, links, link methods, init, procedures, local variables,
-# dump's suffix argument, choice
+# Using cohort matrix
 
 import:
-   - ../standard/console.yml
-   - generations/generation.yml
-   # dependance
-   - dependance_RT/deces_dependance.yml
-   - dependance_RT/dependance_transition.yml
+   - ../../standard/console.yml
+   - ../generations/generation.yml
+   - dependance_initialisation_functions.yml
+   - deces_dependance.yml
+   - dependance_transition.yml
 
 entities:
 
   individus:
     macros:
-      ALIGN_DEPENDANCE_PREVALENCE: False
-      IMPUTE_DEPENDANCE_ANCIENNETE: 2
       MU: 1
 
     processes:
@@ -55,8 +52,3 @@ entities:
             fname = 'dependance_incidence.csv',
             mode = 'a'
             )
-
-
-simulation:
-  periods: 31
-  random_seed: 12345
