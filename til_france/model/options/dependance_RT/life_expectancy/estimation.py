@@ -98,6 +98,8 @@ def create_transition(cohort = 'paquid', sexe = None):
 
 
 proba_by_initial_state = create_transition()
+print proba_by_initial_state
+bim
 
 
 def get_transition(age, proba_by_initial_state):

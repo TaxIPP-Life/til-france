@@ -4,7 +4,7 @@
 import numpy as np
 import pandas as pd
 import statsmodels as sm
-sm.api;ad
+
 import statsmodels.formula.api as smf
 
 
@@ -14,8 +14,6 @@ paquid_path = u'/home/benjello/data/dependance/paquid_panel_3.csv'
 #df2 = pd.read_stata(paquid_dta_path, encoding = 'utf-8')
 
 df = pd.read_csv(paquid_path)
-
-
 
 columns = ['numero', 'annee', 'age', 'scale5', 'sexe']
 filtered = (df[columns]
@@ -28,46 +26,99 @@ filtered["sexe"] = filtered["sexe"].astype('int').astype('category')
 filtered["initial_state"] = filtered["initial_state"].astype('int').astype('category')
 filtered.initial_state.value_counts()
 
-# Build final_state
-filtered['final_state'] = filtered.groupby('numero')['initial_state'].shift(-1)
 
 
-state = (filtered
-    .query('(initial_state == 0) & (final_state in [0, 1, 4, 5])')
-    .dropna()
-    )
+def build_estimation_sample(initial_state, final_states):
+    assert initial_state in final_states
+    filtered['final_state'] = filtered.groupby('numero')['initial_state'].shift(-1)
+    sample = (filtered
+        .query('(initial_state == {}) & (final_state in {})'.format(
+            initial_state,
+            final_states,
+            ))
+        .dropna()
+        )
+    sample["final_state"] = sample["final_state"].astype('int').astype('category')
+    assert set(sample.final_state.value_counts().index.tolist()) == set(final_states)
 
-state["final_state"] = state["final_state"].astype('int').astype('category')
-state.final_state.value_counts()
-
-result = smf.mnlogit(
-    formula = 'final_state ~ I(age - 80) + I((age - 80)**2) + I((age - 80)**3)',
-    data = state[['age', 'final_state']],
-    ).fit()
-
-result = smf.mnlogit(
-    formula = 'final_state ~ age ',
-    data = state[['age', 'final_state']],
-    ).fit()
-
-params = result.params
-print result.summary()
+    return sample.reset_index()
 
 
-prediciton = result.predict()
+def estimate_model(initial_state, final_states, formula, varaibles = ['age', 'final_state', 'sexe']):
+    sample = build_estimation_sample(initial_state, final_states)
+    result = smf.mnlogit(
+        formula = formula,
+        data = sample[varaibles],
+        ).fit()
+    print result.params
+    print result.summary()
 
-import patsy
-exog = state[['age']].query('age > 80')
-exog = state[['age']]
-x = patsy.dmatrix("I(age - 80) + I((age - 80)**2) + I((age - 80)**3)", data= exog)  # df is data for prediction
-test2 = result.predict(x, transform=False)
+    formatted_params = result.params.copy()
+    formatted_params.columns = sorted(set(final_states) - set([initial_state]))
 
-prediciton = result.predict(])
+    def rename_index_func(index):
+        index = index.lower()
+        if index.startswith('i('):
+            index = index[1:]
+        elif index.startswith('intercept'):
+            index = '1'
+        return index
+
+    formatted_params.rename(index = rename_index_func, inplace = True)
+    formatted_params[initial_state] = 0
+    return result, formatted_params
 
 
-(abs(prediciton.sum(axis = 1) - 1) < .00001).all()
+def direct_compute_predicition(initial_state, final_states, formula, formatted_params):
+    computed_prediction = build_estimation_sample(initial_state, final_states)
+    for final_state, column in formatted_params.iteritems():
+        print final_state
+        print column
+        proba_str = "exp({})".format(
+            " + ".join([index + " * " + str(value) for index, value in zip(column.index, column.values)])
+            )
+        print proba_str
+        computed_prediction['proba_{}'.format(final_state)] = computed_prediction.eval(proba_str)
+
+    computed_prediction['z'] =  computed_prediction[[
+        col for col in computed_prediction.columns if col.startswith('proba')
+        ]].sum(axis = 1)
+
+    for col in computed_prediction.columns:
+        if col.startswith('proba'):
+            computed_prediction[col] = computed_prediction[col] / computed_prediction['z']
+
+    return computed_prediction
 
 
-computed_prediction = state.copy()
-computed_prediction['proba_0'] = 1  # exp(0)
-computed_prediction['proba_1'] = computed_prediction.eval('')
+def compute_prediction(initial_state, final_states, formula, result, exog = None):
+    import patsy
+    if exog is None:
+        exog = build_estimation_sample(initial_state, final_states)[['age', 'sexe']]
+    x = patsy.dmatrix(formula.split('~', 1)[-1], data= exog)  # df is data for prediction
+    prediction = result.predict(x, transform=False)
+    (abs(prediction.sum(axis = 1) - 1) < .00001).all()
+    prediction = pd.DataFrame(prediction)
+    prediction.columns = ['proba_{}'.format(state) for state in sorted(final_states)]
+    return prediction
+
+
+initial_state = 0
+final_states = [0, 1, 4, 5]
+formula = 'final_state ~ I(age - 80) + I((age - 80)**2) + I((age - 80)**3)'
+
+result, formatted_params = estimate_model(initial_state, final_states, formula)
+
+print formatted_params
+
+computed_prediction = direct_compute_predicition(initial_state, final_states, formula, formatted_params)
+prediction = compute_prediction(initial_state, final_states, formula, result)
+diff = computed_prediction[prediction.columns] - prediction
+
+print diff.min()
+print diff.max()
+
+
+transition_by_age = pd.DataFrame(dict(age = range(65, 120)))
+probas_by_age = compute_prediction(initial_state, final_states, formula, result, exog = transition_by_age)
+transition_by_age = transition_by_age.merge(probas_by_age, left_index = True, right_index = True)
