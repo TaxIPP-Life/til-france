@@ -1,17 +1,19 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
+from __future__ import division
+
+
 import numpy as np
 import pandas as pd
-import statsmodels as sm
-
+import patsy
 import statsmodels.formula.api as smf
 
 
 paquid_path = u'/home/benjello/data/dependance/paquid_panel_3.csv'
 
-#paquid_dta_path = u'/home/benjello/data/dependance/paquid_panel_3_mahdi.dta'
-#df2 = pd.read_stata(paquid_dta_path, encoding = 'utf-8')
+# paquid_dta_path = u'/home/benjello/data/dependance/paquid_panel_3_mahdi.dta'
+# df2 = pd.read_stata(paquid_dta_path, encoding = 'utf-8')
 
 df = pd.read_csv(paquid_path)
 
@@ -20,15 +22,16 @@ filtered = (df[columns]
     .dropna()
     .rename(columns = {'scale5': 'initial_state'})
     )
+
 assert (filtered.isnull().sum() == 0).all()
+
 
 filtered["sexe"] = filtered["sexe"].astype('int').astype('category')
 filtered["initial_state"] = filtered["initial_state"].astype('int').astype('category')
 filtered.initial_state.value_counts()
 
 
-
-def build_estimation_sample(initial_state, final_states):
+def build_estimation_sample(initial_state, final_states, sexe = None):
     assert initial_state in final_states
     filtered['final_state'] = filtered.groupby('numero')['initial_state'].shift(-1)
     sample = (filtered
@@ -38,17 +41,24 @@ def build_estimation_sample(initial_state, final_states):
             ))
         .dropna()
         )
+    if sexe:
+        assert sexe in ['male', 'homme', 'female', 'femme']
+        if sexe == 'male' or sexe == 'homme':
+            sample = sample.query('sexe == 1')
+        elif sexe == 'female' or sexe == 'femme':
+            sample = sample.query('sexe == 2')
     sample["final_state"] = sample["final_state"].astype('int').astype('category')
     assert set(sample.final_state.value_counts().index.tolist()) == set(final_states)
 
     return sample.reset_index()
 
 
-def estimate_model(initial_state, final_states, formula, varaibles = ['age', 'final_state', 'sexe']):
-    sample = build_estimation_sample(initial_state, final_states)
+def estimate_model(initial_state, final_states, formula, sexe = None, variables = ['age', 'final_state']):
+    sample = build_estimation_sample(initial_state, final_states, sexe = sexe)
+
     result = smf.mnlogit(
         formula = formula,
-        data = sample[varaibles],
+        data = sample[variables],
         ).fit()
     print result.params
     print result.summary()
@@ -69,18 +79,16 @@ def estimate_model(initial_state, final_states, formula, varaibles = ['age', 'fi
     return result, formatted_params
 
 
-def direct_compute_predicition(initial_state, final_states, formula, formatted_params):
-    computed_prediction = build_estimation_sample(initial_state, final_states)
+def direct_compute_predicition(initial_state, final_states, formula, formatted_params, sexe = None):
+    computed_prediction = build_estimation_sample(initial_state, final_states, sexe = sexe)
     for final_state, column in formatted_params.iteritems():
-        print final_state
-        print column
         proba_str = "exp({})".format(
             " + ".join([index + " * " + str(value) for index, value in zip(column.index, column.values)])
             )
         print proba_str
-        computed_prediction['proba_{}'.format(final_state)] = computed_prediction.eval(proba_str)
+        computed_prediction['proba_etat_{}'.format(final_state)] = computed_prediction.eval(proba_str)
 
-    computed_prediction['z'] =  computed_prediction[[
+    computed_prediction['z'] = computed_prediction[[
         col for col in computed_prediction.columns if col.startswith('proba')
         ]].sum(axis = 1)
 
@@ -91,34 +99,130 @@ def direct_compute_predicition(initial_state, final_states, formula, formatted_p
     return computed_prediction
 
 
-def compute_prediction(initial_state, final_states, formula, result, exog = None):
-    import patsy
+def compute_prediction(initial_state, final_states, formula, variables = ['age'], exog = None, sexe = None):
+    sample = build_estimation_sample(initial_state, final_states, sexe = sexe)
     if exog is None:
-        exog = build_estimation_sample(initial_state, final_states)[['age', 'sexe']]
-    x = patsy.dmatrix(formula.split('~', 1)[-1], data= exog)  # df is data for prediction
+        exog = sample[variables]
+
+    result = smf.mnlogit(
+        formula = formula,
+        data = sample,
+        ).fit()
+    expurged_formula = formula.split('~', 1)[-1]
+    x = patsy.dmatrix(expurged_formula, data= exog)  # df is data for prediction
     prediction = result.predict(x, transform=False)
     (abs(prediction.sum(axis = 1) - 1) < .00001).all()
     prediction = pd.DataFrame(prediction)
-    prediction.columns = ['proba_{}'.format(state) for state in sorted(final_states)]
-    return prediction
+    prediction.columns = ['proba_etat_{}'.format(state) for state in sorted(final_states)]
+    return prediction.reset_index(drop = True)
 
 
-initial_state = 0
-final_states = [0, 1, 4, 5]
+def test():
+    initial_state = 0
+    final_states = [0, 1, 4, 5]
+    sexe = 'homme'
+    formula = 'final_state ~ I(age - 80) + I((age - 80)**2) + I((age - 80)**3)'
+
+    result, formatted_params = estimate_model(initial_state, final_states, formula, sexe = sexe)
+
+    print formatted_params
+
+    computed_prediction = direct_compute_predicition(initial_state, final_states, formula, formatted_params, sexe = sexe)
+    prediction = compute_prediction(initial_state, final_states, formula)
+    diff = computed_prediction[prediction.columns] - prediction
+
+    print diff.min()
+    print diff.max()
+
+
+# test()
+
 formula = 'final_state ~ I(age - 80) + I((age - 80)**2) + I((age - 80)**3)'
-
-result, formatted_params = estimate_model(initial_state, final_states, formula)
-
-print formatted_params
-
-computed_prediction = direct_compute_predicition(initial_state, final_states, formula, formatted_params)
-prediction = compute_prediction(initial_state, final_states, formula, result)
-diff = computed_prediction[prediction.columns] - prediction
-
-print diff.min()
-print diff.max()
+sexe = 'male'
+final_states_by_initial_state = {
+    0: [0, 1, 4, 5],
+    1: [0, 1, 2, 4, 5],
+    2: [1, 2, 3, 4, 5],
+    3: [2, 3, 4, 5],
+    4: [4, 5],
+    }
 
 
-transition_by_age = pd.DataFrame(dict(age = range(65, 120)))
-probas_by_age = compute_prediction(initial_state, final_states, formula, result, exog = transition_by_age)
-transition_by_age = transition_by_age.merge(probas_by_age, left_index = True, right_index = True)
+proba_by_initial_state = dict()
+exog = pd.DataFrame(dict(age = range(65, 120)))
+mortality_by_initial_state = exog
+
+for initial_state, final_states in final_states_by_initial_state.iteritems():
+    proba_by_initial_state[initial_state] = pd.concat(
+        [
+            exog,
+            compute_prediction(initial_state, final_states, formula, exog = exog, sexe = sexe)
+            ],
+        axis = 1,
+        )
+    mortality_by_initial_state = pd.concat(
+        [
+            mortality_by_initial_state,
+            pd.DataFrame({
+                initial_state: (1 - np.sqrt(1 - proba_by_initial_state[initial_state]['proba_etat_5'])),
+                }),
+            ],
+        axis = 1,
+        )
+
+
+filtered['final_state'] = filtered.groupby('numero')['initial_state'].shift(-1)
+filtered['age_group_10'] = 10 * (filtered.age / 10).apply(np.floor).astype('int')
+filtered['age_group_5'] = 5 * ((filtered.age) / 5).apply(np.floor).astype('int')
+if sexe:
+    if sexe in ['homme', 'male']:
+        sexe_nbr = 1
+    elif sexe in ['femme', 'female']:
+        sexe_nbr = 2
+
+    filtered = filtered.query('sexe == {}'.format(sexe_nbr))
+
+
+test = filtered.query('(annee == 2003) & (initial_state != 5)').dropna()
+test.initial_state.value_counts()
+
+test.groupby(['age_group_5'])[['final_state']].apply(
+    lambda x: 1 - np.sqrt(1 - 1.0 * (x.final_state == 5).sum() / x.count())
+    )
+
+
+from til_france.targets.population import build_mortality_rates
+mortalite_insee = build_mortality_rates()[sexe][2007][65:]
+mortalite_insee.name = 'mortalite_insee'
+
+
+profile = filtered.query('initial_state != 5').dropna()
+profile.age.round().value_counts()
+
+profile['age'] = profile.age.round()
+
+mortality_table = pd.melt(
+    mortality_by_initial_state,
+    id_vars=['age'],
+    value_vars=[0, 1, 2, 3, 4],
+    var_name = 'initial_state',
+    value_name = 'mortality',
+    )
+
+
+df = profile.merge(mortality_table, on =['age', 'initial_state'], how = 'left')
+sample_mortality_profile = (profile
+    .merge(mortality_table, on =['age', 'initial_state'], how = 'left')
+    .groupby(['age'])['mortality']
+    .mean()
+    )
+
+plot_data = pd.concat([sample_mortality_profile, mortalite_insee], axis = 1)
+plot_data.index.name = 'age'
+ax = plot_data.query('age').plot()
+ax.get_figure().savefig('mortalite.png')
+
+plot_data['ratio'] = plot_data.eval('mortality / mortalite_insee')
+
+ax2 = plot_data.query('age').plot(y = 'ratio')
+ax2.get_figure().savefig('ratio_mortalite.png')
