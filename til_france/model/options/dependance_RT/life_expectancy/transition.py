@@ -5,8 +5,10 @@ from __future__ import division
 
 
 import numpy as np
+import os
 import pandas as pd
 import patsy
+import pkg_resources
 import statsmodels.formula.api as smf
 
 
@@ -14,6 +16,22 @@ paquid_path = u'/home/benjello/data/dependance/paquid_panel_3.csv'
 
 # paquid_dta_path = u'/home/benjello/data/dependance/paquid_panel_3_mahdi.dta'
 # df2 = pd.read_stata(paquid_dta_path, encoding = 'utf-8')
+
+assets_path = config_files_directory = os.path.join(
+    pkg_resources.get_distribution('til-france').location,
+    'til_france',
+    'model',
+    'options',
+    'dependance_RT',
+    'assets',
+    )
+
+
+life_table_path = os.path.join(
+    assets_path,
+    'lifetables_period.xlsx'
+    )
+
 
 df = pd.read_csv(paquid_path)
 
@@ -192,9 +210,16 @@ test.groupby(['age_group_5'])[['final_state']].apply(
 
 
 from til_france.targets.population import build_mortality_rates
-mortalite_insee = build_mortality_rates()[sexe][2007][65:]
+mortalite_insee = build_mortality_rates()[sexe][2007]
 mortalite_insee.name = 'mortalite_insee'
 
+mortalite_by_sex = dict()
+mortalite_by_sex['male'] = (pd.read_excel(life_table_path, sheetname = 'france-male')[['Year', 'Age', 'qx']]
+    .rename(columns = dict(Year = 'annee', Age = 'age', qx = 'mortalite'))
+    )
+mortalite_by_sex['female'] = (pd.read_excel(life_table_path, sheetname = 'france-female')[['Year', 'Age', 'qx']]
+    .rename(columns = dict(Year = 'annee', Age = 'age', qx = 'mortalite'))
+    )
 
 profile = filtered.query('initial_state != 5').dropna()
 profile.age.round().value_counts()
@@ -217,9 +242,18 @@ sample_mortality_profile = (profile
     .mean()
     )
 
-plot_data = pd.concat([sample_mortality_profile, mortalite_insee], axis = 1)
+mortalite_1988 = (mortalite_by_sex[sexe]
+    .query('annee == 1988')
+    .reset_index()
+    .loc[:109, ['age', 'mortalite']]
+    .astype(dict(age = 'int'))
+    .set_index('age')
+    .rename(columns = dict(mortalite = 'mortalite_1988'))
+    )
+
+plot_data = pd.concat([sample_mortality_profile, mortalite_insee, mortalite_1988], axis = 1)
 plot_data.index.name = 'age'
-ax = plot_data.query('age').plot()
+ax = plot_data.query('age > 60').plot()
 ax.get_figure().savefig('mortalite.png')
 
 plot_data['ratio'] = plot_data.eval('mortality / mortalite_insee')
