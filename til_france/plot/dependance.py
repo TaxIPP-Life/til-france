@@ -372,7 +372,6 @@ def _extract(simulation, filename, removed_lines_prefixes, columns, drop = None,
     else:
         multiple = False
 
-
     def _single_extract(directory, filename):
         assert filename[-4:] != '.csv', 'filename should not contain extension'
         file_path = os.path.join(directory, '{}.csv'.format(filename))
