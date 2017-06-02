@@ -6,16 +6,6 @@ import pandas as pd
 import pkg_resources
 
 
-assets_path = config_files_directory = os.path.join(
-    pkg_resources.get_distribution('til-france').location,
-    'til_france',
-    'model',
-    'options',
-    'dependance_RT',
-    'assets',
-    )
-
-
 
 moratliteH_path = os.path.join(
     pkg_resources.get_distribution('til-france').location,
@@ -188,3 +178,5 @@ mortality = (alive.shift() - alive) / alive.shift()
 mortality[65] = 0
 
 pd.concat([mortalite[66:], mortality], axis = 1).plot()
+
+

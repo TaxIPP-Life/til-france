@@ -4,6 +4,7 @@
 import logging
 import sys
 
+
 import seaborn as sns
 sns.set_style("whitegrid")
 
@@ -62,13 +63,26 @@ def plot_results(simulation, option = None, age_max = None):
 
 
 def extract_dependance_niveau(simulation, option = None):
+    assert option is not None
     df = extract_dependance_niveau_csv(simulation, backup = option)
-    from til_france.model.options.dependance_RT.life_expectancy.estimation import assets_path
+    import os
+    import pkg_resources
+    assets_path = os.path.join(
+        pkg_resources.get_distribution('til-france').location,
+        'til_france',
+        'model',
+        'options',
+        'dependance_RT',
+        'assets',
+        )
+
     df.to_csv(os.path.join(assets_path, 'dependance_niveau.csv'))
     Bim
 
+
 if __name__ == '__main__':
     logging.basicConfig(level = logging.DEBUG, stream = sys.stdout)
-    option = 'dependance_RT_3c'
-    simulation = get_simulation(run = True, option = option)
-    plot_results(simulation, option = option, age_max = 95)
+    option = 'dependance_RT_paquid'
+    simulation = get_simulation(run = False, option = option)
+    extract_dependance_niveau(simulation, option = option)
+    # plot_results(simulation, option = option, age_max = 95)
