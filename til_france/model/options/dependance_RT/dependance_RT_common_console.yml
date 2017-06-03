@@ -7,9 +7,14 @@ import:
    - deces_dependance.yml
    - dependance_transition.yml
 
-entities:
+globals:
+  transition:
+    path: test.csv
+    type: float
 
+entities:
   individus:
+
     macros:
       MU: 1
 
@@ -52,3 +57,24 @@ entities:
             fname = 'dependance_incidence.csv',
             mode = 'a'
             )
+
+  generation:
+    fields:
+      - dependance_transition_homme_0_0: {type: float, initialdata: False}
+
+    processes:
+      dependance_transition_initialisation:
+        - show('initialisation transition')
+        - show(transition)
+        - dependance_transition_homme_0_0: transition[0, 0:121, 0, 0]
+        - show(dependance_transition_homme_0_0[72])
+
+      mise_a_jour:
+        - education()
+        - mortality_rates_update()
+        - dependance_transition_initialisation()
+
+      options_initialisation:
+        - mortality_rates_initialisation()
+        - dependance_transition_initialisation()
+

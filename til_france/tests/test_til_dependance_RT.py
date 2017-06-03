@@ -83,6 +83,6 @@ def extract_dependance_niveau(simulation, option = None):
 if __name__ == '__main__':
     logging.basicConfig(level = logging.DEBUG, stream = sys.stdout)
     option = 'dependance_RT_paquid'
-    simulation = get_simulation(run = False, option = option)
+    simulation = get_simulation(run = True, option = option)
     extract_dependance_niveau(simulation, option = option)
     # plot_results(simulation, option = option, age_max = 95)

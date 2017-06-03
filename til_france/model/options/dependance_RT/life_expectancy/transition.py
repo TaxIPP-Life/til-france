@@ -12,11 +12,7 @@ import pkg_resources
 import statsmodels.formula.api as smf
 
 
-paquid_path = u'/home/benjello/data/dependance/paquid_panel_3.csv'
-
-# paquid_dta_path = u'/home/benjello/data/dependance/paquid_panel_3_mahdi.dta'
-# df2 = pd.read_stata(paquid_dta_path, encoding = 'utf-8')
-
+# Paths
 assets_path = config_files_directory = os.path.join(
     pkg_resources.get_distribution('til-france').location,
     'til_france',
@@ -26,11 +22,24 @@ assets_path = config_files_directory = os.path.join(
     'assets',
     )
 
-
 life_table_path = os.path.join(
     assets_path,
     'lifetables_period.xlsx'
     )
+
+paquid_path = u'/home/benjello/data/dependance/paquid_panel_3.csv'
+# paquid_dta_path = u'/home/benjello/data/dependance/paquid_panel_3_mahdi.dta'
+# df2 = pd.read_stata(paquid_dta_path, encoding = 'utf-8')
+
+
+# Transition matrix structure
+final_states_by_initial_state = {
+    0: [0, 1, 4, 5],
+    1: [0, 1, 2, 4, 5],
+    2: [1, 2, 3, 4, 5],
+    3: [2, 3, 4, 5],
+    4: [4, 5],
+    }
 
 
 def get_filtered_paquid_data():
@@ -135,17 +144,10 @@ def compute_prediction(initial_state, final_states, formula = None, variables = 
     return prediction.reset_index(drop = True)
 
 
-
 def get_proba_by_initial_state(formula = None, sexe = None):
     assert sexe is not None
     assert formula is not None
-    final_states_by_initial_state = {
-        0: [0, 1, 4, 5],
-        1: [0, 1, 2, 4, 5],
-        2: [1, 2, 3, 4, 5],
-        3: [2, 3, 4, 5],
-        4: [4, 5],
-        }
+
     proba_by_initial_state = dict()
     exog = pd.DataFrame(dict(age = range(65, 120)))
     for initial_state, final_states in final_states_by_initial_state.iteritems():
@@ -162,13 +164,6 @@ def get_proba_by_initial_state(formula = None, sexe = None):
 def get_predicted_mortality_table(formula = None, sexe = None):
     assert sexe is not None
     assert formula is not None
-    final_states_by_initial_state = {
-        0: [0, 1, 4, 5],
-        1: [0, 1, 2, 4, 5],
-        2: [1, 2, 3, 4, 5],
-        3: [2, 3, 4, 5],
-        4: [4, 5],
-        }
     proba_by_initial_state = get_proba_by_initial_state(formula = formula, sexe = sexe)
     exog = pd.DataFrame(dict(age = range(65, 120)))
     mortality_by_initial_state = exog
@@ -199,8 +194,8 @@ def test(formula = None,
     assert formula is not None
     assert sexe is not None
     result, formatted_params = estimate_model(initial_state, final_states, formula, sexe = sexe)
-    print result.summary(alpha = .1)
-    print formatted_params
+    print(result.summary(alpha = .1))
+    print(formatted_params)
     computed_prediction = direct_compute_predicition(
         initial_state, final_states, formula, formatted_params, sexe = sexe)
     prediction = compute_prediction(initial_state, final_states, formula, sexe = sexe)
@@ -365,54 +360,96 @@ def get_transtions(formula = None, sexe = None):
             [['age', 'initial_state', 'final_state', 'probability']]
             )
 
-    return pd.concat(transition_matrices, ignore_index = True).set_index(
-        ['age', 'initial_state', 'final_state'])
+    return pd.concat(transition_matrices, ignore_index = True).set_index(['age', 'initial_state', 'final_state'])
+
+
+def get_calibrated_transition(formula = None, period = None, sexe = None):
+    assert period is not None
+    transitions = get_transtions(formula = formula, sexe = sexe)
+    calibration = get_calibration(formula = formula, period = period, sexe = sexe)
+    mortality = (transitions
+        .reset_index()
+        .query('final_state == 5')
+        .merge(calibration[['age', 'cale_mortality_2_year']], on = 'age')
+        .eval('calibrated_probability = probability * cale_mortality_2_year', inplace = False)
+        .eval(
+            'cale_other_transitions = (1 - probability * cale_mortality_2_year) / (1 - probability)',
+            inplace = False,
+            )
+        )
+
+    cale_other_transitions = mortality[['age', 'initial_state', 'cale_other_transitions']].copy()
+    other_transitions = (transitions
+        .reset_index()
+        .query('final_state != 5')
+        .merge(cale_other_transitions)
+        .eval('calibrated_probability = probability * cale_other_transitions', inplace = False)
+        )
+
+    calibrated_transitions = (pd.concat([mortality, other_transitions])
+        .set_index(['age', 'initial_state', 'final_state'])
+        .sort_index()
+        )
+    diff = (
+        calibrated_transitions.reset_index().groupby(['age', 'initial_state'])['calibrated_probability'].sum() - 1)
+    assert (diff.abs().max() < 1e-10).all(), "error is too big: {} > 1e-10".format(diff.abs().max())
+    calibrated_transitions['calibrated_probability'].reset_index()
+    return calibrated_transitions
 
 
 if __name__ == '__main__':
     # formula = 'final_state ~ I((age - 80)) + I(((age - 80))**2)'
-    formula = 'final_state ~ I((age - 80)) + I(((age - 80))**2) + I(((age - 80))**3)'
     # formula = 'final_state ~ I((age - 80)) + I(((age - 80))**2) + I(((age - 80))**3) + I(((age - 80))**4)'
     # formula = 'final_state ~ I((age - 80) * 0.1) + I(((age - 80) * 0.1)**2) + I(((age - 80) * 0.1)**3) + I(((age - 80) * 0.1)**4) + I(((age - 80) * 0.1)**5)'
 
     # test(formula = formula, sexe = 'female')
     # plot_paquid_comparison(formula = formula, sexe = 'female')
 
-    sexe = 'male'
+    formula = 'final_state ~ I((age - 80)) + I(((age - 80))**2) + I(((age - 80))**3)'
     period = 2010
+    sexe = 'male'
+    filename = os.path.join('/home/benjello/data/til/input/test.csv')
 
-    def get_calibrated_transition(formula = None, period = None, sexe = None):
-        assert period is not None
-        transitions = get_transtions(formula = formula, sexe = sexe)
-        calibration  = get_calibration(formula = formula, period = period, sexe = sexe)
+    def export_calibrated_transitions_to_liam(formula = None, period = None, sexe = None, filename = None):
+        calibrated_transitions = get_calibrated_transition(period = period, formula = formula, sexe = sexe)
+        age_max = calibrated_transitions.index.levels[0].max()
+        null_fill_by_year = calibrated_transitions['calibrated_probability'].reset_index().query('age == 65').copy()
+        null_fill_by_year['calibrated_probability'] = 0
+        pre_65_null_fill = pd.concat([
+            null_fill_by_year.assign(age = i).copy()
+            for i in range(0, 65)
+            ]).reset_index(drop = True)
+        elder_null_fill = pd.concat([
+            null_fill_by_year.assign(age = i).copy()
+            for i in range(age_max + 1, 121)
+            ]).reset_index(drop = True)
 
-        mortality = (transitions
-          .reset_index()
-          .query('final_state == 5')
-          .merge(calibration[['age', 'cale_mortality_2_year']], on = 'age')
-          .eval('calibrated_probability = probability * cale_mortality_2_year', inplace = False)
-          .eval(
-              'cale_other_transitions = (1 - probability * cale_mortality_2_year) / (1 - probability)',
-              inplace = False,
-              )
-          )
+        age_full = pd.concat([
+            pre_65_null_fill,
+            calibrated_transitions['calibrated_probability'].reset_index(),
+            elder_null_fill
+            ]).reset_index(drop = True)
 
-        cale_other_transitions = mortality[['age', 'initial_state', 'cale_other_transitions']].copy()
-        other_transitions = (transitions
-          .reset_index()
-          .query('final_state != 5')
-          .merge(cale_other_transitions)
-          .eval('calibrated_probability = probability * cale_other_transitions', inplace = False)
-          )
-
-        calibrated_transitions = pd.concat([mortality, other_transitions]).set_index(['age', 'initial_state', 'final_state']).sort_index()
-        diff = (calibrated_transitions.reset_index().groupby(['age', 'initial_state'])['calibrated_probability'].sum() - 1)
-        assert (diff.abs().max() < 1e-10).all(), "error is too big: {} > 1e-10".format(diff.abs().max())
-
-        calibrated_transitions['calibrated_probability'].reset_index()
+        age_full['period'] = period
+        result = age_full[
+            ['period', 'age', 'initial_state', 'final_state', 'calibrated_probability']
+            ].set_index(['period', 'age', 'initial_state', 'final_state'])
+        if filename is not None:
+            result.unstack().fillna(0).to_csv(filename, header = False)
+        return age_full[['period', 'age', 'initial_state', 'final_state']]
 
 
-    calibrated_transitions = get_calibrated_transition(period = 2010, formula = formula, sexe = 'male')
+        verbatim_header = '''period,age,initial_state,final_state,,,,,
+,,,0,1,2,3,4,5'''
 
-#    model_to_target = pd.DataFrame(columns = ['annee', 'age', 'sexe', 'dependance_niveau', 'cale'])
-#    model_to_target['sexe'] = sexe_nbr
+
+    bim
+    x = (calibrated_transitions
+        .query('initial_state == 0')['calibrated_probability']
+        .reset_index()
+        .drop('initial_state', axis = 1)
+        .set_index(['age', 'final_state'])
+        .unstack()
+        )
+
+    x

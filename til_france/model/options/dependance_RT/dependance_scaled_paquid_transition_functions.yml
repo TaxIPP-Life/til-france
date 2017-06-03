@@ -1,0 +1,33 @@
+entities:
+  individus:
+    processes:
+      etat_0():
+      - prob_0: if(ISMALE, dependance_transition_homme_0_0, dependance_transition_femme_0_0
+      - prob_1: if(ISMALE, dependance_transition_homme_0_1, dependance_transition_femme_0_1
+      - prob_4: if(ISMALE, dependance_transition_homme_0_4, dependance_transition_femme_0_4
+      - prob_5: if(ISMALE, dependance_transition_homme_0_5, dependance_transition_femme_0_5
+      - return choice([0, 1, 4, 5], [prob_0, prob_1, prob_4, prob_5])
+      etat_1():
+      - prob_0: if(ISMALE, dependance_transition_homme_1_0, dependance_transition_femme_1_0
+      - prob_1: if(ISMALE, dependance_transition_homme_1_1, dependance_transition_femme_1_1
+      - prob_2: if(ISMALE, dependance_transition_homme_1_2, dependance_transition_femme_1_2
+      - prob_4: if(ISMALE, dependance_transition_homme_1_4, dependance_transition_femme_1_4
+      - prob_5: if(ISMALE, dependance_transition_homme_1_5, dependance_transition_femme_1_5
+      - return choice([0, 1, 2, 4, 5], [prob_0, prob_1, prob_2, prob_4, prob_5])
+      etat_2():
+      - prob_1: if(ISMALE, dependance_transition_homme_2_1, dependance_transition_femme_2_1
+      - prob_2: if(ISMALE, dependance_transition_homme_2_2, dependance_transition_femme_2_2
+      - prob_3: if(ISMALE, dependance_transition_homme_2_3, dependance_transition_femme_2_3
+      - prob_4: if(ISMALE, dependance_transition_homme_2_4, dependance_transition_femme_2_4
+      - prob_5: if(ISMALE, dependance_transition_homme_2_5, dependance_transition_femme_2_5
+      - return choice([1, 2, 3, 4, 5], [prob_1, prob_2, prob_3, prob_4, prob_5])
+      etat_3():
+      - prob_2: if(ISMALE, dependance_transition_homme_3_2, dependance_transition_femme_3_2
+      - prob_3: if(ISMALE, dependance_transition_homme_3_3, dependance_transition_femme_3_3
+      - prob_4: if(ISMALE, dependance_transition_homme_3_4, dependance_transition_femme_3_4
+      - prob_5: if(ISMALE, dependance_transition_homme_3_5, dependance_transition_femme_3_5
+      - return choice([2, 3, 4, 5], [prob_2, prob_3, prob_4, prob_5])
+      etat_4():
+      - prob_4: if(ISMALE, dependance_transition_homme_4_4, dependance_transition_femme_4_4
+      - prob_5: if(ISMALE, dependance_transition_homme_4_5, dependance_transition_femme_4_5
+      - return choice([4, 5], [prob_4, prob_5])

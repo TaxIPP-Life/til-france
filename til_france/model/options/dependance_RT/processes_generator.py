@@ -7,6 +7,9 @@ import pkg_resources
 import yaml
 
 
+from til_france.model.options.dependance_RT.life_expectancy.transition import final_states_by_initial_state
+
+
 dependance_functions_yml_path = os.path.join(
     pkg_resources.get_distribution('til-france').location,
     'til_france',
@@ -129,7 +132,7 @@ def create_initialisation():
         yaml.dump(main, outfile, default_flow_style = False, width = 1000)
 
 
-def create_transiton(cohort = None):
+def create_transition_functions(cohort = None):
     assert cohort in ['paquid', '3c']
     process_by_initial_state = dict()
     processes = dict(processes = process_by_initial_state)
@@ -208,7 +211,59 @@ def create_transiton(cohort = None):
         yaml.dump(main, outfile, default_flow_style = False, width = 1000)
 
 
+def create_scaled_transition_functions(cohort = 'paquid'):
+    dependance_transition_yml_path = os.path.join(
+        pkg_resources.get_distribution('til-france').location,
+        'til_france',
+        'model',
+        'options',
+        'dependance_RT',
+        'dependance_scaled_{}_transition_functions.yml'.format(cohort)
+        )
+    process_by_initial_state = dict()
+    processes = dict(processes = process_by_initial_state)
+    individus = dict(individus = processes)
+    main = dict(entities = individus)
+
+    generation_variables = list()
+
+    for initial_state, final_states in final_states_by_initial_state.iteritems():
+        initial_state_actions = list()
+        process_by_initial_state['etat_{}()'.format(initial_state)] = initial_state_actions
+        # probability computation lines
+        for final_state in final_states:
+            male_link = 'dependance_transition_homme_{}_{}'.format(initial_state, final_state)
+            female_link = 'dependance_transition_femme_{}_{}'.format(initial_state, final_state)
+            initial_state_actions.append({
+                "prob_{}".format(final_state): "if(ISMALE, indivdu2generation.{}, indivdu2generation.{})".format(
+                    male_link, female_link)
+                })
+            generation_variables.append(male_link)
+            generation_variables.append(female_link)
+
+        # return line
+        prob_final_states = ["prob_{}".format(final_state) for final_state in final_states]
+        probabilities_list_str = "[" + ", ".join(prob_final_states) + "]"
+        final_states_index_list_str = [
+            int(final_state[-1:]) for final_state in prob_final_states
+            ]
+        initial_state_actions.append(
+            "return choice({}, {})".format(
+                final_states_index_list_str,
+                probabilities_list_str
+                )
+            )
+
+    with open(dependance_transition_yml_path, 'w') as outfile:
+        yaml.dump(main, outfile, default_flow_style = False, width = 1000)
+
+    with open(generation_dependance_transition_yml_path, 'w') as outfile:
+        yaml.dump(generation_main, outfile, default_flow_style = False, width = 1000)
+
+
+
 if __name__ == "__main__":
-    create_initialisation()
-    create_transiton(cohort = "paquid")
-    create_transiton(cohort = "3c")
+    # create_initialisation()
+    # create_transition_functions(cohort = "paquid")
+    # create_transition_functions(cohort = "3c")
+    create_scaled_transition_functions(cohort = "paquid")

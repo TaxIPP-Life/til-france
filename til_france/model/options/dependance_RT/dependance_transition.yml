@@ -12,8 +12,8 @@ entities:
       #  Etat 3 : restrictions dans les ADL (Echelle de Katz) ´
       #  Etat 4 : restrictions dans les ADL les plus sévères ´
       #  Etat 5 : décès
-      - dependance_anciennete: {type: int, initialdata: false, default: -1}
-      - dependance_niveau: {type: int, initialdata: true}
+      - dependance_anciennete: {type: int, initialdata: False, default: -1}
+      - dependance_niveau: {type: int, initialdata: True}
 
     processes:
       dependance_initialisation:
