@@ -57,7 +57,8 @@ def plot_results(simulation, option = None, age_max = None):
         backup = option,
         years = [2010, 2025, 2040],
         save = True,
-        age_max = age_max)
+        age_max = age_max,
+        )
     #
     Boum
 
@@ -83,6 +84,6 @@ def extract_dependance_niveau(simulation, option = None):
 if __name__ == '__main__':
     logging.basicConfig(level = logging.DEBUG, stream = sys.stdout)
     option = 'dependance_RT_paquid'
-    simulation = get_simulation(run = True, option = option)
-    extract_dependance_niveau(simulation, option = option)
-    # plot_results(simulation, option = option, age_max = 95)
+    simulation = get_simulation(run = False, option = option)
+    # extract_dependance_niveau(simulation, option = option)
+    plot_results(simulation, option = option, age_max = 95)

@@ -161,7 +161,7 @@ def get_proba_by_initial_state(formula = None, sexe = None):
     return proba_by_initial_state
 
 
-def get_predicted_mortality_table(formula = None, sexe = None):
+def get_predicted_mortality_table(formula = None, sexe = None, save = True):
     assert sexe is not None
     assert formula is not None
     proba_by_initial_state = get_proba_by_initial_state(formula = formula, sexe = sexe)
@@ -184,6 +184,8 @@ def get_predicted_mortality_table(formula = None, sexe = None):
         var_name = 'initial_state',
         value_name = 'mortality',
         )
+    if save:
+        mortality_table.to_csv('predicted_mortality_table_{}.csv'.format(sexe))
     return mortality_table
 
 
@@ -303,10 +305,11 @@ def get_calibration(period = None, formula = None, sexe = None):
     assert formula is not None
     assert sexe in ['homme', 'male', 'femme', 'female']
     mortality_table = get_predicted_mortality_table(formula = formula, sexe = sexe)
+
     if sexe in ['homme', 'male']:
-        sexe_nbr = 1
+        sexe_nbr = 0
     elif sexe in ['femme', 'female']:
-        sexe_nbr = 2
+        sexe_nbr = 1
 
     mortalite_after_imputation = (pd.read_csv(os.path.join(assets_path, 'dependance_niveau.csv'), index_col = 0)
         .query('(period == @period) and (age >= 60)')
@@ -371,11 +374,12 @@ def get_calibrated_transition(formula = None, period = None, sexe = None):
         .reset_index()
         .query('final_state == 5')
         .merge(calibration[['age', 'cale_mortality_2_year']], on = 'age')
-        .eval('calibrated_probability = probability * cale_mortality_2_year', inplace = False)
-        .eval(
-            'cale_other_transitions = (1 - probability * cale_mortality_2_year) / (1 - probability)',
-            inplace = False,
-            )
+        )
+    mortality['calibrated_probability'] = np.minimum(
+        mortality.probability * mortality.cale_mortality_2_year, 1)  # Avoid over corrections !
+    mortality.eval(
+        'cale_other_transitions = (1 - calibrated_probability) / (1 - probability)',
+        inplace = True,
         )
 
     cale_other_transitions = mortality[['age', 'initial_state', 'cale_other_transitions']].copy()
@@ -407,22 +411,34 @@ if __name__ == '__main__':
 
     formula = 'final_state ~ I((age - 80)) + I(((age - 80))**2) + I(((age - 80))**3)'
     period = 2010
-    sexe = 'male'
-    filename = os.path.join('/home/benjello/data/til/input/test.csv')
 
-    def export_calibrated_transitions_to_liam(formula = None, period = None, sexe = None, filename = None):
+    for sexe in ['male', 'female']:
+        filename = os.path.join('/home/benjello/data/til/input/transition_{}.csv'.format(sexe))
+        #    def export_calibrated_transitions_to_liam(formula = None, period = None, sexe = None, filename = None):
         calibrated_transitions = get_calibrated_transition(period = period, formula = formula, sexe = sexe)
         age_max = calibrated_transitions.index.levels[0].max()
         null_fill_by_year = calibrated_transitions['calibrated_probability'].reset_index().query('age == 65').copy()
         null_fill_by_year['calibrated_probability'] = 0
+
         pre_65_null_fill = pd.concat([
             null_fill_by_year.assign(age = i).copy()
             for i in range(0, 65)
             ]).reset_index(drop = True)
+
+        pre_65_null_fill.loc[
+            pre_65_null_fill.final_state == 0,
+            'calibrated_probability'
+            ] = 1
+
         elder_null_fill = pd.concat([
             null_fill_by_year.assign(age = i).copy()
             for i in range(age_max + 1, 121)
             ]).reset_index(drop = True)
+
+        elder_null_fill.loc[
+            (elder_null_fill.age > age_max) & (elder_null_fill.final_state == 5),
+            'calibrated_probability'
+            ] = 1
 
         age_full = pd.concat([
             pre_65_null_fill,
@@ -434,22 +450,32 @@ if __name__ == '__main__':
         result = age_full[
             ['period', 'age', 'initial_state', 'final_state', 'calibrated_probability']
             ].set_index(['period', 'age', 'initial_state', 'final_state'])
+
+        assert not (result.calibrated_probability < 0).any(), result.loc[result.calibrated_probability < 0]
+        assert not (result.calibrated_probability > 1).any(), result.loc[result.calibrated_probability > 1]
+        result.to_csv('result.csv')
         if filename is not None:
             result.unstack().fillna(0).to_csv(filename, header = False)
-        return age_full[['period', 'age', 'initial_state', 'final_state']]
+            # Add liam2 compatible header
+            verbatim_header = '''period,age,initial_state,final_state,,,,,
+    ,,,0,1,2,3,4,5
+    '''
+            with file(filename, 'r') as original: data = original.read()
+            with file(filename, 'w') as modified: modified.write(verbatim_header + data)
+
+    # return age_full[['period', 'age', 'initial_state', 'final_state']]
 
 
-        verbatim_header = '''period,age,initial_state,final_state,,,,,
-,,,0,1,2,3,4,5'''
+    result
 
 
     bim
-    x = (calibrated_transitions
-        .query('initial_state == 0')['calibrated_probability']
-        .reset_index()
-        .drop('initial_state', axis = 1)
-        .set_index(['age', 'final_state'])
-        .unstack()
-        )
+    # x = (calibrated_transitions
+    #     .query('initial_state == 0')['calibrated_probability']
+    #     .reset_index()
+    #     .drop('initial_state', axis = 1)
+    #     .set_index(['age', 'final_state'])
+    #     .unstack()
+    #     )
 
-    x
+    # x

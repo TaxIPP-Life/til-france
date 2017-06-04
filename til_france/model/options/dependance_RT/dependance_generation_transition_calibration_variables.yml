@@ -1,0 +1,92 @@
+entities:
+  generation:
+    fields:
+    - dependance_transition_homme_0_0: {type: float, initialdata: False}
+    - dependance_transition_femme_0_0: {type: float, initialdata: False}
+    - dependance_transition_homme_0_1: {type: float, initialdata: False}
+    - dependance_transition_femme_0_1: {type: float, initialdata: False}
+    - dependance_transition_homme_0_4: {type: float, initialdata: False}
+    - dependance_transition_femme_0_4: {type: float, initialdata: False}
+    - dependance_transition_homme_0_5: {type: float, initialdata: False}
+    - dependance_transition_femme_0_5: {type: float, initialdata: False}
+    - dependance_transition_homme_1_0: {type: float, initialdata: False}
+    - dependance_transition_femme_1_0: {type: float, initialdata: False}
+    - dependance_transition_homme_1_1: {type: float, initialdata: False}
+    - dependance_transition_femme_1_1: {type: float, initialdata: False}
+    - dependance_transition_homme_1_2: {type: float, initialdata: False}
+    - dependance_transition_femme_1_2: {type: float, initialdata: False}
+    - dependance_transition_homme_1_4: {type: float, initialdata: False}
+    - dependance_transition_femme_1_4: {type: float, initialdata: False}
+    - dependance_transition_homme_1_5: {type: float, initialdata: False}
+    - dependance_transition_femme_1_5: {type: float, initialdata: False}
+    - dependance_transition_homme_2_1: {type: float, initialdata: False}
+    - dependance_transition_femme_2_1: {type: float, initialdata: False}
+    - dependance_transition_homme_2_2: {type: float, initialdata: False}
+    - dependance_transition_femme_2_2: {type: float, initialdata: False}
+    - dependance_transition_homme_2_3: {type: float, initialdata: False}
+    - dependance_transition_femme_2_3: {type: float, initialdata: False}
+    - dependance_transition_homme_2_4: {type: float, initialdata: False}
+    - dependance_transition_femme_2_4: {type: float, initialdata: False}
+    - dependance_transition_homme_2_5: {type: float, initialdata: False}
+    - dependance_transition_femme_2_5: {type: float, initialdata: False}
+    - dependance_transition_homme_3_2: {type: float, initialdata: False}
+    - dependance_transition_femme_3_2: {type: float, initialdata: False}
+    - dependance_transition_homme_3_3: {type: float, initialdata: False}
+    - dependance_transition_femme_3_3: {type: float, initialdata: False}
+    - dependance_transition_homme_3_4: {type: float, initialdata: False}
+    - dependance_transition_femme_3_4: {type: float, initialdata: False}
+    - dependance_transition_homme_3_5: {type: float, initialdata: False}
+    - dependance_transition_femme_3_5: {type: float, initialdata: False}
+    - dependance_transition_homme_4_4: {type: float, initialdata: False}
+    - dependance_transition_femme_4_4: {type: float, initialdata: False}
+    - dependance_transition_homme_4_5: {type: float, initialdata: False}
+    - dependance_transition_femme_4_5: {type: float, initialdata: False}
+    processes:
+      dependance_transition_initialisation:
+      - dependance_transition_homme_0_0: transition[0, 0:121, 0, 0]
+      - dependance_transition_femme_0_0: transition[0, 0:121, 0, 0]
+      - dependance_transition_homme_0_1: transition[0, 0:121, 0, 1]
+      - dependance_transition_femme_0_1: transition[0, 0:121, 0, 1]
+      - dependance_transition_homme_0_4: transition[0, 0:121, 0, 4]
+      - dependance_transition_femme_0_4: transition[0, 0:121, 0, 4]
+      - dependance_transition_homme_0_5: transition[0, 0:121, 0, 5]
+      - dependance_transition_femme_0_5: transition[0, 0:121, 0, 5]
+      - dependance_transition_homme_1_0: transition[0, 0:121, 1, 0]
+      - dependance_transition_femme_1_0: transition[0, 0:121, 1, 0]
+      - dependance_transition_homme_1_1: transition[0, 0:121, 1, 1]
+      - dependance_transition_femme_1_1: transition[0, 0:121, 1, 1]
+      - dependance_transition_homme_1_2: transition[0, 0:121, 1, 2]
+      - dependance_transition_femme_1_2: transition[0, 0:121, 1, 2]
+      - dependance_transition_homme_1_4: transition[0, 0:121, 1, 4]
+      - dependance_transition_femme_1_4: transition[0, 0:121, 1, 4]
+      - dependance_transition_homme_1_5: transition[0, 0:121, 1, 5]
+      - dependance_transition_femme_1_5: transition[0, 0:121, 1, 5]
+      - dependance_transition_homme_2_1: transition[0, 0:121, 2, 1]
+      - dependance_transition_femme_2_1: transition[0, 0:121, 2, 1]
+      - dependance_transition_homme_2_2: transition[0, 0:121, 2, 2]
+      - dependance_transition_femme_2_2: transition[0, 0:121, 2, 2]
+      - dependance_transition_homme_2_3: transition[0, 0:121, 2, 3]
+      - dependance_transition_femme_2_3: transition[0, 0:121, 2, 3]
+      - dependance_transition_homme_2_4: transition[0, 0:121, 2, 4]
+      - dependance_transition_femme_2_4: transition[0, 0:121, 2, 4]
+      - dependance_transition_homme_2_5: transition[0, 0:121, 2, 5]
+      - dependance_transition_femme_2_5: transition[0, 0:121, 2, 5]
+      - dependance_transition_homme_3_2: transition[0, 0:121, 3, 2]
+      - dependance_transition_femme_3_2: transition[0, 0:121, 3, 2]
+      - dependance_transition_homme_3_3: transition[0, 0:121, 3, 3]
+      - dependance_transition_femme_3_3: transition[0, 0:121, 3, 3]
+      - dependance_transition_homme_3_4: transition[0, 0:121, 3, 4]
+      - dependance_transition_femme_3_4: transition[0, 0:121, 3, 4]
+      - dependance_transition_homme_3_5: transition[0, 0:121, 3, 5]
+      - dependance_transition_femme_3_5: transition[0, 0:121, 3, 5]
+      - dependance_transition_homme_4_4: transition[0, 0:121, 4, 4]
+      - dependance_transition_femme_4_4: transition[0, 0:121, 4, 4]
+      - dependance_transition_homme_4_5: transition[0, 0:121, 4, 5]
+      - dependance_transition_femme_4_5: transition[0, 0:121, 4, 5]
+      mise_a_jour:
+      - education()
+      - mortality_rates_update()
+      # - dependance_transition_mise_a_jour()
+      options_initialisation:
+      - mortality_rates_initialisation()
+      - dependance_transition_initialisation()

@@ -212,12 +212,17 @@ def create_transition_functions(cohort = None):
 
 
 def create_scaled_transition_functions(cohort = 'paquid'):
-    dependance_transition_yml_path = os.path.join(
+    dependance_RT_path = os.path.join(
         pkg_resources.get_distribution('til-france').location,
         'til_france',
         'model',
         'options',
         'dependance_RT',
+        )
+
+    # individus entry base structure
+    dependance_transition_yml_path = os.path.join(
+        dependance_RT_path,
         'dependance_scaled_{}_transition_functions.yml'.format(cohort)
         )
     process_by_initial_state = dict()
@@ -225,7 +230,22 @@ def create_scaled_transition_functions(cohort = 'paquid'):
     individus = dict(individus = processes)
     main = dict(entities = individus)
 
-    generation_variables = list()
+    # generation entry base structure
+    dependance_generation_transition_yml_path = os.path.join(
+        dependance_RT_path,
+        'dependance_generation_transition_calibration_variables.yml'.format(cohort)
+        )
+    generation_fields = list()
+    mise_a_jour = ['education()', 'mortality_rates_update()', 'dependance_transition_mise_a_jour()']
+    options_initialisation = ['mortality_rates_initialisation()', 'dependance_transition_initialisation()']
+    dependance_transition_initialisation = list()
+    generation_processes = dict(
+        mise_a_jour = mise_a_jour,
+        options_initialisation = options_initialisation,
+        dependance_transition_initialisation = dependance_transition_initialisation,
+        )
+    generations = dict(generations = dict(fields = generation_fields, processes = generation_processes))
+    generations_main = dict(entities = generations)
 
     for initial_state, final_states in final_states_by_initial_state.iteritems():
         initial_state_actions = list()
@@ -235,13 +255,29 @@ def create_scaled_transition_functions(cohort = 'paquid'):
             male_link = 'dependance_transition_homme_{}_{}'.format(initial_state, final_state)
             female_link = 'dependance_transition_femme_{}_{}'.format(initial_state, final_state)
             initial_state_actions.append({
-                "prob_{}".format(final_state): "if(ISMALE, indivdu2generation.{}, indivdu2generation.{})".format(
+                "prob_{}".format(final_state): "if(ISMALE, individu2generation.{}, individu2generation.{})".format(
                     male_link, female_link)
                 })
-            generation_variables.append(male_link)
-            generation_variables.append(female_link)
-
-        # return line
+            # generation_fields.append({
+            #     male_link: dict(type = 'float', initialdata = 'False')
+            #     })
+            # generation_fields.append({
+            #     str(female_link): dict(type = 'float', initialdata = 'False')
+            #     })
+            generation_fields.append({
+                male_link: '{type = float, initialdata = False}'
+                })
+            generation_fields.append({
+                female_link: '{type = float, initialdata = False}'
+                })
+            dependance_transition_initialisation.append({
+                male_link: 'dependance_transition_homme[0, 0:121, {}, {}]'.format(initial_state, final_state),
+                # First argument of transition is period
+                })
+            dependance_transition_initialisation.append({
+                female_link: 'dependance_transition_femme[0, 0:121, {}, {}]'.format(initial_state, final_state),
+                })
+        # return line for individus
         prob_final_states = ["prob_{}".format(final_state) for final_state in final_states]
         probabilities_list_str = "[" + ", ".join(prob_final_states) + "]"
         final_states_index_list_str = [
@@ -257,9 +293,8 @@ def create_scaled_transition_functions(cohort = 'paquid'):
     with open(dependance_transition_yml_path, 'w') as outfile:
         yaml.dump(main, outfile, default_flow_style = False, width = 1000)
 
-    with open(generation_dependance_transition_yml_path, 'w') as outfile:
-        yaml.dump(generation_main, outfile, default_flow_style = False, width = 1000)
-
+    with open(dependance_generation_transition_yml_path, 'w') as outfile:
+        yaml.dump(generations_main, outfile, default_flow_style = False, width = 1000)
 
 
 if __name__ == "__main__":

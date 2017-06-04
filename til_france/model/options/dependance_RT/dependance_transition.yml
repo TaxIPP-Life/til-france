@@ -82,7 +82,7 @@ entities:
         - dependance_niveau_from_3: etat_3()
         - dependance_niveau_from_4: etat_4()
         - dependance_niveau: if(
-            (age >= 60) & ((id % 2) == period_modulo),
+            (age >= 65) & ((id % 2) == period_modulo),
             if(
                 dependance_niveau == 0,
                 dependance_niveau_from_0,
