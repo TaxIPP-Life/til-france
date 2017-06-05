@@ -9,20 +9,21 @@ import yaml
 
 from til_france.model.options.dependance_RT.life_expectancy.transition import final_states_by_initial_state
 
+til_france_path = os.path.join(
+    pkg_resources.get_distribution('Til-France').location,
+    'til_france',
+    )
 
 dependance_functions_yml_path = os.path.join(
-    pkg_resources.get_distribution('til-france').location,
-    'til_france',
+    til_france_path,
     'model',
     'options',
     'dependance_RT',
     'dependance_initialisation_functions.yml'
     )
 
-
 prevalence_coef_path = os.path.join(
-    pkg_resources.get_distribution('til-france').location,
-    'til_france',
+    til_france_path,
     'model',
     'options',
     'dependance_RT',
@@ -186,8 +187,9 @@ def create_transition_functions(cohort = None):
                 "prob_" + str(final_state): "prob_{} / z".format(final_state)
                 })
 
-        prob_final_states = ["prob_" + final_state for final_state in variables_by_final_state.keys()]
-        probabilities_list_str = "[" + ", ".join(prob_final_states) + "]"
+        prob_final_states = sorted(["prob_" + final_state for final_state in variables_by_final_state.keys()])
+        probabilities_list_str = "[" + ", ".join(prob_final_states[:-1])
+        probabilities_list_str = probabilities_list_str + ", 1 - (" + '+'.join(prob_final_states[:-1]) + ")]"
         final_states_index_list_str = [
             int(final_state[-1:]) for final_state in prob_final_states
             ]
@@ -237,14 +239,14 @@ def create_scaled_transition_functions(cohort = 'paquid'):
         )
     generation_fields = list()
     mise_a_jour = ['education()', 'mortality_rates_update()', 'dependance_transition_mise_a_jour()']
-    options_initialisation = ['mortality_rates_initialisation()', 'dependance_transition_initialisation()']
-    dependance_transition_initialisation = list()
+    options_initialisation = ['mortality_rates_initialisation()', 'dependance_transition_mise_a_jour()']
+    dependance_transition_mise_a_jour = list()
     generation_processes = dict(
         mise_a_jour = mise_a_jour,
         options_initialisation = options_initialisation,
-        dependance_transition_initialisation = dependance_transition_initialisation,
+        dependance_transition_mise_a_jour = dependance_transition_mise_a_jour,
         )
-    generations = dict(generations = dict(fields = generation_fields, processes = generation_processes))
+    generations = dict(generation = dict(fields = generation_fields, processes = generation_processes))
     generations_main = dict(entities = generations)
 
     for initial_state, final_states in final_states_by_initial_state.iteritems():
@@ -265,21 +267,24 @@ def create_scaled_transition_functions(cohort = 'paquid'):
             #     str(female_link): dict(type = 'float', initialdata = 'False')
             #     })
             generation_fields.append({
-                male_link: '{type = float, initialdata = False}'
+                male_link: '{type: float, initialdata: False}'
                 })
             generation_fields.append({
-                female_link: '{type = float, initialdata = False}'
+                female_link: '{type: float, initialdata: False}'
                 })
-            dependance_transition_initialisation.append({
-                male_link: 'dependance_transition_homme[0, 0:121, {}, {}]'.format(initial_state, final_state),
+            dependance_transition_mise_a_jour.append({
+                male_link: 'dependance_transition_homme[period - 2010, 0:121, {}, {}]'.format(
+                    initial_state, final_state),
                 # First argument of transition is period
                 })
-            dependance_transition_initialisation.append({
-                female_link: 'dependance_transition_femme[0, 0:121, {}, {}]'.format(initial_state, final_state),
+            dependance_transition_mise_a_jour.append({
+                female_link: 'dependance_transition_femme[period - 2010, 0:121, {}, {}]'.format(
+                    initial_state, final_state),
                 })
         # return line for individus
-        prob_final_states = ["prob_{}".format(final_state) for final_state in final_states]
-        probabilities_list_str = "[" + ", ".join(prob_final_states) + "]"
+        prob_final_states = sorted(["prob_" + str(final_state) for final_state in final_states])
+        probabilities_list_str = "[" + ", ".join(prob_final_states[:-1])
+        probabilities_list_str = probabilities_list_str + ", 1 - (" + ' + '.join(prob_final_states[:-1]) + ")]"
         final_states_index_list_str = [
             int(final_state[-1:]) for final_state in prob_final_states
             ]
@@ -290,11 +295,23 @@ def create_scaled_transition_functions(cohort = 'paquid'):
                 )
             )
 
+
+
+
     with open(dependance_transition_yml_path, 'w') as outfile:
         yaml.dump(main, outfile, default_flow_style = False, width = 1000)
 
     with open(dependance_generation_transition_yml_path, 'w') as outfile:
         yaml.dump(generations_main, outfile, default_flow_style = False, width = 1000)
+
+    # Read in the file
+    with open(dependance_generation_transition_yml_path, 'r') as outfile:
+        filedata = outfile.read()
+    # Replace the target string
+    filedata = filedata.replace("'{type: float, initialdata: False}'", '{type: float, initialdata: False}')
+    # Write the file out again
+    with open(dependance_generation_transition_yml_path, 'w') as outfile:
+        outfile.write(filedata)
 
 
 if __name__ == "__main__":

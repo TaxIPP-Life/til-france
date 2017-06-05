@@ -2,41 +2,32 @@ entities:
   individus:
     processes:
       etat_0():
-      - show('initial_state 0\n')
       - prob_0: if(ISMALE, individu2generation.dependance_transition_homme_0_0, individu2generation.dependance_transition_femme_0_0)
       - prob_1: if(ISMALE, individu2generation.dependance_transition_homme_0_1, individu2generation.dependance_transition_femme_0_1)
       - prob_4: if(ISMALE, individu2generation.dependance_transition_homme_0_4, individu2generation.dependance_transition_femme_0_4)
       - prob_5: if(ISMALE, individu2generation.dependance_transition_homme_0_5, individu2generation.dependance_transition_femme_0_5)
-      - return choice([0, 1, 4, 5], [prob_0, prob_1, prob_4, prob_5])
+      - return choice([0, 1, 4, 5], [prob_0, prob_1, prob_4, 1 - (prob_0 + prob_1 + prob_4)])
       etat_1():
-      - show('initial_state 1\n')
       - prob_0: if(ISMALE, individu2generation.dependance_transition_homme_1_0, individu2generation.dependance_transition_femme_1_0)
       - prob_1: if(ISMALE, individu2generation.dependance_transition_homme_1_1, individu2generation.dependance_transition_femme_1_1)
       - prob_2: if(ISMALE, individu2generation.dependance_transition_homme_1_2, individu2generation.dependance_transition_femme_1_2)
       - prob_4: if(ISMALE, individu2generation.dependance_transition_homme_1_4, individu2generation.dependance_transition_femme_1_4)
       - prob_5: if(ISMALE, individu2generation.dependance_transition_homme_1_5, individu2generation.dependance_transition_femme_1_5)
-      - return choice([0, 1, 2, 4, 5], [prob_0, prob_1, prob_2, prob_4, prob_5])
+      - return choice([0, 1, 2, 4, 5], [prob_0, prob_1, prob_2, prob_4, 1 - (prob_0 + prob_1 + prob_2 + prob_4)])
       etat_2():
-      - show('initial_state 2\n')
       - prob_1: if(ISMALE, individu2generation.dependance_transition_homme_2_1, individu2generation.dependance_transition_femme_2_1)
       - prob_2: if(ISMALE, individu2generation.dependance_transition_homme_2_2, individu2generation.dependance_transition_femme_2_2)
       - prob_3: if(ISMALE, individu2generation.dependance_transition_homme_2_3, individu2generation.dependance_transition_femme_2_3)
       - prob_4: if(ISMALE, individu2generation.dependance_transition_homme_2_4, individu2generation.dependance_transition_femme_2_4)
       - prob_5: if(ISMALE, individu2generation.dependance_transition_homme_2_5, individu2generation.dependance_transition_femme_2_5)
-      - total: prob_1 + prob_2 + prob_3 + prob_4 + prob_5
-      - show(groupby(age, expr = max(total)), '\n')
-      - show(groupby(age, expr = min(total)))
-      - show(dump(age, prob_1, prob_2, prob_3, prob_4, prob_5, filter = ( ((prob_1 + prob_2 + prob_3 + prob_4 + prob_5) != 1) & (age >= 65) ) ))
       - return choice([1, 2, 3, 4, 5], [prob_1, prob_2, prob_3, prob_4, 1 - (prob_1 + prob_2 + prob_3 + prob_4)])
       etat_3():
-      - show('initial_state 3\n')
       - prob_2: if(ISMALE, individu2generation.dependance_transition_homme_3_2, individu2generation.dependance_transition_femme_3_2)
       - prob_3: if(ISMALE, individu2generation.dependance_transition_homme_3_3, individu2generation.dependance_transition_femme_3_3)
       - prob_4: if(ISMALE, individu2generation.dependance_transition_homme_3_4, individu2generation.dependance_transition_femme_3_4)
       - prob_5: if(ISMALE, individu2generation.dependance_transition_homme_3_5, individu2generation.dependance_transition_femme_3_5)
       - return choice([2, 3, 4, 5], [prob_2, prob_3, prob_4, 1 - (prob_2 + prob_3 + prob_4)])
       etat_4():
-      - show('initial_state 4\n')
       - prob_4: if(ISMALE, individu2generation.dependance_transition_homme_4_4, individu2generation.dependance_transition_femme_4_4)
       - prob_5: if(ISMALE, individu2generation.dependance_transition_homme_4_5, individu2generation.dependance_transition_femme_4_5)
-      - return choice([4, 5], [prob_4, 1 - prob_4])
+      - return choice([4, 5], [prob_4, 1 - (prob_4)])

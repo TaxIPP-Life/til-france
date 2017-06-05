@@ -47,7 +47,7 @@ def get_simulation(run = False, option = None):
     return simulation
 
 
-def plot_results(simulation, option = None, age_max = None):
+def plot_results(simulation, option = None, age_max = None, age_min = None):
     assert option is not None
     plot_population(simulation, backup = option)
     plot_dependance_csv(simulation, backup = option)
@@ -58,6 +58,7 @@ def plot_results(simulation, option = None, age_max = None):
         years = [2010, 2025, 2040],
         save = True,
         age_max = age_max,
+        age_min = age_min,
         )
     #
     Boum
@@ -86,4 +87,4 @@ if __name__ == '__main__':
     option = 'dependance_RT_paquid'
     simulation = get_simulation(run = False, option = option)
     # extract_dependance_niveau(simulation, option = option)
-    plot_results(simulation, option = option, age_max = 95)
+    plot_results(simulation, option = option, age_min = 65, age_max = 95)

@@ -260,7 +260,8 @@ def clean_prevalence_csv(data):
     return data
 
 
-def plot_dependance_prevalence_by_age(simulation, years = None, ax = None, age_max = None, backup = None):
+def plot_dependance_prevalence_by_age(simulation, years = None, ax = None, age_max = None, age_min = None,
+        backup = None):
     assert years is not None
     figures_directory = create_or_get_figures_directory(simulation, backup = backup)
 
@@ -277,10 +278,11 @@ def plot_dependance_prevalence_by_age(simulation, years = None, ax = None, age_m
     ylabel = u"taux de prévalence"
     # ylabel = "prevalence rate"
     return _plot_and_or_save(ax = ax, data = data, figures_directory = figures_directory,
-        name = 'prevalence', pdf_name = None, years = years, age_max = age_max, ylabel = ylabel)
+        name = 'prevalence', pdf_name = None, years = years, age_max = age_max, age_min = age_min, ylabel = ylabel)
 
 
-def plot_dependance_incidence_by_age(simulation, years = None, ax = None, age_max = None, backup = None):
+def plot_dependance_incidence_by_age(simulation, years = None, ax = None, age_max = None, age_min = None,
+        backup = None):
     assert years is not None
     figures_directory = create_or_get_figures_directory(simulation, backup = backup)
     data = extract_incidence_csv(simulation, backup = backup)
@@ -295,10 +297,11 @@ def plot_dependance_incidence_by_age(simulation, years = None, ax = None, age_ma
     ylabel = "taux d'incidence"
     # ylabel = "incidence rate"
     return _plot_and_or_save(ax = ax, data = data, figures_directory = figures_directory,
-        name = 'incidence', pdf_name = None, years = years, age_max = age_max, ylabel = ylabel)
+        name = 'incidence', pdf_name = None, years = years, age_max = age_max, age_min = age_min, ylabel = ylabel)
 
 
-def plot_dependance_mortalite_by_age(simulation, years = None, ax = None, age_max = None, backup = None):
+def plot_dependance_mortalite_by_age(simulation, years = None, ax = None, age_max = None, age_min = None,
+        backup = None):
     assert years is not None
     figures_directory = create_or_get_figures_directory(simulation, backup = backup)
     data = extract_deces_csv(simulation, backup = backup)
@@ -313,16 +316,16 @@ def plot_dependance_mortalite_by_age(simulation, years = None, ax = None, age_ma
     print(data)
     ylabel = u"quotient de mortalité des personnes dépendantes"
     return _plot_and_or_save(ax = ax, data = data, figures_directory = figures_directory,
-      name = 'mortalite', pdf_name = None, years = years, age_max = age_max, ylabel = ylabel)
+      name = 'mortalite', pdf_name = None, years = years, age_max = age_max, age_min = age_min, ylabel = ylabel)
 
 
-def plot_dependance_by_age(simulation, years = None, age_max = None, save = True, backup = None):
+def plot_dependance_by_age(simulation, years = None, age_max = None, age_min = None, save = True, backup = None):
     figures_directory = create_or_get_figures_directory(simulation, backup = backup)
     fig, (ax1, ax2, ax3) = plt.subplots(1, 3)
     legend_handles, legend_labels = plot_dependance_prevalence_by_age(
         simulation, years = years, ax = ax1, age_max = age_max)
-    plot_dependance_incidence_by_age(simulation, years = years, ax = ax2, age_max = age_max)
-    plot_dependance_mortalite_by_age(simulation, years = years, ax = ax3, age_max = age_max)
+    plot_dependance_incidence_by_age(simulation, years = years, ax = ax2, age_max = age_max, age_min = age_min)
+    plot_dependance_mortalite_by_age(simulation, years = years, ax = ax3, age_max = age_max, age_min = age_min)
 
     ax3.legend().set_visible(False)
     plt.draw()
@@ -334,11 +337,12 @@ def plot_dependance_by_age(simulation, years = None, age_max = None, save = True
         fig.savefig(os.path.join(figures_directory, 'dependance_by_age.pdf'), bbox_inches='tight')
 
 
-def plot_dependance_by_age_separate(simulation, years = None, age_max = None, save = True, backup = None):
-    plot_dependance_prevalence_by_age(simulation, years = years, age_max = age_max, backup = backup)
-    plot_dependance_incidence_by_age(simulation, years = years, age_max = age_max, backup = backup)
+def plot_dependance_by_age_separate(simulation, years = None, age_max = None, age_min = None, save = True,
+        backup = None):
+    plot_dependance_prevalence_by_age(simulation, years = years, age_max = age_max, age_min = age_min, backup = backup)
+    plot_dependance_incidence_by_age(simulation, years = years, age_max = age_max, age_min = age_min, backup = backup)
     plot_dependance_mortalite_by_age(
-        simulation, years = years, age_max = age_max, backup = backup)
+        simulation, years = years, age_max = age_max, age_min = age_min, backup = backup)
 
 
 # Helpers
@@ -412,7 +416,7 @@ def _extract(simulation, filename, removed_lines_prefixes, columns, drop = None,
 
 
 def _plot_and_or_save(ax = None, data = None, figures_directory = None, name = None, pdf_name = None, years = None,
-        age_max = None, ylabel = None, english = False):
+        age_max = None, age_min = None, ylabel = None, english = False):
     assert name is not None
     assert data is not None
     assert years is not None
@@ -421,10 +425,12 @@ def _plot_and_or_save(ax = None, data = None, figures_directory = None, name = N
     data['age_group'] = np.trunc((data.age - 60) / 5)
     data.age_group = data.age_group.astype(int)
 
+    if not age_min:
+        age_min = 60
     if age_max:
-        query = '(age >= 60) and (age <= @age_max) and (period in @years)'
+        query = '(age >= @age_min) and (age <= @age_max) and (period in @years)'
     else:
-        query = '(age >= 60) and (period in @years)'
+        query = '(age >= @age_min) and (period in @years)'
 
     data_plot = data.query(query)[['age', 'period', name, 'sexe']]
 
