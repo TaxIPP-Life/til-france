@@ -3,7 +3,7 @@ entities:
     processes:
       Phi(x):
       - x_adjusted: x / 1.41421356237
-      - return (1.0 + 0.5 * erf(x_adjusted))
+      - return 0.5 * (1.0 + erf(x_adjusted))
       compute_dependance_niveau_femme_inf_80(lq, nb_enfants):
       - value: -0.148325517774 * INCOUPLE + 0.210969701409 * (education_niveau == 1) + 0.0436756461859 * nb_enfants + -0.210589900613 * (education_niveau >= 4) + 0.415847092867 * lq
       - probabilite_0: Phi(-2.96239829063 - value)
