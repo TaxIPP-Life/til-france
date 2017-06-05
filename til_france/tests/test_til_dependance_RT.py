@@ -49,13 +49,13 @@ def get_simulation(run = False, option = None):
 
 def plot_results(simulation, option = None, age_max = None, age_min = None):
     assert option is not None
-    plot_population(simulation, backup = option)
-    plot_dependance_csv(simulation, backup = option)
+    # plot_population(simulation, backup = option)
+    plot_dependance_csv(simulation, backup = option, year_min = 2011)
 
     plot_dependance_by_age_separate(
         simulation,
         backup = option,
-        years = [2010, 2025, 2040],
+        years = [2011, 2025, 2040],
         save = True,
         age_max = age_max,
         age_min = age_min,
@@ -79,12 +79,12 @@ def extract_dependance_niveau(simulation, option = None):
         )
 
     df.to_csv(os.path.join(assets_path, 'dependance_niveau.csv'))
-    Bim
+    Boum
 
 
 if __name__ == '__main__':
     logging.basicConfig(level = logging.DEBUG, stream = sys.stdout)
     option = 'dependance_RT_paquid'
-    simulation = get_simulation(run = False, option = option)
+    simulation = get_simulation(run = True, option = option)
     # extract_dependance_niveau(simulation, option = option)
     plot_results(simulation, option = option, age_min = 65, age_max = 95)

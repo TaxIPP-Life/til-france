@@ -159,10 +159,15 @@ def clean_dependance_csv(panel_simulation):
     return panel_simulation
 
 
-def plot_dependance_csv(simulation, backup = None):
+def plot_dependance_csv(simulation, backup = None, year_min = None, year_max = None):
     figures_directory = create_or_get_figures_directory(simulation, backup = backup)
     panel_simulation = extract_dependance_csv(simulation, backup = backup)
     panel_simulation = clean_dependance_csv(panel_simulation)
+
+    if year_min:
+        panel_simulation = panel_simulation.query('index >= @year_min')
+    if year_max:
+        panel_simulation = panel_simulation.query('index <= @year_max')
 
     ax = panel_simulation.plot(
         linewidth = 2,
@@ -241,7 +246,9 @@ def clean_prevalence_csv(data):
     def _clean_data(df):
         df = (df
             .groupby([dependance_level_variable, 'period', 'age', 'sexe'])['total'].sum()
-            .unstack([dependance_level_variable]))
+            .unstack([dependance_level_variable])
+            .fillna(0)
+            )
         df[0] = df[-1] + df[0]
         df.drop(-1, axis = 1, inplace = True)
         df['prevalence'] = sum(
