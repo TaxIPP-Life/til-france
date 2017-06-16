@@ -93,4 +93,4 @@ simulation:
 
     # Number of periods includes initial period
     periods: 30
-    # last period = periods + start_period - 1 = 45 + 2016 -1 = 2060
+    # last period = periods + start_period - 1 = 30 + 2016 -1 = 2045

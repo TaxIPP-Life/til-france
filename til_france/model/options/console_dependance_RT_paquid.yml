@@ -13,5 +13,5 @@ entities:
 
 
 simulation:
-  periods: 31
+  periods: 3
   random_seed: 12345

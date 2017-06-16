@@ -80,5 +80,6 @@ def main():
         log.info('Writing data in {}.'.format(file_path))
         dataframe.to_csv(file_path)
 
+
 if __name__ == "__main__":
     sys.exit(main())

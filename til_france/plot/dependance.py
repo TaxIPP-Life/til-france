@@ -267,6 +267,40 @@ def clean_prevalence_csv(data):
     return data
 
 
+def clean_prevalence_all_levels_csv(data):
+
+    columns = data[0].columns if isinstance(data, list) else data.columns
+
+    if 'dependance_niveau' in columns:
+        dependance_level_variable = 'dependance_niveau'
+        log.debug("Cleaning dependance_niveau")
+    else:
+        raise
+
+    def _clean_data(df):
+        df = (df
+            .groupby([dependance_level_variable, 'period', 'age', 'sexe'])['total'].sum()
+            .unstack([dependance_level_variable])
+            .fillna(0)
+            )
+        df[0] = df[-1] + df[0]
+        df.drop(-1, axis = 1, inplace = True)
+        prevalence_cols = df.columns.tolist()
+        for column in df.columns:
+            df['prevalence_{}'.format(column)] = df[column] / sum(
+                [df[i] for i in prevalence_cols ]
+                )
+
+        df = df.reset_index()
+        df.age = df.age.astype(int)
+        df.set_index(['period', 'age', 'sexe'], inplace = True)
+
+        return df[[col for col in df if str(col).startswith('prevalence')]].copy()
+
+    data = _apply_cleaning(_clean_data, data)
+    return data
+
+
 def plot_dependance_prevalence_by_age(simulation, years = None, ax = None, age_max = None, age_min = None,
         backup = None):
     assert years is not None
@@ -286,6 +320,27 @@ def plot_dependance_prevalence_by_age(simulation, years = None, ax = None, age_m
     # ylabel = "prevalence rate"
     return _plot_and_or_save(ax = ax, data = data, figures_directory = figures_directory,
         name = 'prevalence', pdf_name = None, years = years, age_max = age_max, age_min = age_min, ylabel = ylabel)
+
+
+def plot_dependance_prevalence_all_levels_by_age(simulation, years = None, ax = None, age_max = None, age_min = None,
+        backup = None):
+    assert years is not None
+    figures_directory = create_or_get_figures_directory(simulation, backup = backup)
+
+    try:
+        df = extract_dependance_gir_csv(simulation, backup = backup)
+        log.debug("Extracting girs")
+    except IOError:
+        log.debug("Abrot extracting girs because irrelevant")
+        df = extract_dependance_niveau_csv(simulation, backup = backup)
+        log.debug("Extracting dependance_niveau")
+
+    data = clean_prevalence_all_levels_csv(df)
+    ylabel = u"taux de prévalence"
+    # # ylabel = "prevalence rate"
+    return data
+#    return _plot_and_or_save(ax = ax, data = data, figures_directory = figures_directory,
+#         name = 'prevalence', pdf_name = None, years = years, age_max = age_max, age_min = age_min, ylabel = ylabel)
 
 
 def plot_dependance_incidence_by_age(simulation, years = None, ax = None, age_max = None, age_min = None,
