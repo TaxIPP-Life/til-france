@@ -23,6 +23,27 @@ from til_france.model.options.dependance_RT.life_expectancy.calibration import (
 from til_france.targets.population import build_mortality_rates
 
 
+def get_mortality_from_insee_projection(sexe = None, year = None):
+    assert year is not None
+    assert sexe in ['female', 'male']
+    mortalite_insee = build_mortality_rates()[sexe][year]
+    mortalite_insee.name = 'mortalite_insee_{}'.format(year)
+    return mortalite_insee
+
+
+def get_historical_mortality(sexe = None, year = None):
+    mortalite_by_sex = get_historical_mortalite_by_sex()
+    return (
+        mortalite_by_sex[sexe]
+        .query('annee == @year')
+        .reset_index()
+        .loc[:109, ['age', 'mortalite']]
+        .astype(dict(age = 'int'))
+        .set_index('age')
+        .rename(columns = dict(mortalite = 'mortalite_{}'.format(year)))
+        )
+
+
 def plot_paquid_comparison(formula = None, sexe = None):
     assert formula is not None
     mortality_table = get_predicted_mortality_table(formula= formula, sexe = sexe)
@@ -45,29 +66,16 @@ def plot_paquid_comparison(formula = None, sexe = None):
         lambda x: 1 - np.sqrt(1 - 1.0 * (x.final_state == 5).sum() / x.count())
         )
 
-    mortalite_insee_2007 = build_mortality_rates()[sexe][2007]
-    mortalite_insee_2007.name = 'mortalite_insee_2007'
-
-    mortalite_by_sex = get_historical_mortalite_by_sex()
+    mortalite_insee_2007 = get_mortality_from_insee_projection(sexe = sexe, year = 2007)
+    mortalite_1988 = get_historical_mortality(sexe = sexe, year = 1998)
 
     profile = filtered.query('initial_state != 5').dropna()
     profile.age.round().value_counts()
-
     profile['age'] = profile.age.round()
-
     sample_mortality_profile = (profile
         .merge(mortality_table, on =['age', 'initial_state'], how = 'left')
         .groupby(['age'])['mortality']
         .mean()
-        )
-
-    mortalite_1988 = (mortalite_by_sex[sexe]
-        .query('annee == 1988')
-        .reset_index()
-        .loc[:109, ['age', 'mortalite']]
-        .astype(dict(age = 'int'))
-        .set_index('age')
-        .rename(columns = dict(mortalite = 'mortalite_1988'))
         )
 
     plot_data = pd.concat([sample_mortality_profile, mortalite_insee_2007, mortalite_1988], axis = 1)
@@ -80,13 +88,11 @@ def plot_paquid_comparison(formula = None, sexe = None):
     ax2 = plot_data.query('age > 60').plot(y = 'ratio')
     ax2.get_figure().savefig('ratio_mortalite.png')
 
+    #
     sexe_nbr = 0 if sexe == 'male' else 1
-
     df = (pd.read_csv(os.path.join(assets_path, 'dependance_niveau.csv'), index_col = 0)
         .query('(period == 2010) and (age >= 60)'))
-
     assert (df.query('dependance_niveau == -1')['total'] == 0).all()
-
     mortalite_after_imputation = (df
         .query('dependance_niveau != -1')
         .query('sexe == @sexe_nbr')
