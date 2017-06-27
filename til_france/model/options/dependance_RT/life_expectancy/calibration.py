@@ -9,11 +9,9 @@ import os
 import pandas as pd
 
 
-from .transition_matrices import (
+from til_france.model.options.dependance_RT.life_expectancy.transition_matrices import (
     assets_path,
-    final_states_by_initial_state,
-    get_proba_by_initial_state,
-    get_transtions,
+    get_transitions,
     til_france_path,
     )
 
@@ -27,25 +25,12 @@ life_table_path = os.path.join(
 def get_predicted_mortality_table(formula = None, sexe = None, save = True):
     assert sexe is not None
     assert formula is not None
-    proba_by_initial_state = get_proba_by_initial_state(formula = formula, sexe = sexe)
-    exog = pd.DataFrame(dict(age = range(65, 120)))
-    mortality_by_initial_state = exog
-    for initial_state in final_states_by_initial_state.keys():
-        mortality_by_initial_state = pd.concat(
-            [
-                mortality_by_initial_state,
-                pd.DataFrame({
-                    initial_state: (1 - np.sqrt(1 - proba_by_initial_state[initial_state]['proba_etat_5'])),
-                    }),
-                ],
-            axis = 1,
+    mortality_table = (get_transitions(formula = formula, sexe = sexe)
+        .query('final_state == 5')
+        .copy()
+        .assign(
+            mortality = lambda x: (1 - np.sqrt(1 - x.probability))
             )
-    mortality_table = pd.melt(
-        mortality_by_initial_state,
-        id_vars=['age'],
-        value_vars=[0, 1, 2, 3, 4],
-        var_name = 'initial_state',
-        value_name = 'mortality',
         )
     if save:
         mortality_table.to_csv('predicted_mortality_table_{}.csv'.format(sexe))
@@ -153,7 +138,7 @@ def get_calibration(period = None, formula = None, sexe = None):
 
 def get_calibrated_transition(formula = None, period = None, sexe = None):
     assert period is not None
-    transitions = get_transtions(formula = formula, sexe = sexe)
+    transitions = get_transitions(formula = formula, sexe = sexe)
     calibration = get_calibration(formula = formula, period = period, sexe = sexe)
     mortality = (transitions
         .reset_index()
@@ -297,6 +282,12 @@ if __name__ == '__main__':
 
     formula = 'final_state ~ I((age - 80) * 0.1) + I(((age - 80) * 0.1)**2) + I(((age - 80) * 0.1)**3)'
     period = 2010
+
+    sexe = 'female'
+    df_old = get_predicted_mortality_table_old(formula = formula, sexe = sexe)
+    df = get_predicted_mortality_table_old(formula = formula, sexe = sexe)
+
+    BOUM
 
     for sexe in ['male', 'female']:
         filename = os.path.join('/home/benjello/data/til/input/dependance_transition_{}.csv'.format(sexe))

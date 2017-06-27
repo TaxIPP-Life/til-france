@@ -5,6 +5,9 @@ import os
 import pandas as pd
 import pkg_resources
 
+from til_france.model.options.dependance_RT.life_expectancy.transition_matrices import (
+    build_tansition_matrix_from_proba_by_initial_state
+    )
 
 
 moratliteH_path = os.path.join(
@@ -14,7 +17,6 @@ moratliteH_path = os.path.join(
     'demo',
     'hyp_mortaliteH.csv',
     )
-
 
 
 def rename_variables(variables):
@@ -29,7 +31,7 @@ def rename_variables(variables):
     return variables
 
 
-def create_transition(cohort = 'paquid', sexe = None):
+def create_transition_matrix(cohort = 'paquid', sexe = None):
     assert cohort in ['paquid', '3c']
     if sexe is None:
         template = 'etat_initial_{}_corr.xlsx'
@@ -59,6 +61,7 @@ def create_transition(cohort = 'paquid', sexe = None):
     proba_by_initial_state = dict()
     for initial_state, file_path in file_path_by_state.iteritems():
         variables_by_final_state = pd.read_excel(file_path).to_dict()
+        print variables_by_final_state
         initial_state_actions = list()
         process_by_initial_state['etat_{}()'.format(initial_state)] = initial_state_actions
         for final_state, variables in variables_by_final_state.iteritems():
@@ -73,7 +76,7 @@ def create_transition(cohort = 'paquid', sexe = None):
             if value_formula == '':
                 value_formula = 0
             initial_state_actions.append({
-                "prob_" + str(final_state): "exp({})".format(value_formula)
+                "proba_" + str(final_state): "exp({})".format(value_formula)
                 })
 
         df = pd.DataFrame({'age': range(65, 120)})
@@ -83,11 +86,12 @@ def create_transition(cohort = 'paquid', sexe = None):
         df.set_index('age', inplace = True)
         df = df.div(df.sum(axis = 1), axis = 0)  # Normalization
         assert (abs(df.sum(axis=1) - 1) < .000001).all()
-        proba_by_initial_state[initial_state] = df
-    return proba_by_initial_state
+        proba_by_initial_state[initial_state] = df.reset_index()
+
+    return build_tansition_matrix_from_proba_by_initial_state(proba_by_initial_state)
 
 
-proba_by_initial_state = create_transition()
+proba_by_initial_state = create_transition_matrix()
 print proba_by_initial_state
 bim
 

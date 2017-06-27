@@ -47,6 +47,7 @@ def get_historical_mortality(sexe = None, year = None):
 def plot_paquid_comparison(formula = None, sexe = None):
     assert formula is not None
     mortality_table = get_predicted_mortality_table(formula= formula, sexe = sexe)
+
     filtered = get_filtered_paquid_data()
     filtered['final_state'] = filtered.groupby('numero')['initial_state'].shift(-1)
     filtered['age_group_10'] = 10 * (filtered.age / 10).apply(np.floor).astype('int')
@@ -72,7 +73,6 @@ def plot_paquid_comparison(formula = None, sexe = None):
     profile = filtered.query('initial_state != 5').dropna()
     profile.age.round().value_counts()
     profile['age'] = profile.age.round()
-    sample_mortality_profile = (profile
         .merge(mortality_table, on =['age', 'initial_state'], how = 'left')
         .groupby(['age'])['mortality']
         .mean()

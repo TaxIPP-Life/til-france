@@ -82,6 +82,23 @@ def build_estimation_sample(initial_state, final_states, sexe = None):
     return sample.reset_index()
 
 
+def build_tansition_matrix_from_proba_by_initial_state(proba_by_initial_state):
+    transition_matrices = list()
+    for initial_state, proba_dataframe in proba_by_initial_state.iteritems():
+        transition_matrices.append(
+            pd.melt(
+                proba_dataframe,
+                id_vars = ['age'],
+                var_name = 'final_state',
+                value_name = 'probability',
+                )
+            .replace({'final_state': dict([('proba_etat_{}'.format(index), index) for index in range(6)])})
+            .assign(initial_state = initial_state)
+            [['age', 'initial_state', 'final_state', 'probability']]
+            )
+    return pd.concat(transition_matrices, ignore_index = True).set_index(['age', 'initial_state', 'final_state'])
+
+
 def estimate_model(initial_state, final_states, formula, sexe = None, variables = ['age', 'final_state']):
     assert sexe is not None
     sample = build_estimation_sample(initial_state, final_states, sexe = sexe)
@@ -145,10 +162,9 @@ def compute_prediction(initial_state, final_states, formula = None, variables = 
     return prediction.reset_index(drop = True)
 
 
-def get_proba_by_initial_state(formula = None, sexe = None):
+def get_transitions(formula = None, sexe = None):
     assert sexe is not None
     assert formula is not None
-
     proba_by_initial_state = dict()
     exog = pd.DataFrame(dict(age = range(65, 120)))
     for initial_state, final_states in final_states_by_initial_state.iteritems():
@@ -159,26 +175,8 @@ def get_proba_by_initial_state(formula = None, sexe = None):
                 ],
             axis = 1,
             )
-    return proba_by_initial_state
-
-
-def get_transtions(formula = None, sexe = None):
-    proba_by_initial_state = get_proba_by_initial_state(formula = formula, sexe = sexe)
-    transition_matrices = list()
-    for initial_state, proba_dataframe in proba_by_initial_state.iteritems():
-        transition_matrices.append(
-            pd.melt(
-                proba_dataframe,
-                id_vars = ['age'],
-                var_name = 'final_state',
-                value_name = 'probability',
-                )
-            .replace({'final_state': dict([('proba_etat_{}'.format(index), index) for index in range(6)])})
-            .assign(initial_state = initial_state)
-            [['age', 'initial_state', 'final_state', 'probability']]
-            )
-
-    return pd.concat(transition_matrices, ignore_index = True).set_index(['age', 'initial_state', 'final_state'])
+    transition_matrix = build_tansition_matrix_from_proba_by_initial_state(proba_by_initial_state)
+    return transition_matrix
 
 
 def test(formula = None,
