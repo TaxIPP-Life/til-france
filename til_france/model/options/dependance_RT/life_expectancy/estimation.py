@@ -13,15 +13,6 @@ from til_france.model.options.dependance_RT.life_expectancy.transition_matrices 
     )
 
 
-moratliteH_path = os.path.join(
-    pkg_resources.get_distribution('til-france').location,
-    'til_france',
-    'param',
-    'demo',
-    'hyp_mortaliteH.csv',
-    )
-
-
 def rename_variables(variables):
     new_by_old_variable = {
         'age': '(age - 80)',
@@ -93,42 +84,28 @@ def create_transition_matrix(cohort = 'paquid', sexe = None):
     return build_tansition_matrix_from_proba_by_initial_state(proba_by_initial_state)
 
 
-proba_by_initial_state = create_transition_matrix()
-bim
 
 
-def get_transition(age, proba_by_initial_state):
-    assert age in range(65, 120)
-    probabilities = dict()
-    for etat, dataframe in proba_by_initial_state.iteritems():
-        extraction = dataframe.query('age == {}'.format(age)).reset_index(drop = True).squeeze()
-        extraction.name = etat
-        probabilities[etat] = extraction
-
-    transition = pd.concat(probabilities, axis = 1)
-    # Introduce absorbant dead state
-    transition[5] = 0
-    transition.loc['prob_etat_5', 5] = 1
-    transition.fillna(0, inplace = True)
-    rename_func = lambda x: x[-1:]
-    transition.rename(index = rename_func, inplace = True)
-    return transition
-
-
-initial_age = 65
-
-transition_by_age = dict()
-for age in range(65, 120):
-    transition_by_age[age] = get_transition(age = age, proba_by_initial_state = proba_by_initial_state)
-
-
-transition = transition_by_age[65]
-initial_population = np.array([1, 0, 0, 0, 0, 0])
-assert initial_population.sum() == 1
-assert (transition.dot(initial_population).sum() - 1) < 1e-10
+def get_transition_by_age(transition_matrix, age_range = range(65, 120)):
+    transition_by_age = dict()
+    for age in range(65, 120):
+        transition = (transition_matrix
+            .query('age == @age')
+            .loc[age]
+            .unstack('initial_state')
+            .squeeze()
+            .xs('probability', axis=1, drop_level=True)
+            )
+        # Introduce absorbant dead state
+        transition[ 5] = 0
+        transition.loc[5, 5] = 1
+        transition.fillna(0, inplace = True)
+        transition_by_age[age] = transition.copy()
+    return transition_by_age
 
 
 def get_population_2_year(transition_by_age):
+    initial_age = min(transition_by_age.keys())
     initial_population = np.array([1, 0, 0, 0, 0, 0])
     assert initial_population.sum() == 1
 
@@ -151,6 +128,7 @@ def get_population_2_year(transition_by_age):
 
 
 def get_population_1_year(transition_by_age):
+    initial_age = min(transition_by_age.keys())
     initial_population = np.array([1, 0, 0, 0, 0, 0])
     assert initial_population.sum() == 1
     population = pd.DataFrame({initial_age: initial_population})
@@ -161,24 +139,41 @@ def get_population_1_year(transition_by_age):
     return population
 
 
-population = get_population_1_year(transition_by_age)
-alive = population.loc[0:4].sum()
-alive.sum()
-autonomous = population.loc[0].sum()
-autonomous.sum()
-dependant = population.loc[1:4].sum()
-dependant.sum()
-dead = population.loc[5].sum()
-dead.sum()
+def diagnostic(cohort = None , sexe = None, initial_population = np.array([1, 0, 0, 0, 0, 0])):
+    transition_matrix = create_transition_matrix(cohort = cohort, sexe = sexe)
+    transition_by_age = get_transition_by_age(transition_matrix)
+    initial_population
+    assert initial_population.sum() == 1
+    assert (transition_by_age[65].dot(initial_population).sum() - 1) < 1e-10
+    population = get_population_1_year(transition_by_age)
+
+    alive = population.loc[0:4].sum()
+    life_expectancy = 64 + alive.sum()
+    print('life_expectancy at 65: {}'.format(life_expectancy))
+    remaining_years = alive.sum()
+    autonomous_years = population.loc[0].sum()
+    dependant_years = population.loc[1:4].sum().sum()
+
+    print('{} = {} + {}'.format(
+        remaining_years, autonomous_years, dependant_years
+        ))
+
+    mortalite = build_mortality_rates()['female'][2007]
+    mortalite[65] = 0
+
+    # survival
+    alive2 = (1 - mortalite[65:]).cumprod()
+    pd.concat([alive, alive2], axis = 1).plot()
+
+    # mortality
+    mortality = (alive.shift() - alive) / alive.shift()
+    mortality[65] = 0
+    pd.concat([mortalite[66:], mortality], axis = 1).plot()
 
 
-mortalite = build_mortality_rates()['female'][2007]
-mortalite[65] = 0
-alive2 = (1 - mortalite[65:]).cumprod()
-pd.concat([alive, alive2], axis = 1).plot()
+if __name__ == "__main__":
+    diagnostic(cohort = 'paquid')
+    # TODO check origin of year/age
+    # male/female
+    # cohort and data
 
-
-mortality = (alive.shift() - alive) / alive.shift()
-mortality[65] = 0
-
-pd.concat([mortalite[66:], mortality], axis = 1).plot()
