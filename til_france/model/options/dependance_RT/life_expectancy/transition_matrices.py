@@ -58,8 +58,8 @@ def get_filtered_paquid_data():
     return filtered
 
 
-def build_estimation_sample(initial_state, final_states, sexe = None):
-    assert sexe is not None
+def build_estimation_sample(initial_state, final_states, sex = None):
+    assert sex in ['male', 'female']
     filtered = get_filtered_paquid_data()
     assert initial_state in final_states
     filtered['final_state'] = filtered.groupby('numero')['initial_state'].shift(-1)
@@ -70,11 +70,10 @@ def build_estimation_sample(initial_state, final_states, sexe = None):
             ))
         .dropna()
         )
-    if sexe:
-        assert sexe in ['male', 'homme', 'female', 'femme']
-        if sexe == 'male' or sexe == 'homme':
+    if sex:
+        if sex == 'male':
             sample = sample.query('sexe == 1').copy()
-        elif sexe == 'female' or sexe == 'femme':
+        elif sex == 'female':
             sample = sample.query('sexe == 2').copy()
     sample["final_state"] = sample["final_state"].astype('int').astype('category')
     assert set(sample.final_state.value_counts().index.tolist()) == set(final_states)
@@ -82,7 +81,8 @@ def build_estimation_sample(initial_state, final_states, sexe = None):
     return sample.reset_index()
 
 
-def build_tansition_matrix_from_proba_by_initial_state(proba_by_initial_state):
+def build_tansition_matrix_from_proba_by_initial_state(proba_by_initial_state, sex = None):
+    assert sex in ['male', 'female', 'all']
     transition_matrices = list()
     for initial_state, proba_dataframe in proba_by_initial_state.iteritems():
         transition_matrices.append(
@@ -94,14 +94,20 @@ def build_tansition_matrix_from_proba_by_initial_state(proba_by_initial_state):
                 )
             .replace({'final_state': dict([('proba_etat_{}'.format(index), index) for index in range(6)])})
             .assign(initial_state = initial_state)
-            [['age', 'initial_state', 'final_state', 'probability']]
+            .assign(sex = sex)
+            [['sex', 'age', 'initial_state', 'final_state', 'probability']]
             )
-    return pd.concat(transition_matrices, ignore_index = True).set_index(['age', 'initial_state', 'final_state'])
+    return pd.concat(
+        transition_matrices,
+        ignore_index = True
+        ).set_index(
+            ['sex', 'age', 'initial_state', 'final_state']
+            )
 
 
-def estimate_model(initial_state, final_states, formula, sexe = None, variables = ['age', 'final_state']):
-    assert sexe is not None
-    sample = build_estimation_sample(initial_state, final_states, sexe = sexe)
+def estimate_model(initial_state, final_states, formula, sex = None, variables = ['age', 'final_state']):
+    assert sex in ['male', 'female']
+    sample = build_estimation_sample(initial_state, final_states, sex = sex)
     result = smf.mnlogit(
         formula = formula,
         data = sample[variables],
@@ -123,9 +129,9 @@ def estimate_model(initial_state, final_states, formula, sexe = None, variables 
     return result, formatted_params
 
 
-def direct_compute_predicition(initial_state, final_states, formula, formatted_params, sexe = None):
-    assert sexe is not None
-    computed_prediction = build_estimation_sample(initial_state, final_states, sexe = sexe)
+def direct_compute_predicition(initial_state, final_states, formula, formatted_params, sex = None):
+    assert sex in ['male', 'female']
+    computed_prediction = build_estimation_sample(initial_state, final_states, sex = sex)
     for final_state, column in formatted_params.iteritems():
         proba_str = "exp({})".format(
             " + ".join([index + " * " + str(value) for index, value in zip(column.index, column.values)])
@@ -143,9 +149,9 @@ def direct_compute_predicition(initial_state, final_states, formula, formatted_p
     return computed_prediction
 
 
-def compute_prediction(initial_state, final_states, formula = None, variables = ['age'], exog = None, sexe = None):
-    assert sexe is not None
-    sample = build_estimation_sample(initial_state, final_states, sexe = sexe)
+def compute_prediction(initial_state, final_states, formula = None, variables = ['age'], exog = None, sex = None):
+    assert sex in ['male', 'female']
+    sample = build_estimation_sample(initial_state, final_states, sex = sex)
     if exog is None:
         exog = sample[variables]
 
@@ -162,39 +168,45 @@ def compute_prediction(initial_state, final_states, formula = None, variables = 
     return prediction.reset_index(drop = True)
 
 
-def get_transitions(formula = None, sexe = None):
-    assert sexe is not None
-    assert formula is not None
-    proba_by_initial_state = dict()
-    exog = pd.DataFrame(dict(age = range(65, 120)))
-    for initial_state, final_states in final_states_by_initial_state.iteritems():
-        proba_by_initial_state[initial_state] = pd.concat(
-            [
-                exog,
-                compute_prediction(initial_state, final_states, formula, exog = exog, sexe = sexe)
-                ],
-            axis = 1,
-            )
-    transition_matrix = build_tansition_matrix_from_proba_by_initial_state(proba_by_initial_state)
-    return transition_matrix
+def get_transitions_from_formula(formula = None):
+    transitions = None
+    for sex in ['male', 'female']:
+        assert formula is not None
+        proba_by_initial_state = dict()
+        exog = pd.DataFrame(dict(age = range(65, 120)))
+        for initial_state, final_states in final_states_by_initial_state.iteritems():
+            proba_by_initial_state[initial_state] = pd.concat(
+                [
+                    exog,
+                    compute_prediction(initial_state, final_states, formula, exog = exog, sex = sex)
+                    ],
+                axis = 1,
+                )
+        transitions = pd.concat([
+            transitions,
+            build_tansition_matrix_from_proba_by_initial_state(proba_by_initial_state, sex = sex)
+            ])
+
+    transitions.reset_index().set_index('sex', 'age', 'initial_state', 'fianl_state')
+    return transitions
 
 
 def test(formula = None,
      initial_state = 0,
      final_states = [0, 1, 4, 5],
-     sexe = None):
+     sex = None):
     assert formula is not None
-    assert sexe is not None
-    result, formatted_params = estimate_model(initial_state, final_states, formula, sexe = sexe)
+    assert sex is not None
+    result, formatted_params = estimate_model(initial_state, final_states, formula, sex = sex)
     print(result.summary(alpha = .1))
     print(formatted_params)
     computed_prediction = direct_compute_predicition(
-        initial_state, final_states, formula, formatted_params, sexe = sexe)
-    prediction = compute_prediction(initial_state, final_states, formula, sexe = sexe)
+        initial_state, final_states, formula, formatted_params, sex = sex)
+    prediction = compute_prediction(initial_state, final_states, formula, sex = sex)
     diff = computed_prediction[prediction.columns] - prediction
     assert (diff.abs().max() < 1e-10).all(), "error is too big: {} > 1e-10".format(diff.abs().max())
 
 
 if __name__ == '__main__':
     formula = 'final_state ~ I((age - 80)) + I(((age - 80))**2) + I(((age - 80))**3)'
-    test(formula = formula, sexe = 'female')
+    test(formula = formula, sex = 'female')

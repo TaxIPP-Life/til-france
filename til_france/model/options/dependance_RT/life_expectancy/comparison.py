@@ -23,18 +23,18 @@ from til_france.model.options.dependance_RT.life_expectancy.calibration import (
 from til_france.targets.population import build_mortality_rates
 
 
-def get_mortality_from_insee_projection(sexe = None, year = None):
+def get_mortality_from_insee_projection(sex = None, year = None):
     assert year is not None
-    assert sexe in ['female', 'male']
-    mortalite_insee = build_mortality_rates()[sexe][year]
+    assert sex in ['female', 'male']
+    mortalite_insee = build_mortality_rates()[sex][year]
     mortalite_insee.name = 'mortalite_insee_{}'.format(year)
     return mortalite_insee
 
 
-def get_historical_mortality(sexe = None, year = None):
+def get_historical_mortality(sex = None, year = None):
     mortalite_by_sex = get_historical_mortalite_by_sex()
     return (
-        mortalite_by_sex[sexe]
+        mortalite_by_sex[sex]
         .query('annee == @year')
         .reset_index()
         .loc[:109, ['age', 'mortalite']]
@@ -44,9 +44,9 @@ def get_historical_mortality(sexe = None, year = None):
         )
 
 
-def plot_paquid_comparison(formula = None, sexe = None):
+def plot_paquid_comparison(formula = None, sex = None):
     assert formula is not None
-    mortality_table = get_predicted_mortality_table(formula= formula, sexe = sexe)
+    mortality_table = get_predicted_mortality_table(formula= formula).query('sex == @sex')
 
     filtered = get_filtered_paquid_data()
     filtered['final_state'] = filtered.groupby('numero')['initial_state'].shift(-1)
@@ -67,12 +67,12 @@ def plot_paquid_comparison(formula = None, sexe = None):
         lambda x: 1 - np.sqrt(1 - 1.0 * (x.final_state == 5).sum() / x.count())
         )
 
-    mortalite_insee_2007 = get_mortality_from_insee_projection(sexe = sexe, year = 2007)
-    mortalite_1988 = get_historical_mortality(sexe = sexe, year = 1998)
+    mortalite_insee_2007 = get_mortality_from_insee_projection(sex = sex, year = 2007)
+    mortalite_1988 = get_historical_mortality(sex = sex, year = 1998)
 
     profile = filtered.query('initial_state != 5').dropna()
     profile.age.round().value_counts()
-    profile['age'] = profile.age.round()
+    profile['age'] = (profile.age.round()
         .merge(mortality_table, on =['age', 'initial_state'], how = 'left')
         .groupby(['age'])['mortality']
         .mean()
