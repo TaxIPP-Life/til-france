@@ -22,6 +22,52 @@ life_table_path = os.path.join(
     )
 
 
+def build_mortality_calibrated_targets(transitions, period):
+    calibrated_transitions = get_calibrated_transitions(period = period, transitions = transitions)
+
+    null_fill_by_year = calibrated_transitions.reset_index().query('age == 65').copy()
+    null_fill_by_year['calibrated_probability'] = 0
+
+    # Less than 65 years old _> no correction
+    pre_65_null_fill = pd.concat([
+        null_fill_by_year.assign(age = i).copy()
+        for i in range(0, 65)
+        ]).reset_index(drop = True)
+
+    pre_65_null_fill.loc[
+        pre_65_null_fill.final_state == 0,
+        'calibrated_probability'
+        ] = 1
+
+    # More than 65 years old
+    age_max = calibrated_transitions.index.get_level_values('age').max()
+    elder_null_fill = pd.concat([
+        null_fill_by_year.assign(age = i).copy()
+        for i in range(age_max + 1, 121)
+        ]).reset_index(drop = True)
+
+    elder_null_fill.loc[
+        (elder_null_fill.age > age_max) & (elder_null_fill.final_state == 5),
+        'calibrated_probability'
+        ] = 1
+
+    age_full = pd.concat([
+        pre_65_null_fill,
+        calibrated_transitions.reset_index(),
+        elder_null_fill
+        ]).reset_index(drop = True)
+
+    age_full['period'] = period
+    result = age_full[
+        ['period', 'age', 'initial_state', 'final_state', 'calibrated_probability']
+        ].set_index(['period', 'age', 'initial_state', 'final_state'])
+
+    assert not (result.calibrated_probability < 0).any(), result.loc[result.calibrated_probability < 0]
+    assert not (result.calibrated_probability > 1).any(), result.loc[result.calibrated_probability > 1]
+    result.to_csv('result.csv')
+    return result
+
+
 def get_calibration(age_min = 65, period = None, transitions = None):
     assert period is not None
     assert transitions is not None
@@ -294,58 +340,16 @@ if __name__ == '__main__':
     formula = 'final_state ~ I((age - 80) * 0.1) + I(((age - 80) * 0.1)**2) + I(((age - 80) * 0.1)**3)'
     period = 2010
 
-    sex = 'female'
-    df = get_predicted_mortality_table(formula = formula)
 
     for sex in ['male', 'female']:
         filename = os.path.join('/home/benjello/data/til/input/dependance_transition_{}.csv'.format(sex))
         #    def export_calibrated_transitions_to_liam(formula = None, period = None, sexe = None, filename = None):
+
         transitions = get_transitions_from_formula(formula = formula)
-        calibrated_transitions = get_calibrated_transitions(period = period, transitions = transitions)
 
-        null_fill_by_year = calibrated_transitions.reset_index().query('age == 65').copy()
-        null_fill_by_year['calibrated_probability'] = 0
 
-        # Less than 65 years old _> no correction
-        pre_65_null_fill = pd.concat([
-            null_fill_by_year.assign(age = i).copy()
-            for i in range(0, 65)
-            ]).reset_index(drop = True)
-
-        pre_65_null_fill.loc[
-            pre_65_null_fill.final_state == 0,
-            'calibrated_probability'
-            ] = 1
-
-        # More than 65 years old
-        age_max = calibrated_transitions.index.get_level_values('age').max()
-        elder_null_fill = pd.concat([
-            null_fill_by_year.assign(age = i).copy()
-            for i in range(age_max + 1, 121)
-            ]).reset_index(drop = True)
-
-        elder_null_fill.loc[
-            (elder_null_fill.age > age_max) & (elder_null_fill.final_state == 5),
-            'calibrated_probability'
-            ] = 1
-
-        age_full = pd.concat([
-            pre_65_null_fill,
-            calibrated_transitions.reset_index(),
-            elder_null_fill
-            ]).reset_index(drop = True)
-
-        age_full['period'] = period
-        result = age_full[
-            ['period', 'age', 'initial_state', 'final_state', 'calibrated_probability']
-            ].set_index(['period', 'age', 'initial_state', 'final_state'])
-
-        assert not (result.calibrated_probability < 0).any(), result.loc[result.calibrated_probability < 0]
-        assert not (result.calibrated_probability > 1).any(), result.loc[result.calibrated_probability > 1]
-        result.to_csv('result.csv')
-
-        periodized_result = add_projection_corrections(sex = sex, result = result, mu = None)
-        periodized_result.to_csv('periodized_result.csv')
+            periodized_result = add_projection_corrections(sex = sex, result = result, mu = None)
+            periodized_result.to_csv('periodized_result.csv')
 
         if filename is not None:
             periodized_result.unstack().fillna(0).to_csv(filename, header = False)
