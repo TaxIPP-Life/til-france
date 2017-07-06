@@ -101,7 +101,6 @@ def get_calibration(age_min = 65, period = None, transitions = None):
         )
     mortalite_by_sex = get_projection_mortalite_by_sex()
 
-
     mortalite_reelle = (mortalite_by_sex[sex]
         .query('annee == @period')
         .reset_index()
@@ -189,8 +188,9 @@ def get_predicted_mortality_table(formula = None, save = True):
     return mortality_table
 
 
-def get_projection_mortalite_by_sex():
+def get_insee_projected_mortality():
     # Data from INSEE projections
+    RESTART HERE
     data_path = os.path.join(til_france_path, 'param', 'demo')
 
     sheetname_by_gender = dict(zip(
@@ -214,15 +214,15 @@ def get_projection_mortalite_by_sex():
         del df[u"Âge atteint dans l'année"]
         df.index.name = 'age'
 
-    mortalite_by_sex = dict()
+    mortality = None
     for gender in ['male', 'female']:
-        mortalite_by_sex[gender] = mortality_by_gender[gender] / 1e4
+        mortality = mortality_by_gender[gender] / 1e4
         mortalite_by_sex[gender] = mortalite_by_sex[gender].reset_index()
         mortalite_by_sex[gender] = pd.melt(
             mortalite_by_sex[gender],
             id_vars = 'age',
             var_name = 'annee',
-            value_name = 'mortalite'
+            value_name = 'mortality'
             )
 
     return mortalite_by_sex
@@ -232,15 +232,15 @@ def add_projection_corrections(sex, result, mu = None):
     projection_mortalite = get_projection_mortalite_by_sex()[sex]
     initial_mortalite = (projection_mortalite
         .query('annee == 2010')
-        .rename(columns = {'mortalite': 'initial_mortalite'})
+        .rename(columns = {'mortality': 'initial_mortality'})
         .drop('annee', axis = 1)
         )
     correction_coefficient = (projection_mortalite
         .query('annee >= 2010')
         .merge(initial_mortalite.reset_index())
-        .eval('correction_coefficient = mortalite / initial_mortalite', inplace = False)
+        .eval('correction_coefficient = mortality / initial_mortality', inplace = False)
         .rename(columns = dict(annee = 'period'))
-        .drop(['mortalite', 'initial_mortalite'], axis = 1)
+        .drop(['mortality', 'initial_mortality'], axis = 1)
         )
 
     result = pd.read_csv('result.csv')
@@ -339,17 +339,17 @@ if __name__ == '__main__':
 
     formula = 'final_state ~ I((age - 80) * 0.1) + I(((age - 80) * 0.1)**2) + I(((age - 80) * 0.1)**3)'
     period = 2010
+    transitions = get_transitions_from_formula(formula = formula)
+    result = build_mortality_calibrated_targets(transitions, period)
+    print(result.head())
 
-
+    boum
     for sex in ['male', 'female']:
         filename = os.path.join('/home/benjello/data/til/input/dependance_transition_{}.csv'.format(sex))
         #    def export_calibrated_transitions_to_liam(formula = None, period = None, sexe = None, filename = None):
 
-        transitions = get_transitions_from_formula(formula = formula)
-
-
-            periodized_result = add_projection_corrections(sex = sex, result = result, mu = None)
-            periodized_result.to_csv('periodized_result.csv')
+        periodized_result = add_projection_corrections(sex = sex, result = result, mu = None)
+        periodized_result.to_csv('periodized_result.csv')
 
         if filename is not None:
             periodized_result.unstack().fillna(0).to_csv(filename, header = False)
