@@ -26,6 +26,8 @@ def build_mortality_calibrated_targets(transitions, period):
     calibrated_transitions = get_calibrated_transitions(period = period, transitions = transitions)
 
     null_fill_by_year = calibrated_transitions.reset_index().query('age == 65').copy()
+    print null_fill_by_year
+    BOUM
     null_fill_by_year['calibrated_probability'] = 0
 
     # Less than 65 years old _> no correction
@@ -38,6 +40,10 @@ def build_mortality_calibrated_targets(transitions, period):
         pre_65_null_fill.final_state == 0,
         'calibrated_probability'
         ] = 1
+    print pre_65_null_fill.info()
+    print pre_65_null_fill.sex.value_counts()
+    print pre_65_null_fill.describe()
+    print pre_65_null_fill.head(10)
 
     # More than 65 years old
     age_max = calibrated_transitions.index.get_level_values('age').max()
@@ -59,11 +65,16 @@ def build_mortality_calibrated_targets(transitions, period):
 
     age_full['period'] = period
     result = age_full[
-        ['period', 'age', 'initial_state', 'final_state', 'calibrated_probability']
-        ].set_index(['period', 'age', 'initial_state', 'final_state'])
+        ['period', 'sex', 'age', 'initial_state', 'final_state', 'calibrated_probability']
+        ].set_index(['period', 'sex', 'age', 'initial_state', 'final_state'])
 
     assert not (result.calibrated_probability < 0).any(), result.loc[result.calibrated_probability < 0]
     assert not (result.calibrated_probability > 1).any(), result.loc[result.calibrated_probability > 1]
+    diff = (
+        result.reset_index().groupby(['period', 'sex', 'age', 'initial_state'])['calibrated_probability'].sum() - 1)
+    assert (diff.abs().max() < 1e-10).all(), "error is too big: {} > 1e-10. Example: {}".format(
+        diff.abs().max(), diff.abs().loc[(diff.abs() < 1e-10)])
+
     result.to_csv('result.csv')
     return result
 
@@ -94,24 +105,23 @@ def get_calibration(age_min = 65, period = None, transitions = None):
     #
 
     global_mortalite_after_imputation = (mortalite_after_imputation
-        .groupby(['age'])[['total', 'mortality']].apply(
+        .groupby(['sex', 'age'])[['total', 'mortality']].apply(
             lambda x: (x.total * x.mortality).sum() / (x.total.sum() + (x.total.sum() == 0)))
         .reset_index()
         .rename(columns = {0: 'avg_mortality'})
         )
-    mortalite_by_sex = get_projection_mortalite_by_sex()
 
-    mortalite_reelle = (mortalite_by_sex[sex]
-        .query('annee == @period')
+    projected_mortality = (get_insee_projected_mortality()
+        .query('year == @period')
         .reset_index()
-        .loc[:109, ['age', 'mortalite']]
+        .loc[:109, ['sex', 'age', 'mortality']]
         .astype(dict(age = 'int'))
-        .rename(columns = dict(annee = 'period'))
+        .rename(columns = dict(year = 'period'))
         )
 
-    model_to_target = (global_mortalite_after_imputation.merge(mortalite_reelle)
-        .eval('cale_mortality_1_year = mortalite / avg_mortality', inplace = False)
-        .eval('mortalite_2_year = 1 - (1 - mortalite) ** 2', inplace = False)
+    model_to_target = (global_mortalite_after_imputation.merge(projected_mortality)
+        .eval('cale_mortality_1_year = mortality / avg_mortality', inplace = False)
+        .eval('mortalite_2_year = 1 - (1 - mortality) ** 2', inplace = False)
         .eval('avg_mortality_2_year = 1 - (1 - avg_mortality) ** 2', inplace = False)
         .eval('cale_mortality_2_year = mortalite_2_year / avg_mortality_2_year', inplace = False)
         )
@@ -189,17 +199,18 @@ def get_predicted_mortality_table(formula = None, save = True):
 
 
 def get_insee_projected_mortality():
-    # Data from INSEE projections
-    RESTART HERE
+    '''
+    Get mortality data from INSEE projections
+    '''
     data_path = os.path.join(til_france_path, 'param', 'demo')
 
-    sheetname_by_gender = dict(zip(
+    sheetname_by_sex = dict(zip(
         ['male', 'female'],
         ['hyp_mortaliteH', 'hyp_mortaliteF']
         ))
-    mortality_by_gender = dict(
+    mortality_by_sex = dict(
         (
-            gender,
+            sex,
             pd.read_excel(
                 os.path.join(data_path, 'projpop0760_FECcentESPcentMIGcent.xls'),
                 sheetname = sheetname, skiprows = 2, header = 2
@@ -207,46 +218,52 @@ def get_insee_projected_mortality():
                     u"Âge atteint dans l'année", drop = True
                     ).reset_index()
             )
-        for gender, sheetname in sheetname_by_gender.iteritems()
+        for sex, sheetname in sheetname_by_sex.iteritems()
         )
 
-    for df in mortality_by_gender.values():
+    for df in mortality_by_sex.values():
         del df[u"Âge atteint dans l'année"]
         df.index.name = 'age'
 
     mortality = None
-    for gender in ['male', 'female']:
-        mortality = mortality_by_gender[gender] / 1e4
-        mortalite_by_sex[gender] = mortalite_by_sex[gender].reset_index()
-        mortalite_by_sex[gender] = pd.melt(
-            mortalite_by_sex[gender],
+    for sex in ['male', 'female']:
+        mortality_sex = ((mortality_by_sex[sex] / 1e4)
+            .reset_index()
+            )
+        mortality_sex = pd.melt(
+            mortality_sex,
             id_vars = 'age',
             var_name = 'annee',
             value_name = 'mortality'
             )
+        mortality_sex['sex'] = sex
+        mortality_sex.rename(columns = dict(annee = 'year'), inplace = True)
+        mortality = pd.concat([mortality, mortality_sex])
 
-    return mortalite_by_sex
+    return mortality.set_index(['sex', 'age', 'year'])
 
 
-def add_projection_corrections(sex, result, mu = None):
-    projection_mortalite = get_projection_mortalite_by_sex()[sex]
-    initial_mortalite = (projection_mortalite
-        .query('annee == 2010')
+def add_projection_corrections(result, mu = None):
+    projected_mortality = get_insee_projected_mortality()
+    initial_mortality = (projected_mortality
+        .query('year == 2010')
         .rename(columns = {'mortality': 'initial_mortality'})
-        .drop('annee', axis = 1)
+        .reset_index()
+        .drop('year', axis = 1)
         )
-    correction_coefficient = (projection_mortalite
-        .query('annee >= 2010')
-        .merge(initial_mortalite.reset_index())
+    correction_coefficient = (projected_mortality.reset_index()
+        .query('year >= 2010')
+        .merge(initial_mortality.reset_index())
         .eval('correction_coefficient = mortality / initial_mortality', inplace = False)
-        .rename(columns = dict(annee = 'period'))
+        .rename(columns = dict(year = 'period'))
         .drop(['mortality', 'initial_mortality'], axis = 1)
         )
 
     result = pd.read_csv('result.csv')
-    uncalibrated_probabilities = (result[['age', 'initial_state', 'final_state', 'calibrated_probability']]
+
+    uncalibrated_probabilities = (result[['sex', 'age', 'initial_state', 'final_state', 'calibrated_probability']]
         .merge(correction_coefficient)
-        .set_index(['period', 'age', 'initial_state'])
+        .set_index(['period', 'sex', 'age', 'initial_state'])
         .sort_index()
         )
 
@@ -262,7 +279,7 @@ def add_projection_corrections(sex, result, mu = None):
             inplace = True,
             )
         cale_other_transitions = mortality.reset_index()[
-            ['period', 'age', 'initial_state', 'cale_other_transitions']
+            ['period', 'sex', 'age', 'initial_state', 'cale_other_transitions']
             ].copy()
         other_transitions = (uncalibrated_probabilities
             .reset_index()
@@ -339,9 +356,12 @@ if __name__ == '__main__':
 
     formula = 'final_state ~ I((age - 80) * 0.1) + I(((age - 80) * 0.1)**2) + I(((age - 80) * 0.1)**3)'
     period = 2010
+
     transitions = get_transitions_from_formula(formula = formula)
     result = build_mortality_calibrated_targets(transitions, period)
     print(result.head())
+
+    periodized_result = add_projection_corrections(result = result, mu = None)
 
     boum
     for sex in ['male', 'female']:
