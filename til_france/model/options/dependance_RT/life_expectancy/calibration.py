@@ -24,8 +24,8 @@ life_table_path = os.path.join(
 
 def assert_probabilities(dataframe = None, by = ['period', 'sex', 'age', 'initial_state'], probability = 'calibrated_probability'):
     assert dataframe is not None
-    assert not (dataframe[probability] < 0).any(), dataframe.loc[result[probability] < 0]
-    assert not (dataframe[probability] > 1).any(), dataframe.loc[result[probability] > 1]
+    assert not (dataframe[probability] < 0).any(), dataframe.loc[dataframe[probability] < 0]
+    assert not (dataframe[probability] > 1).any(), dataframe.loc[dataframe[probability] > 1]
     diff = (
         dataframe.reset_index().groupby(by)[probability].sum() - 1)
     assert (diff.abs().max() < 1e-10).all(), "error is too big: {} > 1e-10. Example: {}".format(
@@ -286,8 +286,8 @@ def add_projection_corrections(result, mu = None):
     mortality = (uncalibrated_probabilities
         .query('final_state == 5')
         ).copy()
-    mortality['periodized_calibrated_probability'] = np.minimum(
-        mortality.calibrated_probability * mortality.correction_coefficient, 1)  # Avoid over corrections !
+    mortality['periodized_calibrated_probability'] = np.minimum(  # use minimum to avoid over corrections !
+        mortality.calibrated_probability * mortality.correction_coefficient, 1)
 
     if mu is None:
         mortality.eval(
@@ -308,40 +308,38 @@ def add_projection_corrections(result, mu = None):
             )
     else:
         raise('mu should be None')
-#        mortality.eval(
-#            'delta_initial = - @mu * (periodized_calibrated_probability - calibrated_probability)',
-#            inplace = True,
-#            )
-#
-#        mortality.eval(
-#            'delta_non_initial = - (1 - @mu) * (periodized_calibrated_probability - calibrated_probability)',
-#            inplace = True,
-#            )
-#
-#        for initial_state, final_states in final_states_by_initial_state.iteritems():
-#            if 5 not in final_states:
-#                continue
-#            #
-#            initial_state = 1
-#            delta_initial_transitions = mortality.reset_index()[
-#                ['period', 'age', 'initial_state', 'delta_initial']
-#                ].copy()
-#
-#            to_initial_transitions = (uncalibrated_probabilities
-#                .reset_index()
-#                .query('(final_state == @initial_state) and (final_state != 5)')
-#                .merge(delta_initial_transitions)
-#                .eval(
-#                    'periodized_calibrated_probability = calibrated_probability + delta_initial',  # Cannot be bigger than 1
-#                    inplace = False,
-#                    )
-#                )
-#
-#            non_initial_transitions_aggregate_probability = (uncalibrated_probabilities
-#                .reset_index()
-#                .query('(final_state != @initial_state) and (final_state != 5)')
-#                .groupby(['period', 'age', 'initial_state'])['calibrated_probability'].sum()
-#                )
+        mortality.eval(
+            'delta_initial = - @mu * (periodized_calibrated_probability - calibrated_probability)',
+            inplace = True,
+            )
+
+        mortality.eval(
+            'delta_non_initial = - (1 - @mu) * (periodized_calibrated_probability - calibrated_probability)',
+            inplace = True,
+            )
+
+       for initial_state, final_states in final_states_by_initial_state.iteritems():
+           if 5 not in final_states:
+               continue
+           #
+           delta_initial_transitions = mortality.reset_index()[
+               ['period', 'sex', 'age', 'initial_state', 'delta_initial']
+               ].copy()
+
+           to_initial_transitions = (uncalibrated_probabilities
+               .reset_index()
+               .query('(final_state == @initial_state) and (final_state != 5)')
+               .merge(delta_initial_transitions)
+               )
+            to_initial_transitions[periodized_calibrated_probability] = np.minimum(
+                to_initial_transitions.calibrated_probability + to_initial_transitions.delta_initial, 1) # Cannot be bigger than 1
+                )
+
+           non_initial_transitions_aggregate_probability = (uncalibrated_probabilities
+               .reset_index()
+               .query('(final_state != @initial_state) and (final_state != 5)')
+               .groupby(['period', 'sex', 'age', 'initial_state'])['calibrated_probability'].sum()
+               )
 #
 #            to_non_initial_transitions = (uncalibrated_probabilities
 #                .reset_index()
@@ -391,13 +389,26 @@ if __name__ == '__main__':
 
     for sex in ['male', 'female']:
         filename = os.path.join('/home/benjello/data/til/input/dependance_transition_{}.csv'.format(sex))
-        #    def export_calibrated_transitions_to_liam(formula = None, period = None, sexe = None, filename = None):
-
-        periodized_result = add_projection_corrections(sex = sex, result = result, mu = None)
         periodized_result.to_csv('periodized_result.csv')
 
         if filename is not None:
-            periodized_result.unstack().fillna(0).to_csv(filename, header = False)
+            print(periodized_result
+                .query('sex == @sex')
+                .reset_index()
+                .drop('sex', axis = 1)
+                .set_index(['period', 'age', 'initial_state', 'final_state'])
+                .unstack()
+                .fillna(0)
+                )
+            (periodized_result
+                .query('sex == @sex')
+                .reset_index()
+                .drop('sex', axis = 1)
+                .set_index(['period', 'age', 'initial_state', 'final_state'])
+                .unstack()
+                .fillna(0)
+                .to_csv(filename, header = False)
+                )
             # Add liam2 compatible header
             verbatim_header = '''period,age,initial_state,final_state,,,,,
 ,,,0,1,2,3,4,5
@@ -406,7 +417,3 @@ if __name__ == '__main__':
                 data = original.read()
             with file(filename, 'w') as modified:
                 modified.write(verbatim_header + data)
-
-    # return age_full[['period', 'age', 'initial_state', 'final_state']]
-
-    bim
