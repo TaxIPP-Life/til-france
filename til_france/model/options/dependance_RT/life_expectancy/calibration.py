@@ -22,12 +22,20 @@ life_table_path = os.path.join(
     )
 
 
+def assert_probabilities(dataframe = None, by = ['period', 'sex', 'age', 'initial_state'], probability = 'calibrated_probability'):
+    assert dataframe is not None
+    assert not (dataframe[probability] < 0).any(), dataframe.loc[result[probability] < 0]
+    assert not (dataframe[probability] > 1).any(), dataframe.loc[result[probability] > 1]
+    diff = (
+        dataframe.reset_index().groupby(by)[probability].sum() - 1)
+    assert (diff.abs().max() < 1e-10).all(), "error is too big: {} > 1e-10. Example: {}".format(
+        diff.abs().max(), diff.abs().loc[(diff.abs() < 1e-10)])
+
+
 def build_mortality_calibrated_targets(transitions, period):
     calibrated_transitions = get_calibrated_transitions(period = period, transitions = transitions)
 
     null_fill_by_year = calibrated_transitions.reset_index().query('age == 65').copy()
-    print null_fill_by_year
-    BOUM
     null_fill_by_year['calibrated_probability'] = 0
 
     # Less than 65 years old _> no correction
@@ -37,13 +45,15 @@ def build_mortality_calibrated_targets(transitions, period):
         ]).reset_index(drop = True)
 
     pre_65_null_fill.loc[
-        pre_65_null_fill.final_state == 0,
+        pre_65_null_fill.initial_state == pre_65_null_fill.final_state,
         'calibrated_probability'
         ] = 1
-    print pre_65_null_fill.info()
-    print pre_65_null_fill.sex.value_counts()
-    print pre_65_null_fill.describe()
-    print pre_65_null_fill.head(10)
+
+    assert_probabilities(
+        dataframe = pre_65_null_fill,
+        by = ['sex', 'age', 'initial_state'],
+        probability = 'calibrated_probability',
+        )
 
     # More than 65 years old
     age_max = calibrated_transitions.index.get_level_values('age').max()
@@ -57,6 +67,12 @@ def build_mortality_calibrated_targets(transitions, period):
         'calibrated_probability'
         ] = 1
 
+    assert_probabilities(
+        dataframe = elder_null_fill,
+        by = ['sex', 'age', 'initial_state'],
+        probability = 'calibrated_probability',
+        )
+
     age_full = pd.concat([
         pre_65_null_fill,
         calibrated_transitions.reset_index(),
@@ -68,12 +84,11 @@ def build_mortality_calibrated_targets(transitions, period):
         ['period', 'sex', 'age', 'initial_state', 'final_state', 'calibrated_probability']
         ].set_index(['period', 'sex', 'age', 'initial_state', 'final_state'])
 
-    assert not (result.calibrated_probability < 0).any(), result.loc[result.calibrated_probability < 0]
-    assert not (result.calibrated_probability > 1).any(), result.loc[result.calibrated_probability > 1]
-    diff = (
-        result.reset_index().groupby(['period', 'sex', 'age', 'initial_state'])['calibrated_probability'].sum() - 1)
-    assert (diff.abs().max() < 1e-10).all(), "error is too big: {} > 1e-10. Example: {}".format(
-        diff.abs().max(), diff.abs().loc[(diff.abs() < 1e-10)])
+    assert_probabilities(
+        dataframe = result,
+        by = ['period', 'sex', 'age', 'initial_state'],
+        probability = 'calibrated_probability',
+        )
 
     result.to_csv('result.csv')
     return result
@@ -160,7 +175,9 @@ def get_calibrated_transitions(period = None, transitions = None):
         )
     # Verification
     diff = (
-        calibrated_transitions.reset_index().groupby(['sex', 'age', 'initial_state'])['calibrated_probability'].sum() - 1)
+        calibrated_transitions.reset_index().groupby(
+            ['sex', 'age', 'initial_state']
+            )['calibrated_probability'].sum() - 1)
     assert (diff.abs().max() < 1e-10).all(), "error is too big: {} > 1e-10".format(diff.abs().max())
 
     return calibrated_transitions['calibrated_probability']
@@ -253,17 +270,16 @@ def add_projection_corrections(result, mu = None):
         )
     correction_coefficient = (projected_mortality.reset_index()
         .query('year >= 2010')
-        .merge(initial_mortality.reset_index())
+        .merge(initial_mortality)
         .eval('correction_coefficient = mortality / initial_mortality', inplace = False)
         .rename(columns = dict(year = 'period'))
         .drop(['mortality', 'initial_mortality'], axis = 1)
         )
-
     result = pd.read_csv('result.csv')
 
-    uncalibrated_probabilities = (result[['sex', 'age', 'initial_state', 'final_state', 'calibrated_probability']]
+    uncalibrated_probabilities = (result[['period', 'sex', 'age', 'initial_state', 'final_state', 'calibrated_probability']]
         .merge(correction_coefficient)
-        .set_index(['period', 'sex', 'age', 'initial_state'])
+        .set_index(['period', 'sex', 'age', 'initial_state', 'final_state'])
         .sort_index()
         )
 
@@ -343,13 +359,19 @@ def add_projection_corrections(result, mu = None):
 
     periodized_calibrated_transitions = (pd.concat([
         mortality.reset_index()[
-            ['period', 'age', 'initial_state', 'final_state', 'periodized_calibrated_probability']
+            ['period', 'sex', 'age', 'initial_state', 'final_state', 'periodized_calibrated_probability']
             ],
         other_transitions[
-            ['period', 'age', 'initial_state', 'final_state', 'periodized_calibrated_probability']
+            ['period', 'sex', 'age', 'initial_state', 'final_state', 'periodized_calibrated_probability']
             ],
         ]))
-    return periodized_calibrated_transitions.set_index(['period', 'age', 'initial_state', 'final_state'])
+
+    assert_probabilities(
+        dataframe = periodized_calibrated_transitions,
+        by = ['period', 'sex', 'age', 'initial_state'],
+        probability = 'periodized_calibrated_probability',
+        )
+    return periodized_calibrated_transitions.set_index(['period', 'sex', 'age', 'initial_state', 'final_state'])
 
 
 if __name__ == '__main__':
@@ -359,11 +381,14 @@ if __name__ == '__main__':
 
     transitions = get_transitions_from_formula(formula = formula)
     result = build_mortality_calibrated_targets(transitions, period)
-    print(result.head())
+    assert_probabilities(
+        dataframe = result,
+        by = ['sex', 'age', 'initial_state'],
+        probability = 'calibrated_probability',
+        )
 
     periodized_result = add_projection_corrections(result = result, mu = None)
 
-    boum
     for sex in ['male', 'female']:
         filename = os.path.join('/home/benjello/data/til/input/dependance_transition_{}.csv'.format(sex))
         #    def export_calibrated_transitions_to_liam(formula = None, period = None, sexe = None, filename = None):
