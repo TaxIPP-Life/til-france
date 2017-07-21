@@ -17,12 +17,44 @@ from til_france.model.options.dependance_RT.life_expectancy.transition_matrices 
 from til_france.model.options.dependance_RT.life_expectancy.calibration import (
     build_mortality_calibrated_targets,
     get_historical_mortality,
+    get_mortality_after_imputation,
     get_predicted_mortality_table,
     get_transitions_from_formula,
     )
 
 
 from til_france.targets.population import build_mortality_rates
+
+
+def extract_historical_mortality(year = None):
+    return (get_historical_mortality()
+        .query('(annee == @year)')
+        .query('age <= 110')[['sex', 'age', 'mortalite']]
+        .astype(dict(age = 'int'))
+        .set_index(['sex', 'age'])
+        .rename(columns = dict(mortalite = 'mortalite_{}'.format(year)))
+        )
+
+
+def get_calibrated_mortality_after_imputation(transitions, period):
+    calibrated_transitions = build_mortality_calibrated_targets(
+        transitions = transitions,
+        period = period,
+        )
+
+    calibrated_mortality_table = get_predicted_mortality_table(
+        transitions = calibrated_transitions,
+        probability_name = 'calibrated_probability',
+        )
+
+    calibrated_mortality_after_imputation = get_mortality_after_imputation(
+        period = period,
+        mortality_table = calibrated_mortality_table,
+        )
+
+    calibrated_mortality_after_imputation.name = 'calibrated_mortality_after_imputation'
+
+    return calibrated_mortality_after_imputation
 
 
 def get_mortality_from_insee_projection(year = None):
@@ -39,55 +71,11 @@ def get_mortality_from_insee_projection(year = None):
     return mortalite_insee.set_index(['sex', 'age'])
 
 
-def extract_historical_mortality(year = None):
-    return (get_historical_mortality()
-        .query('(annee == @year)')
-        .query('age <= 110')[['sex', 'age', 'mortalite']]
-        .astype(dict(age = 'int'))
-        .set_index(['sex', 'age'])
-        .rename(columns = dict(mortalite = 'mortalite_{}'.format(year)))
-        )
-
-
-def get_mortality_after_imputation(period = 2010):
-    data_by_sex = dict()
-    for sex in ['male', 'female']:
-        sexe_nbr = 0 if sex == 'male' else 1
-        df = (pd.read_csv(os.path.join(assets_path, 'dependance_niveau.csv'), index_col = 0)
-            .query('(period == @period) and (age >= 60)'))
-        assert (df.query('dependance_niveau == -1')['total'] == 0).all()
-        data_by_sex[sex] = (df
-            .query('dependance_niveau != -1')
-            .query('sexe == @sexe_nbr')
-            .query('dependance_niveau != 5')
-            .rename(columns = dict(dependance_niveau = 'initial_state'))
-            .assign(sex = sex)
-            .drop('sexe', axis = 1)
-            )
-
-    data = pd.concat(data_by_sex.values())
-
-    mortalite_after_imputation = (data
-        .merge(
-            mortality_table[['sex', 'age', 'initial_state', 'mortality']],
-            on = ['sex', 'age', 'initial_state'],
-            how = 'inner',
-            )
-        .drop('period', axis = 1)
-        .groupby(['sex', 'age'])[['total', 'mortality']].apply(lambda x: (
-            (x.total * x.mortality).sum() / (x.total.sum() + (x.total.sum() == 0))
-            ))
-        )
-
-    mortalite_after_imputation.name = 'mortalite_after_imputation'
-    return mortalite_after_imputation
-
-
 def plot_paquid_comparison(formula = None, age_max = 120):
     assert formula is not None
     transitions = get_transitions_from_formula(formula = formula)
+    mortality_table = get_predicted_mortality_table(transitions = transitions)
 
-    mortality_table = get_predicted_mortality_table(transitions = transitions).reset_index()
 
     filtered = get_filtered_paquid_data()
     filtered['final_state'] = filtered.groupby('numero')['initial_state'].shift(-1)
@@ -117,7 +105,7 @@ def plot_paquid_comparison(formula = None, age_max = 120):
     profile = filtered.query('initial_state != 5').dropna()
     profile['age'] = profile.age.round()
     profile = (profile
-        .merge(mortality_table, on =['sex', 'age', 'initial_state'], how = 'left')
+        .merge(mortality_table.reset_index(), on =['sex', 'age', 'initial_state'], how = 'left')
         .groupby(['sex', 'age'])['mortality']
         .mean()
         .reset_index()
@@ -126,10 +114,15 @@ def plot_paquid_comparison(formula = None, age_max = 120):
         )
     profile.name = 'mortality_from_paquid'
 
-    mortalite_after_imputation = get_mortality_after_imputation(period = 2010)
+    mortality_after_imputation = get_mortality_after_imputation(period = 2010, mortality_table = mortality_table)
+
+    calibrated_mortality_after_imputation = get_calibrated_mortality_after_imputation(
+        transitions = transitions, period = period)
+
+
 
     plot_data = (pd.concat(
-        [profile, mortalite_insee_2007, mortalite_1988, mortalite_after_imputation],
+        [profile, mortalite_insee_2007, mortalite_1988, mortality_after_imputation, calibrated_mortality_after_imputation],
         axis = 1,
         )
         .query('(age > 60) & (age < @age_max)')
@@ -155,7 +148,11 @@ if __name__ == '__main__':
 
     formula = 'final_state ~ I((age - 80)) + I(((age - 80))**2) + I(((age - 80))**3)'
 
-    # plot_data = plot_paquid_comparison(formula = formula, age_max = 95)
-    period = 2010
-    transitions = get_transitions_from_formula(formula = formula)
-    result = build_mortality_calibrated_targets(transitions, period)
+    plot_data = plot_paquid_comparison(formula = formula, age_max = 95)
+
+#    period = 2010
+#    transitions = get_transitions_from_formula(formula = formula)
+#    mortality_table = get_predicted_mortality_table(transitions = transitions)
+#
+#    calibrated_mortality_after_imputation.reset_index().query('(age >= 65) and (age <= 95)').groupby('sex').plot(
+#        x = 'age', y = 'calibrated_mortality_after_imputation')

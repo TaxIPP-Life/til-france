@@ -35,14 +35,15 @@ def assert_probabilities(dataframe = None, by = ['period', 'sex', 'age', 'initia
     diff = (
         dataframe.reset_index().groupby(by)[probability].sum() - 1)
     assert (diff.abs().max() < 1e-10).all(), "error is too big: {} > 1e-10. Example: {}".format(
-        diff.abs().max(), diff.abs().loc[(diff.abs() < 1e-10)])
+        diff.abs().max(), diff.loc[(diff.abs() >= 1e-10)])
 
 
-def build_mortality_calibrated_targets(transitions, period):
+def build_mortality_calibrated_targets(transitions = None, period = None):
     """
     Compute the calibrated mortality  by sex, age and disability state (initial_state) for a given period
     using data on the disability states distribution in the population at that period
     """
+    assert (transitions is not None) and (period is not None)
     calibrated_transitions = _get_calibrated_transitions(period = period, transitions = transitions)
 
     null_fill_by_year = calibrated_transitions.reset_index().query('age == 65').copy()
@@ -103,6 +104,41 @@ def build_mortality_calibrated_targets(transitions, period):
     return result
 
 
+def get_mortality_after_imputation(period = 2010, mortality_table = None):
+    assert mortality_table is not None
+    data_by_sex = dict()
+    for sex in ['male', 'female']:
+        sexe_nbr = 0 if sex == 'male' else 1
+        df = (pd.read_csv(os.path.join(assets_path, 'dependance_niveau.csv'), index_col = 0)
+            .query('(period == @period) and (age >= 60)'))
+        assert (df.query('dependance_niveau == -1')['total'] == 0).all()
+        data_by_sex[sex] = (df
+            .query('dependance_niveau != -1')
+            .query('sexe == @sexe_nbr')
+            .query('dependance_niveau != 5')
+            .rename(columns = dict(dependance_niveau = 'initial_state'))
+            .assign(sex = sex)
+            .drop('sexe', axis = 1)
+            )
+
+    data = pd.concat(data_by_sex.values())
+
+    mortality_after_imputation = (data
+        .merge(
+            mortality_table.reset_index()[['sex', 'age', 'initial_state', 'mortality']],
+            on = ['sex', 'age', 'initial_state'],
+            how = 'inner',
+            )
+        .drop('period', axis = 1)
+        .groupby(['sex', 'age'])[['total', 'mortality']].apply(lambda x: (
+            (x.total * x.mortality).sum() / (x.total.sum() + (x.total.sum() == 0))
+            ))
+        )
+
+    mortality_after_imputation.name = 'mortality_after_imputation'
+    return mortality_after_imputation
+
+
 def _get_calibration(age_min = 65, period = None, transitions = None):
     """
     Calibrate mortality using the distribution of the disability states within population at period = period
@@ -111,49 +147,32 @@ def _get_calibration(age_min = 65, period = None, transitions = None):
     """
     assert period is not None
     assert transitions is not None
-    predicted_mortality = get_predicted_mortality_table(transitions = transitions)
-
-    population_sample = (pd.read_csv(os.path.join(assets_path, 'dependance_niveau.csv'), index_col = 0)
-        .query('(period == @period) and (age >= @age_min)')
-        .query('dependance_niveau != -1')
-        .query('dependance_niveau != 5')
-        )
-    population_sample.loc[
-        population_sample.sexe == 0,
-        'sex'
-        ] = 'male'
-    population_sample.loc[
-        population_sample.sexe == 1,
-        'sex'
-        ] = 'female'
-
-    mortalite_after_imputation = (population_sample.merge(
-        predicted_mortality.reset_index().rename(columns = dict(initial_state = 'dependance_niveau')),
-        how = 'inner')
-        )
-    #
-
-    global_mortalite_after_imputation = (mortalite_after_imputation
-        .groupby(['sex', 'age'])[['total', 'mortality']].apply(
-            lambda x: (x.total * x.mortality).sum() / (x.total.sum() + (x.total.sum() == 0)))
+    predicted_mortality_table = get_predicted_mortality_table(transitions = transitions)
+    mortality_after_imputation = (
+        get_mortality_after_imputation(mortality_table = predicted_mortality_table)
         .reset_index()
-        .rename(columns = {0: 'avg_mortality'})
+        .rename(columns = {'mortality_after_imputation': 'avg_mortality'})
         )
 
+    print mortality_after_imputation.head()
     projected_mortality = (get_insee_projected_mortality()
         .query('year == @period')
-        .reset_index()
-        .loc[:109, ['sex', 'age', 'mortality']]
-        .astype(dict(age = 'int'))
         .rename(columns = dict(year = 'period'))
         )
+    print projected_mortality.head()
 
-    model_to_target = (global_mortalite_after_imputation.merge(projected_mortality)
+    model_to_target = (mortality_after_imputation
+        .merge(
+            projected_mortality.reset_index(),
+            on = ['sex', 'age'],
+            )
         .eval('cale_mortality_1_year = mortality / avg_mortality', inplace = False)
         .eval('mortalite_2_year = 1 - (1 - mortality) ** 2', inplace = False)
         .eval('avg_mortality_2_year = 1 - (1 - avg_mortality) ** 2', inplace = False)
         .eval('cale_mortality_2_year = mortalite_2_year / avg_mortality_2_year', inplace = False)
         )
+
+    print model_to_target.head()
     return model_to_target
 
 
@@ -166,11 +185,20 @@ def _get_calibrated_transitions(period = None, transitions = None):
     # Add calibration_coeffcients for mortality
     calibration = _get_calibration(period = period, transitions = transitions)
 
+    assert not calibration.reset_index()[['sex', 'age']].duplicated().any(), \
+        calibration.reset_index().loc[calibration.reset_index()[['sex', 'age']].duplicated()]
+
     # Calibrate mortality
+    assert not transitions.reset_index()[['sex', 'age', 'initial_state', 'final_state']].duplicated().any(), \
+        transitions.reset_index().loc[transitions.reset_index()[['sex', 'age', 'initial_state', 'final_state']].duplicated()]
+
     mortality = (transitions
         .reset_index()
         .query('final_state == 5')
-        .merge(calibration[['age', 'cale_mortality_2_year']], on = 'age')
+        .merge(
+            calibration[['sex', 'age', 'cale_mortality_2_year']].copy(),
+            on = ['sex', 'age'],
+            )
         )
     mortality['calibrated_probability'] = np.minimum(
         mortality.probability * mortality.cale_mortality_2_year, 1)  # Avoid over corrections !
@@ -178,18 +206,26 @@ def _get_calibrated_transitions(period = None, transitions = None):
         'cale_other_transitions = (1 - calibrated_probability) / (1 - probability)',
         inplace = True,
         )
+    assert not mortality[['sex', 'age', 'initial_state', 'final_state']].duplicated().any(), \
+        mortality.loc[mortality[['sex', 'age', 'initial_state', 'final_state']].duplicated()]
     # Calibrate other transitions
     cale_other_transitions = mortality[['sex', 'age', 'initial_state', 'cale_other_transitions']].copy()
     other_transitions = (transitions
         .reset_index()
         .query('final_state != 5')
-        .merge(cale_other_transitions)
+        .merge(
+            cale_other_transitions,
+            on = ['sex', 'age', 'initial_state'],
+            )
         .eval('calibrated_probability = probability * cale_other_transitions', inplace = False)
         )
-    calibrated_transitions = (pd.concat([mortality, other_transitions])
-        .set_index(['sex', 'age', 'initial_state', 'final_state'])
-        .sort_index()
-        )
+    calibrated_transitions = pd.concat(
+        [
+            mortality.set_index(['sex', 'age', 'initial_state', 'final_state']).sort_index(),
+            other_transitions.set_index(['sex', 'age', 'initial_state', 'final_state']).sort_index()
+            ]
+        ).sort_index()
+
     # Verification
     assert_probabilities(calibrated_transitions, by = ['sex', 'age', 'initial_state'], probability = 'calibrated_probability')
     return calibrated_transitions['calibrated_probability']
@@ -217,13 +253,13 @@ def get_historical_mortality(rebuild = False):
     return historical_mortality
 
 
-def get_predicted_mortality_table(transitions = None, save = True):
+def get_predicted_mortality_table(transitions = None, save = False, probability_name = 'probability'):
     assert transitions is not None
     mortality_table = (transitions
         .query('final_state == 5')
         .copy()
         .assign(
-            mortality = lambda x: (1 - np.sqrt(1 - x.probability))
+            mortality = lambda x: (1 - np.sqrt(1 - x[probability_name]))
             )
         )
     if save:
