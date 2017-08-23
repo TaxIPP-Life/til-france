@@ -4,14 +4,11 @@
 from __future__ import division
 
 
-import numpy as np
-import os
 import pandas as pd
 
 
 from til_france.model.options.dependance_RT.life_expectancy.transition_matrices import (
-    assets_path,
-    get_filtered_paquid_data,
+    get_clean_paquid,
     )
 
 from til_france.model.options.dependance_RT.life_expectancy.calibration import (
@@ -72,37 +69,26 @@ def get_mortality_from_insee_projection(year = None):
 
 
 def plot_paquid_comparison(formula = None, age_max = 120):
+    """Plot various mortality curves by age  and sex
+    mortalite_1988: historical mortality values
+    mortalite_insee_2007: prjected mortality values
+    mortalite
+    """
     assert formula is not None
     transitions = get_transitions_from_formula(formula = formula)
     mortality_table = get_predicted_mortality_table(transitions = transitions)
 
+    paquid = get_clean_paquid()
+    paquid['final_state'] = paquid.groupby('numero')['initial_state'].shift(-1)
 
-    filtered = get_filtered_paquid_data()
-    filtered['final_state'] = filtered.groupby('numero')['initial_state'].shift(-1)
+    paquid['sex'] = 'male'
+    paquid.loc[filtered.sexe == 2, 'sex'] = 'female'
+    del paquid['sexe']
 
-#    filtered['age_group_10'] = 10 * (filtered.age / 10).apply(np.floor).astype('int')
-#    filtered['age_group_5'] = 5 * ((filtered.age) / 5).apply(np.floor).astype('int')
-
-    filtered['sex'] = 'male'
-    filtered.loc[filtered.sexe == 2, 'sex'] = 'female'
-    del filtered['sexe']
-
-#    if sex in ['homme', 'male']:
-#        sexe_nbr = 1
-#    elif sex in ['femme', 'female']:
-#        sexe_nbr = 2
-
-#    test_df = filtered.query('(annee == 2003) & (initial_state != 5)').dropna()
-#    test_df.initial_state.value_counts()
-#
-#    test_df.groupby(['age_group_5'])[['final_state']].apply(
-#        lambda x: 1 - np.sqrt(1 - 1.0 * (x.final_state == 5).sum() / x.count())
-#        )
-
-    mortalite_1988 = extract_historical_mortality(year = 1998)
+    mortalite_1988 = extract_historical_mortality(year = 1988)
     mortalite_insee_2007 = get_mortality_from_insee_projection(year = 2007)
 
-    profile = filtered.query('initial_state != 5').dropna()
+    profile = paquid.query('initial_state != 5').dropna()
     profile['age'] = profile.age.round()
     profile = (profile
         .merge(mortality_table.reset_index(), on =['sex', 'age', 'initial_state'], how = 'left')
@@ -120,7 +106,13 @@ def plot_paquid_comparison(formula = None, age_max = 120):
         transitions = transitions, period = period)
 
     plot_data = (pd.concat(
-        [profile, mortalite_insee_2007, mortalite_1988, mortality_after_imputation, calibrated_mortality_after_imputation],
+        [
+            profile,
+            mortalite_insee_2007,
+            mortalite_1988,
+            mortality_after_imputation,
+            calibrated_mortality_after_imputation,
+            ],
         axis = 1,
         )
         .query('(age > 60) & (age < @age_max)')

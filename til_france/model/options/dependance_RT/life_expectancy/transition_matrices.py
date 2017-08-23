@@ -42,7 +42,10 @@ final_states_by_initial_state = {
     }
 
 
-def get_filtered_paquid_data():
+def get_clean_paquid():
+    """
+    Get PAQUID relevant data free of missing observations
+    """
     df = pd.read_csv(paquid_path)
     columns = ['numero', 'annee', 'age', 'scale5', 'sexe']
     filtered = (
@@ -54,16 +57,17 @@ def get_filtered_paquid_data():
 
     filtered["sexe"] = filtered["sexe"].astype('int').astype('category')
     filtered["initial_state"] = filtered["initial_state"].astype('int').astype('category')
-    # filtered.initial_state.value_counts()
     return filtered
 
 
 def build_estimation_sample(initial_state, final_states, sex = None):
+    """Build estimation sample from paquid data
+    """
     assert sex in ['male', 'female']
-    filtered = get_filtered_paquid_data()
+    clean_paquid = get_clean_paquid()
     assert initial_state in final_states
-    filtered['final_state'] = filtered.groupby('numero')['initial_state'].shift(-1)
-    sample = (filtered
+    clean_paquid['final_state'] = clean_paquid.groupby('numero')['initial_state'].shift(-1)
+    sample = (clean_paquid
         .query('(initial_state == {}) & (final_state in {})'.format(
             initial_state,
             final_states,
@@ -77,7 +81,6 @@ def build_estimation_sample(initial_state, final_states, sex = None):
             sample = sample.query('sexe == 2').copy()
     sample["final_state"] = sample["final_state"].astype('int').astype('category')
     assert set(sample.final_state.value_counts().index.tolist()) == set(final_states)
-
     return sample.reset_index()
 
 
