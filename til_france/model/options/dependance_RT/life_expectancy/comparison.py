@@ -82,7 +82,7 @@ def plot_paquid_comparison(formula = None, age_max = 120):
     paquid['final_state'] = paquid.groupby('numero')['initial_state'].shift(-1)
 
     paquid['sex'] = 'male'
-    paquid.loc[filtered.sexe == 2, 'sex'] = 'female'
+    paquid.loc[paquid.sexe == 2, 'sex'] = 'female'
     del paquid['sexe']
 
     mortalite_1988 = extract_historical_mortality(year = 1988)
