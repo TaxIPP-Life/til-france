@@ -27,17 +27,19 @@ def rename_variables(variables):
     return variables
 
 
-def get_transitions_from_cohort(cohort = 'paquid', sexe = None):
+def get_transitions_from_cohort(cohort = 'paquid', sex = None):
     assert cohort in ['paquid', '3c']
-    if sexe is None:
+    assert (sex in ['male', 'female)']) or (sex is None)
+    if sex is None:
         template = 'etat_initial_{}_corr.xlsx'
         sex = 'all'
-    elif sexe is not None:
-        assert sexe in ['homme', 'femme']
+    elif sex is not None:
+        if sex == 'male':
+            sexe = 'homme'
+        elif sex == 'female':
+            sexe = 'femme'
         template = 'etat_initial_{}_corr' + '_{sexe}.xlsx'.format(sexe = sexe)
-        sex = 'male' if sexe == 'homme' else 'female'
-    else:
-        raise
+
     file_path_by_state = dict(
         [
             (
@@ -88,12 +90,16 @@ def get_transitions_from_cohort(cohort = 'paquid', sexe = None):
     return build_tansition_matrix_from_proba_by_initial_state(proba_by_initial_state, sex = sex)
 
 
-def get_transition_by_age(transition_matrix, age_range = range(65, 120)):
+def get_transition_by_age(transition_matrix = None, age_range = range(65, 120), sex = None):
+    assert transition_matrix is not None
     transition_by_age = dict()
+    if sex is None:
+        sex = 'all'
+    assert sex in ['all', 'female', 'male']
     for age in range(65, 120):
         transition = (transition_matrix
-            .query('age == @age')
-            .loc[age]
+            .query('(age == @age) & (sex == @sex)')
+            .loc[sex, age]
             .unstack('initial_state')
             .squeeze()
             .xs('probability', axis=1, drop_level=True)
@@ -141,10 +147,10 @@ def get_population_1_year(transition_by_age):
     return population
 
 
-def diagnostic(cohort = None, sexe = None, initial_population = np.array([1, 0, 0, 0, 0, 0]),
+def diagnostic(cohort = None, sex = None, initial_population = np.array([1, 0, 0, 0, 0, 0]),
         mortality_year = 2007, upper_age_limit = 100):
-    transition_matrix = get_transitions_from_cohort(cohort = cohort, sexe = sexe)
-    transition_by_age = get_transition_by_age(transition_matrix)
+    transition_matrix = get_transitions_from_cohort(cohort = cohort, sex = sex)
+    transition_by_age = get_transition_by_age(transition_matrix, sex = sex)
     initial_population
     assert initial_population.sum() == 1
     assert (transition_by_age[65].dot(initial_population).sum() - 1) < 1e-10
@@ -166,24 +172,25 @@ def diagnostic(cohort = None, sexe = None, initial_population = np.array([1, 0, 
 
     alive.index.name = 'age'
     mortality.index.name = 'age'
-    alive.name = 'survival_rate_{}_{}'.format(sexe, cohort)
-    mortality.name = 'mortality_{}_{}'.format(sexe, cohort)
+    if sex is None:
+        sex = 'all'
+    alive.name = 'survival_rate_{}_{}'.format(sex, cohort)
+    mortality.name = 'mortality_{}_{}'.format(sex, cohort)
 
     survivors = [alive]
     mortalities = [mortality]
 
-    if sexe is None:
+    if sex is None:
         sexes = ['male', 'female']
-    elif sexe == 'homme':
-        sexes = ['male']
-    elif sexe == 'femme':
-        sexes = ['female']
     else:
-        raise
+        sexes = [sex]
+
     for sexe in sexes:
-        reference_mortality = get_historical_mortality.query("(annee == @mortality_year) and (sexe == @sexe")[
-            ['mortalite', 'age']
-            ].set_index('age').squeeze()
+        reference_mortality = (get_historical_mortality()
+            .query("(annee == @mortality_year) and (sex == @sexe)")[['mortalite', 'age']]
+            .set_index('age')
+            .squeeze()
+            )
         reference_mortality[65] = 0
         reference_mortality.name = 'mortality_{}_{}'.format(sexe, mortality_year)
         alive_reference = (1 - reference_mortality[65:]).cumprod()

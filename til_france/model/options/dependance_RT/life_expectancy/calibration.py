@@ -154,12 +154,10 @@ def _get_calibration(age_min = 65, period = None, transitions = None):
         .rename(columns = {'mortality_after_imputation': 'avg_mortality'})
         )
 
-    print mortality_after_imputation.head()
     projected_mortality = (get_insee_projected_mortality()
         .query('year == @period')
         .rename(columns = dict(year = 'period'))
         )
-    print projected_mortality.head()
 
     model_to_target = (mortality_after_imputation
         .merge(
@@ -171,8 +169,6 @@ def _get_calibration(age_min = 65, period = None, transitions = None):
         .eval('avg_mortality_2_year = 1 - (1 - avg_mortality) ** 2', inplace = False)
         .eval('cale_mortality_2_year = mortalite_2_year / avg_mortality_2_year', inplace = False)
         )
-
-    print model_to_target.head()
     return model_to_target
 
 
@@ -455,14 +451,6 @@ if __name__ == '__main__':
         periodized_result.to_csv('periodized_result.csv')
 
         if filename is not None:
-            print(periodized_result
-                .query('sex == @sex')
-                .reset_index()
-                .drop('sex', axis = 1)
-                .set_index(['period', 'age', 'initial_state', 'final_state'])
-                .unstack()
-                .fillna(0)
-                )
             (periodized_result
                 .query('sex == @sex')
                 .reset_index()

@@ -187,7 +187,7 @@ def get_transitions_from_formula(formula = None):
             build_tansition_matrix_from_proba_by_initial_state(proba_by_initial_state, sex = sex)
             ])
 
-    transitions.reset_index().set_index('sex', 'age', 'initial_state', 'fianl_state')
+    transitions.reset_index().set_index(['sex', 'age', 'initial_state', 'final_state'])
     return transitions
 
 
@@ -198,8 +198,6 @@ def test(formula = None,
     assert formula is not None
     assert sex is not None
     result, formatted_params = estimate_model(initial_state, final_states, formula, sex = sex)
-    print(result.summary(alpha = .1))
-    print(formatted_params)
     computed_prediction = direct_compute_predicition(
         initial_state, final_states, formula, formatted_params, sex = sex)
     prediction = compute_prediction(initial_state, final_states, formula, sex = sex)

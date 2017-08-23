@@ -114,12 +114,10 @@ def plot_paquid_comparison(formula = None, age_max = 120):
         )
     profile.name = 'mortality_from_paquid'
 
-    mortality_after_imputation = get_mortality_after_imputation(period = 2010, mortality_table = mortality_table)
-
+    period = 2010
+    mortality_after_imputation = get_mortality_after_imputation(period = period, mortality_table = mortality_table)
     calibrated_mortality_after_imputation = get_calibrated_mortality_after_imputation(
         transitions = transitions, period = period)
-
-
 
     plot_data = (pd.concat(
         [profile, mortalite_insee_2007, mortalite_1988, mortality_after_imputation, calibrated_mortality_after_imputation],
