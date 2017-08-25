@@ -12,7 +12,7 @@ from til_france.model.options.dependance_RT.life_expectancy.transition_matrices 
     )
 
 from til_france.model.options.dependance_RT.life_expectancy.calibration import (
-    build_mortality_calibrated_targets,
+    build_mortality_calibrated_target,
     get_historical_mortality,
     get_mortality_after_imputation,
     get_predicted_mortality_table,
@@ -34,7 +34,7 @@ def extract_historical_mortality(year = None):
 
 
 def get_calibrated_mortality_after_imputation(transitions, period):
-    calibrated_transitions = build_mortality_calibrated_targets(
+    calibrated_transitions = build_mortality_calibrated_target(
         transitions = transitions,
         period = period,
         )
