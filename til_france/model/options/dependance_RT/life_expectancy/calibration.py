@@ -4,10 +4,13 @@
 from __future__ import division
 
 
-import numpy as np
 import logging
+import matplotlib.pyplot as plt
+import numpy as np
 import os
 import pandas as pd
+import seaborn as sns
+from slugify import slugify
 
 
 from til_france.model.options.dependance_RT.life_expectancy.transition_matrices import (
@@ -27,7 +30,7 @@ life_table_path = os.path.join(
 
 
 def assert_probabilities(dataframe = None, by = ['period', 'sex', 'age', 'initial_state'],
-        probability = 'calibrated_probability'):
+        probability = 'calibrated_probability', cut_off = 1e-10):
     assert dataframe is not None
     assert not (dataframe[probability] < 0).any(), dataframe.loc[dataframe[probability] < 0]
     assert not (dataframe[probability] > 1).any(), dataframe.loc[dataframe[probability] > 1]
@@ -35,7 +38,7 @@ def assert_probabilities(dataframe = None, by = ['period', 'sex', 'age', 'initia
         dataframe.reset_index().groupby(by)[probability].sum() - 1)
     diff.name = 'error'
 
-    assert (diff.abs().max() < 1e-10).all(), "error is too big: {} > 1e-10. Example: {}".format(
+    assert (diff.abs().max() < cut_off).all(), "error is too big: {} > 1e-10. Example: {}".format(
         diff.abs().max(), (dataframe
             .reset_index()
             .set_index(by)
@@ -319,11 +322,15 @@ def get_insee_projected_mortality():
 
 
 def add_projection_corrections(mortality_calibrated_target, mu = None, variant = None):
+    assert variant is None or variant in [0, 1]
+    if variant is not None:
+        assert mu is not None
+    delta = 1e-7
     regularize(
         transition_matrix_dataframe = mortality_calibrated_target,
         by = ['period', 'sex', 'age', 'initial_state'],
         probability = 'calibrated_probability',
-        )
+        delta = delta)
 
     projected_mortality = get_insee_projected_mortality()
     initial_mortality = (projected_mortality
@@ -341,14 +348,11 @@ def add_projection_corrections(mortality_calibrated_target, mu = None, variant =
         )
 
     assert not (correction_coefficient['correction_coefficient'].isnull().any())
-    assert not (mortality_calibrated_target['calibrated_probability'].isnull().any()), \
-        "There are {} NaN(s) in mortality_calibrated_target".format(
-            mortality_calibrated_target['calibrated_probability'].isnull().sum())
 
     uncalibrated_probabilities = (mortality_calibrated_target.reset_index()[
         ['sex', 'age', 'initial_state', 'final_state', 'calibrated_probability']
         ]
-        .merge(correction_coefficient)
+        .merge(correction_coefficient[['period', 'sex', 'age', 'correction_coefficient']])
         .set_index(['period', 'sex', 'age', 'initial_state', 'final_state'])
         .sort_index()
         )
@@ -356,6 +360,12 @@ def add_projection_corrections(mortality_calibrated_target, mu = None, variant =
     assert not (uncalibrated_probabilities['calibrated_probability'].isnull().any()), \
         "There are {} NaN(s) in uncalibrated_probabilities".format(
             uncalibrated_probabilities['calibrated_probability'].isnull().sum())
+
+    assert (
+        uncalibrated_probabilities.query('final_state == 5')['calibrated_probability'] < 1
+        ).all(), "There are {} 1's in calibrated_probability".format(
+            (uncalibrated_probabilities['calibrated_probability'] < 1).sum(),
+            )
 
     assert_probabilities(
         dataframe = uncalibrated_probabilities,
@@ -366,19 +376,19 @@ def add_projection_corrections(mortality_calibrated_target, mu = None, variant =
     mortality = (uncalibrated_probabilities
         .query('final_state == 5')
         ).copy()
-    assert (mortality.calibrated_probability * mortality.correction_coefficient < 1).all(), \
-        "There are {} periodized_calibrated_probability >= 1".format(
-            (mortality.calibrated_probability * mortality.correction_coefficient < 1).sum()
-            )
+
+
     mortality['periodized_calibrated_probability'] = np.minimum(  # use minimum to avoid over corrections !
-        mortality.calibrated_probability * mortality.correction_coefficient, 1 - 1e-5)
+        mortality.calibrated_probability * mortality.correction_coefficient, 1 - delta)
 
     assert (
-        (mortality['periodized_calibrated_probability'] >= 0) &
         (mortality['periodized_calibrated_probability'] < 1)
-        ).all()
+        ).all(), "There are {} 1's in periodized_calibrated_probability".format(
+            (mortality['periodized_calibrated_probability'] < 1).sum(),
+            )
+
     assert not (mortality['periodized_calibrated_probability'].isnull().any()), \
-        "There are periodized_calibrated_probability NaNs in mortality"
+        "There are calibrated_probability NaNs in mortality"
 
     if mu is None:
         assert (mortality.calibrated_probability < 1).all()
@@ -429,11 +439,12 @@ def add_projection_corrections(mortality_calibrated_target, mu = None, variant =
             ],
         ]))
 
-    # assert_probabilities(
-    #     dataframe = periodized_calibrated_transitions,
-    #     by = ['period', 'sex', 'age', 'initial_state'],
-    #     probability = 'periodized_calibrated_probability',
-    #     )
+    assert_probabilities(
+         dataframe = periodized_calibrated_transitions,
+         by = ['period', 'sex', 'age', 'initial_state'],
+         probability = 'periodized_calibrated_probability',
+         cut_off = delta,
+         )
     return (periodized_calibrated_transitions
         .set_index(['period', 'sex', 'age', 'initial_state', 'final_state'])
         .sort_index()
@@ -441,6 +452,9 @@ def add_projection_corrections(mortality_calibrated_target, mu = None, variant =
 
 
 def _variant_0(mortality = None, mu = None, uncalibrated_probabilities = None):
+    """
+    Gain in survival probability feeds by a proportion of mu the initial_state and 1 - mu the other states
+    """
     mortality.eval(
         'delta_initial = - @mu * (periodized_calibrated_probability - calibrated_probability)',
         inplace = True,
@@ -503,7 +517,12 @@ def _variant_0(mortality = None, mu = None, uncalibrated_probabilities = None):
 
 
 def _variant_1(mortality = None, mu = None, uncalibrated_probabilities = None):
-
+    """
+    Autonomy and disability states are treated differently
+    Gain in survival probability feeds by a proportion of mu the autonomy initial_state and
+    1 - mu the transition to the disability states.
+    Other transition share proportionnally the survival probability gain
+    """
     # Starting from autonomy
     # Staying autonomous
     mortality.eval(
@@ -523,6 +542,7 @@ def _variant_1(mortality = None, mu = None, uncalibrated_probabilities = None):
             inplace = False,
             )
         )
+    assert (stay_autonomous.periodized_calibrated_probability <= 1).all()
     # From autonomy to disablement
     disabling_transitions_aggregate_probability = (uncalibrated_probabilities
         .reset_index()
@@ -565,25 +585,67 @@ def _variant_1(mortality = None, mu = None, uncalibrated_probabilities = None):
         become_disabled,
         other_transitions,
         ])
-
     return other_transitions
 
 
-def plot_periodized_mortality_calibrated_targets(periodized_mortality_calibrated_target):
-    years = [2010, 2020, 20]
-    periodized_mortality_calibrated_target.query
+def plot_projected_target(age_max = 100, age_min = 60, projected_target = None, sex = None, save = True,
+        title = None, title_template = None, years = None):
+
+    assert projected_target is not None
+    assert (sex is None) or (sex in ['male', 'female'])
+    assert years is not None
+    if sex is None:
+        sexes = ['male', 'female']
+    elif sex in ['male', 'female']:
+        sexes = [sex]
+
+    grids = dict()
+    for sex in sexes:
+        data = (projected_target
+            .query('(age >= @age_min) and (age <= @age_max)')
+            .query('(period in @years) and (sex == @sex)')
+            .reset_index()
+            .set_index(['period', 'age', 'initial_state', 'final_state'])
+            ['periodized_calibrated_probability']
+            .reset_index()
+            .rename(columns= dict(periodized_calibrated_probability = "probability"))
+            )
+        grid = sns.FacetGrid(data, row = "initial_state", col = "final_state", hue = "period", despine = True)
+        # sns.set(font_scale=1.5, rc={'text.usetex' : True})
+        # grid.set_titles(template = r"${row_name} \rightarrow {col_name}$")
+        grid.set_titles(template = "{row_name} -> {col_name}")
+        grid.map(plt.plot, 'age', 'probability')
+        grid.add_legend(title = 'years')
+        plt.subplots_adjust(top = 0.95)
+        if title_template:
+            title = title_template.format(sex)
+        elif title is not None:
+            fig_title = "{} (sex = {})".format(title, sex)
+        else:
+            fig_title = "sex = {}".format(sex)
+        grid.fig.suptitle(fig_title)
+        grids[sex] = grid
+        if save:
+            # if filename is None:
+            filename = slugify(fig_title, separator = '_')
+            if not filename.endswith('.png'):
+                filename = filename + ".png"
+            grid.savefig(filename, format = 'png')
+
+    return grids if (len(grids) > 1) else grid
 
 
-def regularize(transition_matrix_dataframe = None, by = None, probability = None, delta = 1e-5):
+def regularize(transition_matrix_dataframe = None, by = None, probability = None, delta = None):
     assert transition_matrix_dataframe is not None
     assert by is not None
     assert probability is not None
+    assert delta is not None
     assert_probabilities(dataframe = transition_matrix_dataframe, by = by, probability = probability)
     mortality_transitions = transition_matrix_dataframe.query('final_state == 5').copy()
 
     # by_without_initial_state = [by_value for by_value in by if by_value != 'initial_state']
     problematic_indices = (mortality_transitions[probability]
-        .loc[mortality_transitions[probability] > (1 - delta)]
+        .loc[mortality_transitions[probability] >= (1 - delta)]
         .reset_index()
         .drop(['final_state', probability] , axis = 1)
         )
@@ -596,19 +658,41 @@ def regularize(transition_matrix_dataframe = None, by = None, probability = None
         )
     correction = delta / count.final_state.astype('float')
     correction.name = 'correction'
+
     corrected_transition_matrix = (transition_matrix_dataframe.reset_index()
-        .merge(correction.reset_index())
-        .eval(
-            'calibrated_probability = (final_state == 5) * (1 - @delta) + (final_state != 5) * correction',
-            inplace = False,
-            )
-        .drop('correction', axis = 1)
-        .set_index(['period', 'sex', 'age', 'initial_state', 'final_state'])
+        .merge(correction.reset_index())  # inner merge
+        .fillna(0)
         )
+    corrected_transition_matrix.loc[
+        (corrected_transition_matrix.final_state == 5),
+        probability
+        ] = (1 - delta)
+    corrected_transition_matrix.loc[
+        corrected_transition_matrix.final_state != 5,
+        probability
+        ] = corrected_transition_matrix.correction
+
+    corrected_transition_matrix.set_index(by + ['final_state'], inplace = True)
+    assert (
+        (corrected_transition_matrix[probability] > 0) &
+        (corrected_transition_matrix[probability] < 1)
+        ).all(), "There are {} 0's and {} 1's in corrected_transition_matrix[{}]".format(
+            (corrected_transition_matrix[probability] > 0).sum(),
+            (corrected_transition_matrix[probability] < 1).sum(),
+            probability
+            )
     transition_matrix_dataframe.update(corrected_transition_matrix)
+
+    assert (
+        transition_matrix_dataframe.query('final_state == 5')[probability] < 1
+        ).all(), "There are {} 1's in transition_matrix_dataframe.{}".format(
+            (transition_matrix_dataframe.query('final_state == 5')[probability] < 1).sum(),
+            probability,
+            )
+
     assert_probabilities(dataframe = transition_matrix_dataframe, by = by, probability = probability)
-    assert (transition_matrix_dataframe.query('final_state == 5')['calibrated_probability'] != 1).all()
     return transition_matrix_dataframe
+
 
 if __name__ == '__main__':
 
@@ -623,23 +707,28 @@ if __name__ == '__main__':
         probability = 'calibrated_probability',
         )
 
-    periodized_target = add_projection_corrections(mortality_calibrated_target = mortality_calibrated_target, mu = None, variant = None)
+    def check(projected_target):
+        for period in range(2010, 2059):
+            x = projected_target.loc[(period, u'female', 89, 4, slice(0, 5)),]
+            print x
+            print (x.sum() - 1) / 1e-10
 
+    variant = 1
+    for mu in [0, 0.5, 1]:
+        title = "mu = {}, variant = {}".format(mu, variant)
+        years = [2010, 2020, 2030, 2040, 2050]
+        projected_target = add_projection_corrections(
+            mortality_calibrated_target = mortality_calibrated_target, mu = mu, variant = variant)
+        plot_projected_target(projected_target = projected_target, years = years, title = title)
 
-    df = periodized_target.loc[(slice(2010, 2015), u'female', 89, 4, slice(0, 5)),]
-
-    for period in range(2010, 2015):
-        x = periodized_target.loc[(period, u'female', 89, 4, slice(0, 5)),]
-        print x * 1e10
-        print (x.sum() - 1) * 10e10
 
     BOUM
     for sex in ['male', 'female']:
         filename = os.path.join('/home/benjello/data/til/input/dependance_transition_{}.csv'.format(sex))
-        periodized_target.to_csv('periodized_result.csv')
+        projected_target.to_csv('periodized_result.csv')
 
         if filename is not None:
-            (periodized_target
+            (projected_target
                 .query('sex == @sex')
                 .reset_index()
                 .drop('sex', axis = 1)
