@@ -2,6 +2,7 @@
 # Local files
 ##########################
 
+*.png
 til_france/tests/output/*.csv
 til_france/tests/output/*.h5
 docs/_book
