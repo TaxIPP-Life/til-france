@@ -46,8 +46,6 @@ def load_dataframe():
 
 def save(dataframe):
     config = Config()
-    hsi_data_directory = config.get('raw_data', 'hsi_data_directory')
-    dataframe.to_hdf(os.path.join(hsi_data_directory, "hsi_extract.h5"), 'individus_institutions')
 
 
 if __name__ == "__main__":
