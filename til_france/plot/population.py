@@ -245,7 +245,7 @@ def plot_population(simulation, backup = None):
         data_frame_insee_total = get_data_frame_insee(gender).sum()
         data_frame_simulation = panel_simulation[gender].unstack('period').drop('total').fillna(0)
         data_frame_simulation.index = data_frame_simulation.index.astype(int)
-        data_frame_simulation.sort_index(inplace = True)
+        data_frame_simulation.sort_values(inplace = True)
         data_frame_simulation_total = data_frame_simulation.sum()
 
         data_frame_insee_total = data_frame_insee_total.loc[data_frame_simulation_total.index].copy()
@@ -359,7 +359,7 @@ def plot_age_pyramid(age_min = 0, age_max = None, group_by = 1, year = 2010, bac
         .unstack()
         .drop('total'))
     data.index = data.index.astype(int)
-    data.sort_index(inplace = True)
+    data.sort_values(inplace = True)
 
     age_min = 60
     data = data.loc[age_min:age_max]

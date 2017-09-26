@@ -4,18 +4,19 @@
 # les valeur de hod dans la duplication.
 
 
-import os
-
-
+import logging
 import numpy as np
+import os
 from pandas import merge, notnull, DataFrame, concat, HDFStore
 import tables
 
-import logging
+
+from liam2.importer import array_to_disk_array
 
 from til_core.data.utils.misc import replicate, count_dup
 from til_france.data.utils import new_idmen, new_link_with_men, of_name_to_til
 from til_france.data.mortality_rates import add_mortality_rates
+from til_france.targets.dependance import build_prevalence_all_years
 
 from til_core.config import Config
 
@@ -243,8 +244,11 @@ class DataTil(object):
             pac_par = individus.loc[
                 (individus['quifoy'] == 2) & (individus[parent] != -1) & (individus['idfoy'] == -1),
                 ['id', parent],
-                ].astype(int)
-            individus['idfoy'][pac_par['id'].values] = individus['idfoy'][pac_par[parent].values]
+                ].copy().astype(int)
+            individus.loc[
+                pac_par['id'].values,
+                'idfoy'
+                ] = individus.loc[pac_par[parent].values, 'idfoy'].copy().values
             log.info(
                 "{} enfants sur la déclaration de leur {}".format(
                     str(len(pac_par)),
@@ -255,7 +259,7 @@ class DataTil(object):
 
         # 5eme étape: création de la table foy
         vous = (individus['quifoy'] == 0) & (individus['idfoy'] > 9)
-        foyers_fiscaux = individus.loc[vous, ['idfoy', 'id', 'idmen']]
+        foyers_fiscaux = individus.loc[vous, ['idfoy', 'id', 'idmen']].copy()
         foyers_fiscaux = foyers_fiscaux.rename(columns={'idfoy': 'id', 'id': 'vous'})
         # Etape propre à l'enquete Patrimoine
         impots = ['zcsgcrds', 'zfoncier', 'zimpot', 'zpenaliv', 'zpenalir', 'zpsocm', 'zrevfin']
@@ -361,7 +365,7 @@ class DataTil(object):
         menages['pond'] = menages['pond'].div(menages['nb_rep'])
         # TODO: réflechir pondération des personnes en collectivité pour l'instant = 1
         menages.loc[menages['id'] < 10, 'pond'] = 1
-        men_exp = replicate(menages)
+        men_exp = replicate(menages)  # _exp pour expanded
 
         # pour conserver les 10 premiers ménages = collectivités
         men_exp['id'] = new_idmen(men_exp, 'id')
@@ -456,6 +460,9 @@ class DataTil(object):
         futur = self.time_data_frame_by_name.get('futur')
         past = self.time_data_frame_by_name.get('past')
 
+
+        log.debug('Table individus contains\n: {}'.format(individus.columns))
+
         ind_men = individus.groupby('idmen')
         individus.set_index('idmen', inplace = True)
         individus['nb_men'] = ind_men.size().astype(np.int)
@@ -489,7 +496,7 @@ class DataTil(object):
                                 table[var] = -1
                         table.fillna(-1, inplace = True)
                         table[var] = table[var].astype(np.float64)
-                    table.sort_index(by=['period', 'id'], inplace = True)
+                    table.sort_values(by=['period', 'id'], inplace = True)
 
         self.entity_by_name['foyers_fiscaux'] = foyers_fiscaux
         self.entity_by_name['individus'] = individus
@@ -580,7 +587,7 @@ class DataTil(object):
             partner_ent = individus.iloc[partner]
             partner_ent = partner_ent[entity_id]
             qui1_ent = individus.loc[qui1, entity_id]
-            assert (qui1_ent == partner_ent).all()
+            assert all(qui1_ent.values == partner_ent.values)
 
         # Table futur bien construite
         if futur is not None:
@@ -649,7 +656,7 @@ class DataTil(object):
         if self.weight_threshold is None:
             name = self.name + extension
         else:
-            name = self.name + '_next_metro_' + str(self.weight_threshold) + extension
+            name = self.name + '_' + str(self.weight_threshold) + extension
         return os.path.join(path_liam_input_data, name)
 
     def store_to_liam(self):
@@ -661,9 +668,9 @@ class DataTil(object):
         path = self._output_name()
         if not os.path.exists(os.path.dirname(path)):
             os.makedirs(os.path.dirname(path))
-        h5file = tables.openFile(path, mode="w")
+        h5file = tables.open_file(path, mode="w")
 
-        entity_node = h5file.createGroup("/", "entities", "Entities")
+        entity_node = h5file.create_group("/", "entities", "Entities")
         for entity_name in ['individus', 'foyers_fiscaux', 'menages', 'futur', 'past']:
             entity = self.time_data_frame_by_name.get(entity_name) \
                 if self.time_data_frame_by_name.get(entity_name) is not None \
@@ -674,7 +681,7 @@ class DataTil(object):
                 ent_table = entity.to_records(index = False)
                 dtypes = ent_table.dtype
                 final_name = of_name_to_til[entity_name]
-                table = h5file.createTable(entity_node, final_name, dtypes, title="%s table" % final_name)
+                table = h5file.create_table(entity_node, final_name, dtypes, title="%s table" % final_name)
                 table.append(ent_table)
                 table.flush()
                 # Additional tables
@@ -683,7 +690,7 @@ class DataTil(object):
                     entity = entity.loc[entity['id'] > -1]
                     ent_table2 = entity[['pond', 'id', 'period']].to_records(index=False)
                     dtypes2 = ent_table2.dtype
-                    table = h5file.createTable(entity_node, 'companies', dtypes2, title="'companies table")
+                    table = h5file.create_table(entity_node, 'companies', dtypes2, title="'companies table")
                     table.append(ent_table2)
                     table.flush()
                 if entity_name == 'individus':
@@ -694,7 +701,7 @@ class DataTil(object):
                         ].to_records(
                             index = False)
                     dtypes2 = ent_table2.dtype
-                    table = h5file.createTable(entity_node, 'register', dtypes2, title="register table")
+                    table = h5file.create_table(entity_node, 'register', dtypes2, title="register table")
                     table.append(ent_table2)
                     table.flush()
 
@@ -712,7 +719,7 @@ class DataTil(object):
                     data_frame['period'] = self.survey_date
                     ent_table3 = data_frame.to_records(index = False)
                     dtypes3 = ent_table3.dtype
-                    table = h5file.createTable(entity_node, 'generation', dtypes3, title="generation table")
+                    table = h5file.create_table(entity_node, 'generation', dtypes3, title="generation table")
                     table.append(ent_table3)
                     table.flush()
 
@@ -720,7 +727,7 @@ class DataTil(object):
         log.info("Saved entities in file {}".format(path))
 
         # Globals
-        h5file = tables.openFile(path, mode="r+")
+        h5file = tables.open_file(path, mode="r+")
         try:
             log.info("Creating node globals")
             globals_node = h5file.create_group("/", 'globals')
@@ -730,13 +737,12 @@ class DataTil(object):
             globals_node = h5file.create_group("/", 'globals')
 
         log.info('Adding unfiorm_weight in node globals of file {}".format(path)')
-        from liam2.importer import array_to_disk_array
         array_to_disk_array(globals_node, 'uniform_weight', np.array(float(self.weight_threshold)))
 
         log.info("Adding mortality rates in node globals of file {}".format(path))
         add_mortality_rates(globals_node)
+        log.debug('gloabls node: {}'.format(globals_node))
         log.info("Added prevalence rates in node globals of file {}".format(path))
-        from til_france.targets.dependance import build_prevalence_all_years
         build_prevalence_all_years(globals_node)
         log.info("Added dependance prevalence rates in node globals of file {}".format(path))
         h5file.close()
