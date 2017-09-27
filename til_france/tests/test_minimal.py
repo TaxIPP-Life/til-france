@@ -21,6 +21,8 @@ from til_france.plot.population import (
 
 sns.set_style("whitegrid")
 
+# fonctions de suppression temporaire de l'affichage  console
+
 
 def sauvegarde_chemin_affichage_console():
     """
@@ -62,6 +64,9 @@ def censure_fonction(fonction):
         censure(0)
 
     return enrobage
+
+
+# Outils de test
 
 options = ['dependance', 'dependance_aligned', 'dependance_pessimistic', 'dependance_medium']
 
