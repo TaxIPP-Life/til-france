@@ -245,7 +245,7 @@ def plot_population(simulation, backup = None):
         data_frame_insee_total = get_data_frame_insee(gender).sum()
         data_frame_simulation = panel_simulation[gender].unstack('period').drop('total').fillna(0)
         data_frame_simulation.index = data_frame_simulation.index.astype(int)
-        data_frame_simulation.sort_values(inplace = True)
+        data_frame_simulation.sort_index(inplace = True)
         data_frame_simulation_total = data_frame_simulation.sum()
 
         data_frame_insee_total = data_frame_insee_total.loc[data_frame_simulation_total.index].copy()
