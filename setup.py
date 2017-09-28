@@ -65,7 +65,10 @@ setup(
         test = [
             'nose',
             'pandas >= 0.17',
+            'patsy',
+            'pkg_resources',
             'scipy >= 0.17',
+            'statsmodels',
             'webcolors',
             'xlrd',
             ],
