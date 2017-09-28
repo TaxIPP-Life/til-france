@@ -9,7 +9,7 @@ Pour l'instant, TILF s'appuie sur deux sources de données :
 - l'enquête Patrimoine de 2010
 - les données HSI de 2009-2010
 
-Il faut utiliser le script `Patrimoine.py` présent dans `/til-france/til_france/data/data`
+Il faut utiliser le script `Patrimoine.py` présent dans [/til-france/til_france/data/data](../til_france/data/data)
 pour mettre en forme les données Patrimoine. Il faut préalablement avoir réglé
 les options de configuration de `til-core`.
 
