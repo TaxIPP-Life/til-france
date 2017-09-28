@@ -20,7 +20,7 @@ Pour les données HSI, il faut créer un fichier .h5 à via open-fisca-survey-ma
 
 ### Paramètres
 
-Ils sont stockés [ici](../til_france/param/demo). On peut les reconstruire (sauf la fécondité pour l'instant) avec le script [`build_parameters.py`](../til_france/scripts/build_parameters.py].
+Ils sont stockés [ici](../til_france/param/demo). On peut les reconstruire (sauf la fécondité pour l'instant) avec le script [`build_parameters.py`](../til_france/scripts/build_parameters.py).
 
 ### Utilisation
 
