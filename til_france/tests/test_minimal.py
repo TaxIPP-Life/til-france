@@ -91,6 +91,11 @@ def run(option):
 
     simulation.run()
 
+    simulation.backup(
+        option,
+        erase = True
+        )
+
     censure(0)
 
     print("Fin simulation")
