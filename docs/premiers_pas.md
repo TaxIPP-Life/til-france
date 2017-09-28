@@ -1,4 +1,4 @@
-﻿# Premiers pas en TIL-France
+# Premiers pas en TIL-France
 
 Ce document présente les étapes à suivre pour faire tourner les options de TIL-France
 inclues dans le dépôt (ci-après 'TILF').
@@ -11,16 +11,16 @@ Pour l'instant, TILF s'appuie sur deux sources de données :
 
 Il faut utiliser le script `Patrimoine.py` présent dans [/til-france/til_france/data/data](../til_france/data/data)
 pour mettre en forme les données Patrimoine. Il faut préalablement avoir réglé
-les options de configuration de `til-core`.
+les options de configuration de [til-core](https://github.com/TaxIPP-Life/til-core).
 
 Pour les données HSI, il faut créer un fichier .h5 à via open-fisca-survey-manager
 (une collection avec un seul survey), puis à partir du fichier créé par 
-open-fisca-survey-manager, utiliser le script `handicap_sante_institutions.py`
-également présent dans `/til-france/til_france/data/data`.
+[open-fisca-survey-manager](https://github.com/openfisca/openfisca-survey-manager), utiliser le script `handicap_sante_institutions.py`
+également présent dans [/til-france/til_france/data/data](../til_france/data/data)
 
 ### Paramètres
 
-`/til_france/param/demo' 
+Ils sont stockés [ici](../til_france/param/demo) 
 
 ### Utilisation
 
@@ -52,4 +52,4 @@ simulation.backup(
 )
 ```
 
-cf les scripts du dossier `til_france/tests` pour des exemples.
+cf les scripts du dossier [test](../til_france/tests) pour des exemples.
