@@ -63,6 +63,7 @@ setup(
         },
     extras_require = dict(
         test = [
+            'ipp-macro-series-parser',
             'nose',
             'pandas >= 0.17',
             'patsy',
