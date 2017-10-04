@@ -168,7 +168,6 @@ def rename_variables(dataframe):
 
 
 def expand_data(dataframe, weight_threshold):
-    global zz
     low_weight_dataframe = dataframe.query('pond < @weight_threshold')
     weights_of_random_picks = low_weight_dataframe.pond.sum()
     number_of_picks = int(weights_of_random_picks // weight_threshold)
@@ -216,7 +215,5 @@ def create_hsi_data():
 
 
 if __name__ == "__main__":
-    global zz
-    zz = 0
     log.setLevel(logging.INFO)
     create_hsi_data()
