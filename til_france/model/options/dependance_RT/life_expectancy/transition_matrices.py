@@ -106,8 +106,9 @@ def build_estimation_sample(initial_state, sex = None):
     no_transition_with_specific_initial_state = clean_paquid.loc[
         clean_paquid.numero.isin(no_transition.index[no_transition].tolist())
         ].query('initial_state == {}'.format(initial_state))
-    log.info("There are {} individuals out of {} with only one observation (and thus no transition) with intiial state = {}".format(
-        len(no_transition_with_specific_initial_state), initial_state, no_transition.sum()))
+    log.info(
+        "There are {} individuals out of {} with only one observation (no transition) with intiial state = {}".format(
+            len(no_transition_with_specific_initial_state), initial_state, no_transition.sum()))
     clean_paquid['final_state'] = clean_paquid.groupby('numero')['initial_state'].shift(-1).copy()
     log.info("There are {} individuals with intiial state = {} with no subsequent transition".format(
         len(
