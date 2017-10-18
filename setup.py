@@ -67,6 +67,7 @@ setup(
             'nose',
             'pandas >= 0.20',
             'scipy >= 0.17',
+            'seaborn',
             'webcolors',
             'xlrd',
             ],
