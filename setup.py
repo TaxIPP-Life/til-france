@@ -63,8 +63,9 @@ setup(
         },
     extras_require = dict(
         test = [
+            'matplotlib',
             'nose',
-            'pandas >= 0.17',
+            'pandas >= 0.20',
             'scipy >= 0.17',
             'webcolors',
             'xlrd',
