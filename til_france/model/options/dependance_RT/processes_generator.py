@@ -54,14 +54,11 @@ def build_function_str(function_name, cuts, variables):
         {'probabilite_3': "Phi({cut_4} - value) - (probabilite_0 + probabilite_1 + probabilite_2)".format(**cuts)},
         {'probabilite_4': "1 - (probabilite_0 + probabilite_1 + probabilite_2 + probabilite_3)".format(**cuts)},
         ]
-    # cut_expr = {
-    #     'dependance_niveau': "if(value > {cut_4}, 5, if(value > {cut_3}, 4, if(value > {cut_2}, 3, if(value > {cut_1}, 2, 1))))".format(**cuts)
-    #     }
     dependance_expr = {
-        "dependance_niveau": "choice([0, 1, 2, 3, 4], [probabilite_0, probabilite_1, probabilite_2, probabilite_3, probabilite_4])"
+        "dependance_niveau":
+            "choice([0, 1, 2, 3, 4], [probabilite_0, probabilite_1, probabilite_2, probabilite_3, probabilite_4])"
         }
     return [value_expr] + probabilities + [dependance_expr, 'return dependance_niveau']
-    # return [value_expr, cut_expr, 'return dependance_niveau']
 
 
 def rename_variables(variables):
@@ -110,8 +107,6 @@ def separate_cuts_from_variables(parameters_value_by_name):
 
 
 def create_initialisation():
-    # renamed_vars = []
-    # vars = []
     process_by_initial_state = dict()
     processes = dict(processes = process_by_initial_state)
     individus = dict(individus = processes)
@@ -294,9 +289,6 @@ def create_scaled_transition_functions(cohort = 'paquid'):
                 probabilities_list_str
                 )
             )
-
-
-
 
     with open(dependance_transition_yml_path, 'w') as outfile:
         yaml.dump(main, outfile, default_flow_style = False, width = 1000)

@@ -144,9 +144,7 @@ def plot_paquid_comparison(formula = None, age_max = 120, paquid_years = None):
 
 
 if __name__ == '__main__':
-
     formula = 'final_state ~ I((age - 80)) + I(((age - 80))**2) + I(((age - 80))**3)'
-
     plot_data = plot_paquid_comparison(formula = formula, age_max = 95, paquid_years = [1988])
 
 #    period = 2010
