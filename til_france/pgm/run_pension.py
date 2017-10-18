@@ -32,10 +32,10 @@ def get_pension(context, yearleg):
 
     workstate = workstate.loc[workstate['id'].isin(info_ind.index), :].copy()
     workstate.set_index('id', inplace=True)
-    workstate.sort_index(inplace=True)
+    workstate.sort_values(inplace=True)
     salaire_imposable = salaire_imposable.loc[salaire_imposable['id'].isin(info_ind.index), :].copy()
     salaire_imposable.set_index('id', inplace=True)
-    salaire_imposable.sort_index(inplace=True)
+    salaire_imposable.sort_values(inplace=True)
     salaire_imposable.fillna(0, inplace=True)
 
     data = PensionData.from_arrays(workstate, salaire_imposable, info_ind)

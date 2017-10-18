@@ -62,8 +62,8 @@ def get_dataframe():
                 (result.valeur >= seuil_valeur) & (result.gir == 0),
                 'gir'] = gir
             print rang, gir, seuil_valeur
-            print result.gir.value_counts().sort_index()
-            # print result.rang.value_counts().sort_index()
+            print result.gir.value_counts().sort_values()
+            # print result.rang.value_counts().sort_values()
 
     mindiv = survey.get_values(table = 'mindiv_c', variables = ['ident', 'numind', 'poidscor'])
     result.gir.value_counts(dropna = False)

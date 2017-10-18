@@ -1,15 +1,14 @@
-﻿# -*- coding:utf-8 -*-
-
+# -*- coding:utf-8 -*-
 
 import os
 import sys
 
-
+import ConfigParser
 import logging
 import numpy as np
 from pandas import concat, DataFrame, merge, read_csv, read_hdf, Series
 
-from openfisca_core.calmar import calmar
+from openfisca_survey_manager.calmar import calmar
 
 
 from til_core.config import Config
@@ -26,7 +25,7 @@ class Patrimoine(DataTil):
 
     def __init__(self):
         DataTil.__init__(self)
-        self.name = 'Patrimoine'
+        self.name = 'patrimoine'
         self.survey_year = 2009
         self.last_year = 2009
         # self.survey_date = 100 * self.survey_year + 1
@@ -72,7 +71,11 @@ class Patrimoine(DataTil):
     def load(self):
         log.info(u"Début de l'importation des données")
         config = Config()
-        patrimoine_data_directory = config.get('raw_data', 'patrimoine_data_directory')
+        try:
+            patrimoine_data_directory = config.get('raw_data', 'patrimoine_data_directory')
+        except ConfigParser.NoSectionError as e:
+            log.info("Configure the raw_data directory")
+            raise(e)
         path_ind = os.path.join(patrimoine_data_directory, 'individu.csv')
         individus = read_csv(path_ind)
         path_men = os.path.join(patrimoine_data_directory, 'menage.csv')
@@ -144,7 +147,6 @@ class Patrimoine(DataTil):
         # age_en_mois
         age = self.survey_year - individus['anais']
         individus['age_en_mois'] = 12 * age + 11 - individus['mnais']
-
         individus['sexe'].replace([1, 2], [0, 1], inplace=True)
         individus['civilstate'].replace([2, 1, 4, 3, 5], [1, 2, 3, 4, 5], inplace=True)
         individus.loc[individus['pacs'] == 1, 'civilstate'] = 5
@@ -221,7 +223,7 @@ class Patrimoine(DataTil):
     def corrections(self):
         pass
 
-    def work_on_past(self, method='from_data'):
+    def work_on_past(self, method = 'from_data'):
         assert method in ['from_external_match', 'from_data']
         individus = self.entity_by_name['individus']
 
@@ -984,7 +986,7 @@ Femmes: {}'''.format(
 
 
 def test_build():
-    logging.basicConfig(level = logging.INFO, stream = sys.stdout)
+    logging.basicConfig(level = logging.DEBUG, stream = sys.stdout)
     import time
     start_t = time.time()
     data = Patrimoine()
@@ -994,7 +996,7 @@ def test_build():
     data.to_DataTil_format()
     data.champ()
     data.calmar_demography()
-    # data.work_on_past() TODO: à réactiver !
+    # data.work_on_past() # TODO: à réactiver !
     # data.create_past_table()
     data.drop_variable()
     # data.corrections()
@@ -1014,7 +1016,7 @@ def test_build():
     individus_institutions = data.entity_by_name['individus_institutions']
 
     log.info(u"Temps de calcul : {} s".format(time.time() - start_t))
-    log.info(u"Nombre d'individus de la table final : {}".format(len(individus)))
+    log.info(u"Nombre d'individus de la table finale : {}".format(len(individus)))
 
     # des petites verifs finales
     individus['en_couple'] = individus['partner'] > -1

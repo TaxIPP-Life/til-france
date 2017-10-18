@@ -56,20 +56,27 @@ setup(
     license = 'http://www.fsf.org/licensing/licenses/agpl-3.0.html',
     long_description = '\n'.join(doc_lines[2:]),
     url = 'https://github.com/TaxIPP-Life/til-france',
+    entry_points = {
+        'console_scripts': [
+            'build_parameters=til_france.scripts.build_parameters:main',
+            ]
+        },
     extras_require = dict(
         test = [
-            'scipy >= 0.17',
             'nose',
             'pandas >= 0.17',
+            'scipy >= 0.17',
             'webcolors',
             'xlrd',
             ],
         ),
     install_requires = [
+        'liam2',
         'numpy',
-        'Til-Core',
+        'openfisca-survey-manager',
         'PyYAML >= 3.10',
-        'liam2'],
+        'til-core',
+        ],
     packages = find_packages(),
     test_suite = 'nose.collector',
     )

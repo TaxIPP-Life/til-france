@@ -22,19 +22,20 @@ def add_mortality_rates(globals_node):
         'til_france',
         )
     data_path = os.path.join(path_model, 'param', 'demo')
-
     mortality_by_gender = build_mortality_rates(to_csv = False)
-    array_by_gender, df_1997_by_gender, array_1997_by_gender = (dict(), ) * 3
+
+    array_by_gender = dict()
+    df_1997_by_gender = dict()
+    array_1997_by_gender = dict()
     for gender in ['male', 'female']:
-        mortality_by_gender[gender].columns = [
-            "period_{}".format(column) for column in mortality_by_gender[gender].columns
-            ]
         array_by_gender[gender] = mortality_by_gender[gender].values
+
+        log.debug('array_by_gender[gender]: {}'.format(array_by_gender[gender]))
+        array_to_disk_array(globals_node, 'mortality_rate_{}'.format(gender), array_by_gender[gender])
+
         df_1997_by_gender[gender] = pandas.read_csv(
             os.path.join(data_path, 'mortality_rate_{}_1997.csv'.format(gender)))
         array_1997_by_gender[gender] = df_1997_by_gender[gender]['mortality_rate_{}_1997'.format(gender)].values
-
-        array_to_disk_array(globals_node, 'mortality_rate_{}'.format(gender), array_by_gender[gender])
         array_to_disk_array(globals_node, 'mortality_rate_{}_1997'.format(gender), array_1997_by_gender[gender])
 
 

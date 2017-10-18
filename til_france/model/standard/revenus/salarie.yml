@@ -1,8 +1,8 @@
 entities:
   individus:
     fields:
-      - salaire_imposable: {type: float, default: 0.0}
-      - productivite: {type: float, initialdata: false}
+      - salaire_imposable: {type: float, initialdata: false, default: 10.9}
+      - productivite: {type: float, initialdata: false, default: 10.9}
 
     processes:
       productivite_initialisation:
@@ -15,6 +15,9 @@ entities:
             salaire_imposable * 0.5 - 1820 * mincer,
             0
             )
+        - salaire_imposable: 0.1  # FIXME
+        - show(min(salaire_imposable), max(salaire_imposable))
+        - show(std(productivite, filter=(salaire_imposable > 0)))
         - productivite: if(
             salaire_imposable <= 0,
             normal(

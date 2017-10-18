@@ -45,6 +45,5 @@ def new_link_with_men(table, table_exp, link_name):
     group_old_id = group_old_id.repeat(nb_by_table)
     new_id = []
     for el in group_old_id:
-        # log.info(el)
-        new_id += el
+        new_id += list(el)
     return new_id
