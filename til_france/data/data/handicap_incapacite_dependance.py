@@ -3,10 +3,7 @@
 import logging
 import numpy as np
 import os
-import pandas as pd
-import patsy
 import pkg_resources
-import seaborn as sns
 import statsmodels.api as sm
 
 from til_core.config import Config

@@ -213,7 +213,6 @@ def create_hsi_data():
     save(final_dataframe)
 
 
-
 if __name__ == "__main__":
     log.setLevel(logging.INFO)
     create_hsi_data()

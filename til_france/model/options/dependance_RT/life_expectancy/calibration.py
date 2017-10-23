@@ -11,8 +11,10 @@ import os
 import pandas as pd
 import seaborn as sns
 from slugify import slugify
+import sys
 
 
+from til_core.config import Config
 from til_france.model.options.dependance_RT.life_expectancy.transition_matrices import (
     assets_path,
     final_states_by_initial_state,
@@ -27,6 +29,272 @@ life_table_path = os.path.join(
     assets_path,
     'lifetables_period.xlsx'
     )
+
+
+def add_projection_corrections(mortality_calibrated_target, mu = None, variant = None):
+    assert variant is None or variant in [0, 1]
+    if variant is not None:
+        assert mu is not None
+    delta = 1e-7
+    regularize(
+        transition_matrix_dataframe = mortality_calibrated_target,
+        by = ['period', 'sex', 'age', 'initial_state'],
+        probability = 'calibrated_probability',
+        delta = delta)
+
+    projected_mortality = get_insee_projected_mortality()
+    initial_mortality = (projected_mortality
+        .query('year == 2010')
+        .rename(columns = {'mortality': 'initial_mortality'})
+        .reset_index()
+        .drop('year', axis = 1)
+        )
+    correction_coefficient = (projected_mortality.reset_index()
+        .query('year >= 2010')
+        .merge(initial_mortality)
+        .eval('correction_coefficient = mortality / initial_mortality', inplace = False)
+        .rename(columns = dict(year = 'period'))
+        .drop(['mortality', 'initial_mortality'], axis = 1)
+        )
+
+    assert not (correction_coefficient['correction_coefficient'].isnull().any())
+
+    uncalibrated_probabilities = (mortality_calibrated_target.reset_index()[
+        ['sex', 'age', 'initial_state', 'final_state', 'calibrated_probability']
+        ]
+        .merge(correction_coefficient[['period', 'sex', 'age', 'correction_coefficient']])
+        .set_index(['period', 'sex', 'age', 'initial_state', 'final_state'])
+        .sort_index()
+        )
+
+    assert not (uncalibrated_probabilities['calibrated_probability'].isnull().any()), \
+        "There are {} NaN(s) in uncalibrated_probabilities".format(
+            uncalibrated_probabilities['calibrated_probability'].isnull().sum())
+
+    assert (
+        uncalibrated_probabilities.query('final_state == 5')['calibrated_probability'] < 1
+        ).all(), "There are {} 1's in calibrated_probability".format(
+            (uncalibrated_probabilities['calibrated_probability'] < 1).sum(),
+            )
+
+    assert_probabilities(
+        dataframe = uncalibrated_probabilities,
+        by = ['period', 'sex', 'age', 'initial_state'],
+        probability = 'calibrated_probability',
+        )
+
+    mortality = (uncalibrated_probabilities
+        .query('final_state == 5')
+        ).copy()
+
+    mortality['periodized_calibrated_probability'] = np.minimum(  # use minimum to avoid over corrections !
+        mortality.calibrated_probability * mortality.correction_coefficient, 1 - delta)
+
+    assert (
+        (mortality['periodized_calibrated_probability'] < 1)
+        ).all(), "There are {} 1's in periodized_calibrated_probability".format(
+            (mortality['periodized_calibrated_probability'] < 1).sum(),
+            )
+
+    assert not (mortality['periodized_calibrated_probability'].isnull().any()), \
+        "There are calibrated_probability NaNs in mortality"
+
+    if mu is None:
+        assert (mortality.calibrated_probability < 1).all()
+        mortality.eval(
+            'cale_other_transitions = (1 - periodized_calibrated_probability) / (1 - calibrated_probability)',
+            inplace = True,
+            )
+        assert not mortality.cale_other_transitions.isnull().any(), "Some calibration coeffecients are NaNs"
+        assert (mortality.cale_other_transitions > 0).all(), "Some calibration coeffecients are negative"
+
+        cale_other_transitions = mortality.reset_index()[
+            ['period', 'sex', 'age', 'initial_state', 'cale_other_transitions']
+            ].copy()
+        other_transitions = (uncalibrated_probabilities
+            .reset_index()
+            .query('final_state != 5')
+            .merge(cale_other_transitions)
+            .eval(
+                'periodized_calibrated_probability = calibrated_probability * cale_other_transitions',
+                inplace = False,
+                )
+            )
+        # Ensures that the mortality is the projected one assuming no variation in elderly disability distribution
+        assert not (other_transitions['periodized_calibrated_probability'].isnull().any()), \
+            "There are {} NaN(s) in other_transitions".format(
+                other_transitions['periodized_calibrated_probability'].isnull().sum())
+        assert (
+            (other_transitions['periodized_calibrated_probability'] >= 0) &
+            (other_transitions['periodized_calibrated_probability'] <= 1)
+            ).all(), "Erroneous periodized_calibrated_probability"
+    else:
+        assert variant is not None
+        if variant == 0:
+            other_transitions = _variant_0(
+                mortality = mortality, mu = mu, uncalibrated_probabilities = uncalibrated_probabilities)
+        elif variant == 1:
+            other_transitions = _variant_1(
+                mortality = mortality, mu = mu, uncalibrated_probabilities = uncalibrated_probabilities)
+        else:
+            raise NotImplementedError
+
+    periodized_calibrated_transitions = (pd.concat([
+        mortality.reset_index()[
+            ['period', 'sex', 'age', 'initial_state', 'final_state', 'periodized_calibrated_probability']
+            ],
+        other_transitions[
+            ['period', 'sex', 'age', 'initial_state', 'final_state', 'periodized_calibrated_probability']
+            ],
+        ]))
+
+    assert_probabilities(
+        dataframe = periodized_calibrated_transitions,
+        by = ['period', 'sex', 'age', 'initial_state'],
+        probability = 'periodized_calibrated_probability',
+        cut_off = delta,
+        )
+    return (periodized_calibrated_transitions
+        .set_index(['period', 'sex', 'age', 'initial_state', 'final_state'])
+        .sort_index()
+        )
+
+
+def _variant_0(mortality = None, mu = None, uncalibrated_probabilities = None):
+    """
+    Gain in survival probability feeds by a proportion of mu the initial_state and 1 - mu the other states
+    """
+    mortality.eval(
+        'delta_initial = - @mu * (periodized_calibrated_probability - calibrated_probability)',
+        inplace = True,
+        )
+
+    mortality.eval(
+        'delta_non_initial = - (1 - @mu) * (periodized_calibrated_probability - calibrated_probability)',
+        inplace = True,
+        )
+
+    for initial_state, final_states in final_states_by_initial_state.iteritems():
+        if 5 not in final_states:
+            continue
+        #
+        delta_initial_transitions = mortality.reset_index()[
+            ['period', 'sex', 'age', 'initial_state', 'delta_initial']
+            ].copy()
+
+        to_initial_transitions = (uncalibrated_probabilities
+            .reset_index()
+            .query('(final_state == @initial_state) and (final_state != 5)')
+            .merge(delta_initial_transitions)
+            )
+        to_initial_transitions['periodized_calibrated_probability'] = np.maximum(
+            to_initial_transitions.calibrated_probability + to_initial_transitions.delta_initial, 0)
+
+        delta_non_initial_transitions = mortality.reset_index()[
+            ['period', 'sex', 'age', 'initial_state', 'delta_non_initial']
+            ].copy()
+
+        non_initial_transitions_aggregate_probability = (uncalibrated_probabilities
+            .reset_index()
+            .query('(final_state != @initial_state) and (final_state != 5)')
+            .groupby(['period', 'sex', 'age', 'initial_state'])['calibrated_probability'].sum()
+            .reset_index()
+            .rename(columns = dict(calibrated_probability = 'aggregate_calibrated_probability'))
+            )
+
+        to_non_initial_transitions = (uncalibrated_probabilities
+            .reset_index()
+            .query('(final_state != @initial_state) and (final_state != 5)')
+            .merge(non_initial_transitions_aggregate_probability.reset_index())
+            .merge(delta_non_initial_transitions)
+            .eval(
+                'periodized_calibrated_probability = calibrated_probability * (1 + delta_non_initial / aggregate_calibrated_probability)',
+                inplace = False,
+                )
+            )
+
+        other_transitions = pd.concat([
+            to_initial_transitions[
+                ['period', 'sex', 'age', 'initial_state', 'final_state', 'periodized_calibrated_probability']
+                ],
+            to_non_initial_transitions[
+                ['period', 'sex', 'age', 'initial_state', 'final_state', 'periodized_calibrated_probability']
+                ].fillna(0)
+            ])
+
+    return other_transitions
+
+
+def _variant_1(mortality = None, mu = None, uncalibrated_probabilities = None):
+    """
+    Autonomy and disability states are treated differently
+    Gain in survival probability feeds by a proportion of mu the autonomy initial_state and
+    1 - mu the transition to the disability states.
+    Other transition share proportionnally the survival probability gain
+    """
+    # Starting from autonomy
+    # Staying autonomous
+    mortality.eval(
+        'survival_gain = - (periodized_calibrated_probability - calibrated_probability)',  # It is postive gain
+        inplace = True,
+        )
+    survival_gain = mortality.reset_index()[
+        ['period', 'sex', 'age', 'initial_state', 'survival_gain']
+        ].copy()
+
+    stay_autonomous = (uncalibrated_probabilities
+        .reset_index()
+        .query('(initial_state == 0) & (final_state == 0)')
+        .merge(survival_gain)
+        .eval(
+            'periodized_calibrated_probability = @mu * survival_gain + calibrated_probability',
+            inplace = False,
+            )
+        )
+    assert (stay_autonomous.periodized_calibrated_probability <= 1).all()
+    # From autonomy to disablement
+    disabling_transitions_aggregate_probability = (uncalibrated_probabilities
+        .reset_index()
+        .query('(initial_state == 0) & (final_state != 0) & (final_state != 5)')
+        .groupby(['period', 'sex', 'age', 'initial_state'])['calibrated_probability'].sum()
+        .reset_index()
+        .rename(columns = dict(calibrated_probability = 'aggregate_calibrated_probability'))
+        )
+    become_disabled = (uncalibrated_probabilities
+        .reset_index()
+        .query('(initial_state == 0) & (final_state != 0) & (final_state != 5)')
+        .merge(disabling_transitions_aggregate_probability)
+        .merge(survival_gain)
+        .eval(
+            'periodized_calibrated_probability =  calibrated_probability * (1 + (1 - @mu) * survival_gain / aggregate_calibrated_probability)',
+            inplace = False,
+            )
+        )
+
+    # For initial_states >= 1
+    mortality.eval(
+        'cale_other_transitions = (1 - periodized_calibrated_probability) / (1 - calibrated_probability)',
+        inplace = True,
+        )
+    cale_other_transitions = mortality.reset_index()[
+        ['period', 'sex', 'age', 'initial_state', 'cale_other_transitions']
+        ].copy()
+    other_transitions = (uncalibrated_probabilities
+        .reset_index()
+        .query('(initial_state != 0) & (final_state != 5)')
+        .merge(cale_other_transitions)
+        .eval(
+            'periodized_calibrated_probability = calibrated_probability * cale_other_transitions',
+            inplace = False,
+            )
+        )
+
+    other_transitions = pd.concat([
+        stay_autonomous,
+        become_disabled,
+        other_transitions,
+        ])
+    return other_transitions
 
 
 def assert_probabilities(dataframe = None, by = ['period', 'sex', 'age', 'initial_state'],
@@ -115,6 +383,49 @@ def build_mortality_calibrated_target(transitions = None, period = None):
     return mortality_calibrated_target
 
 
+def build_mortality_calibrated_target_from_formula(formula = None, period = None):
+    assert period is not None
+    assert formula is not None
+    transitions = get_transitions_from_formula(formula = formula)
+    mortality_calibrated_target = build_mortality_calibrated_target(transitions, period)
+    assert_probabilities(
+        dataframe = mortality_calibrated_target,
+        by = ['sex', 'age', 'initial_state'],
+        probability = 'calibrated_probability',
+        )
+    return mortality_calibrated_target
+
+
+def export_calibrated_dependance_transition(projected_target = None, filename_prefix = None):
+    assert projected_target is not None
+    for sex in ['male', 'female']:
+        if filename_prefix is None:
+            filename = os.path.join('/home/benjello/data/til/input/dependance_transition_{}.csv'.format(sex))
+        else:
+            filename = os.path.join('{}_{}.csv'.format(filename_prefix, sex))
+        projected_target.to_csv('periodized_result.csv')
+
+        if filename is not None:
+            (projected_target
+                .query('sex == @sex')
+                .reset_index()
+                .drop('sex', axis = 1)
+                .set_index(['period', 'age', 'initial_state', 'final_state'])
+                .unstack()
+                .fillna(0)
+                .to_csv(filename, header = False)
+                )
+            # Add liam2 compatible header
+            verbatim_header = '''period,age,initial_state,final_state,,,,,
+,,,0,1,2,3,4,5
+'''
+            with file(filename, 'r') as original:
+                data = original.read()
+            with file(filename, 'w') as modified:
+                modified.write(verbatim_header + data)
+            log.info('Saving {}'.format(filename))
+
+
 def get_mortality_after_imputation(period = 2010, mortality_table = None):
     assert mortality_table is not None
     data_by_sex = dict()
@@ -133,7 +444,6 @@ def get_mortality_after_imputation(period = 2010, mortality_table = None):
             )
 
     data = pd.concat(data_by_sex.values())
-
     mortality_after_imputation = (data
         .merge(
             mortality_table.reset_index()[['sex', 'age', 'initial_state', 'mortality']],
@@ -145,7 +455,6 @@ def get_mortality_after_imputation(period = 2010, mortality_table = None):
             (x.total * x.mortality).sum() / (x.total.sum() + (x.total.sum() == 0))
             ))
         )
-
     mortality_after_imputation.name = 'mortality_after_imputation'
     return mortality_after_imputation
 
@@ -321,273 +630,6 @@ def get_insee_projected_mortality():
     return mortality.set_index(['sex', 'age', 'year'])
 
 
-def add_projection_corrections(mortality_calibrated_target, mu = None, variant = None):
-    assert variant is None or variant in [0, 1]
-    if variant is not None:
-        assert mu is not None
-    delta = 1e-7
-    regularize(
-        transition_matrix_dataframe = mortality_calibrated_target,
-        by = ['period', 'sex', 'age', 'initial_state'],
-        probability = 'calibrated_probability',
-        delta = delta)
-
-    projected_mortality = get_insee_projected_mortality()
-    initial_mortality = (projected_mortality
-        .query('year == 2010')
-        .rename(columns = {'mortality': 'initial_mortality'})
-        .reset_index()
-        .drop('year', axis = 1)
-        )
-    correction_coefficient = (projected_mortality.reset_index()
-        .query('year >= 2010')
-        .merge(initial_mortality)
-        .eval('correction_coefficient = mortality / initial_mortality', inplace = False)
-        .rename(columns = dict(year = 'period'))
-        .drop(['mortality', 'initial_mortality'], axis = 1)
-        )
-
-    assert not (correction_coefficient['correction_coefficient'].isnull().any())
-
-    uncalibrated_probabilities = (mortality_calibrated_target.reset_index()[
-        ['sex', 'age', 'initial_state', 'final_state', 'calibrated_probability']
-        ]
-        .merge(correction_coefficient[['period', 'sex', 'age', 'correction_coefficient']])
-        .set_index(['period', 'sex', 'age', 'initial_state', 'final_state'])
-        .sort_index()
-        )
-
-    assert not (uncalibrated_probabilities['calibrated_probability'].isnull().any()), \
-        "There are {} NaN(s) in uncalibrated_probabilities".format(
-            uncalibrated_probabilities['calibrated_probability'].isnull().sum())
-
-    assert (
-        uncalibrated_probabilities.query('final_state == 5')['calibrated_probability'] < 1
-        ).all(), "There are {} 1's in calibrated_probability".format(
-            (uncalibrated_probabilities['calibrated_probability'] < 1).sum(),
-            )
-
-    assert_probabilities(
-        dataframe = uncalibrated_probabilities,
-        by = ['period', 'sex', 'age', 'initial_state'],
-        probability = 'calibrated_probability',
-        )
-
-    mortality = (uncalibrated_probabilities
-        .query('final_state == 5')
-        ).copy()
-
-
-    mortality['periodized_calibrated_probability'] = np.minimum(  # use minimum to avoid over corrections !
-        mortality.calibrated_probability * mortality.correction_coefficient, 1 - delta)
-
-    assert (
-        (mortality['periodized_calibrated_probability'] < 1)
-        ).all(), "There are {} 1's in periodized_calibrated_probability".format(
-            (mortality['periodized_calibrated_probability'] < 1).sum(),
-            )
-
-    assert not (mortality['periodized_calibrated_probability'].isnull().any()), \
-        "There are calibrated_probability NaNs in mortality"
-
-    if mu is None:
-        assert (mortality.calibrated_probability < 1).all()
-        mortality.eval(
-            'cale_other_transitions = (1 - periodized_calibrated_probability) / (1 - calibrated_probability)',
-            inplace = True,
-            )
-        assert not mortality.cale_other_transitions.isnull().any(), "Some calibration coeffecients are NaNs"
-        assert (mortality.cale_other_transitions > 0).all(), "Some calibration coeffecients are negative"
-
-        cale_other_transitions = mortality.reset_index()[
-            ['period', 'sex', 'age', 'initial_state', 'cale_other_transitions']
-            ].copy()
-        other_transitions = (uncalibrated_probabilities
-            .reset_index()
-            .query('final_state != 5')
-            .merge(cale_other_transitions)
-            .eval(
-                'periodized_calibrated_probability = calibrated_probability * cale_other_transitions',
-                inplace = False,
-                )
-            )
-        # Ensures that the mortality is the projected one assuming no variation in elderly disability distribution
-        assert not (other_transitions['periodized_calibrated_probability'].isnull().any()), \
-            "There are {} NaN(s) in other_transitions".format(
-                other_transitions['periodized_calibrated_probability'].isnull().sum())
-        assert (
-            (other_transitions['periodized_calibrated_probability'] >= 0) &
-            (other_transitions['periodized_calibrated_probability'] <= 1)
-            ).all(), "Erroneous periodized_calibrated_probability"
-    else:
-        assert variant is not None
-        if variant == 0:
-            other_transitions = _variant_0(
-                mortality = mortality, mu = mu, uncalibrated_probabilities = uncalibrated_probabilities)
-        elif variant == 1:
-            other_transitions = _variant_1(
-                mortality = mortality, mu = mu, uncalibrated_probabilities = uncalibrated_probabilities)
-        else:
-            raise NotImplementedError
-
-    periodized_calibrated_transitions = (pd.concat([
-        mortality.reset_index()[
-            ['period', 'sex', 'age', 'initial_state', 'final_state', 'periodized_calibrated_probability']
-            ],
-        other_transitions[
-            ['period', 'sex', 'age', 'initial_state', 'final_state', 'periodized_calibrated_probability']
-            ],
-        ]))
-
-    assert_probabilities(
-         dataframe = periodized_calibrated_transitions,
-         by = ['period', 'sex', 'age', 'initial_state'],
-         probability = 'periodized_calibrated_probability',
-         cut_off = delta,
-         )
-    return (periodized_calibrated_transitions
-        .set_index(['period', 'sex', 'age', 'initial_state', 'final_state'])
-        .sort_index()
-        )
-
-
-def _variant_0(mortality = None, mu = None, uncalibrated_probabilities = None):
-    """
-    Gain in survival probability feeds by a proportion of mu the initial_state and 1 - mu the other states
-    """
-    mortality.eval(
-        'delta_initial = - @mu * (periodized_calibrated_probability - calibrated_probability)',
-        inplace = True,
-        )
-
-    mortality.eval(
-        'delta_non_initial = - (1 - @mu) * (periodized_calibrated_probability - calibrated_probability)',
-        inplace = True,
-        )
-
-    for initial_state, final_states in final_states_by_initial_state.iteritems():
-        if 5 not in final_states:
-            continue
-        #
-        delta_initial_transitions = mortality.reset_index()[
-            ['period', 'sex', 'age', 'initial_state', 'delta_initial']
-            ].copy()
-
-        to_initial_transitions = (uncalibrated_probabilities
-            .reset_index()
-            .query('(final_state == @initial_state) and (final_state != 5)')
-            .merge(delta_initial_transitions)
-            )
-        to_initial_transitions['periodized_calibrated_probability'] = np.maximum(
-            to_initial_transitions.calibrated_probability + to_initial_transitions.delta_initial, 0)
-
-        delta_non_initial_transitions = mortality.reset_index()[
-            ['period', 'sex', 'age', 'initial_state', 'delta_non_initial']
-            ].copy()
-
-        non_initial_transitions_aggregate_probability = (uncalibrated_probabilities
-            .reset_index()
-            .query('(final_state != @initial_state) and (final_state != 5)')
-            .groupby(['period', 'sex', 'age', 'initial_state'])['calibrated_probability'].sum()
-            .reset_index()
-            .rename(columns = dict(calibrated_probability = 'aggregate_calibrated_probability'))
-            )
-
-        to_non_initial_transitions = (uncalibrated_probabilities
-            .reset_index()
-            .query('(final_state != @initial_state) and (final_state != 5)')
-            .merge(non_initial_transitions_aggregate_probability.reset_index())
-            .merge(delta_non_initial_transitions)
-            .eval(
-                'periodized_calibrated_probability = calibrated_probability * (1 + delta_non_initial / aggregate_calibrated_probability)',
-                inplace = False,
-                )
-            )
-
-        other_transitions = pd.concat([
-            to_initial_transitions[
-                ['period', 'sex', 'age', 'initial_state', 'final_state', 'periodized_calibrated_probability']
-                ],
-            to_non_initial_transitions[
-                ['period', 'sex', 'age', 'initial_state', 'final_state', 'periodized_calibrated_probability']
-                ].fillna(0)
-            ])
-
-    return other_transitions
-
-
-def _variant_1(mortality = None, mu = None, uncalibrated_probabilities = None):
-    """
-    Autonomy and disability states are treated differently
-    Gain in survival probability feeds by a proportion of mu the autonomy initial_state and
-    1 - mu the transition to the disability states.
-    Other transition share proportionnally the survival probability gain
-    """
-    # Starting from autonomy
-    # Staying autonomous
-    mortality.eval(
-        'survival_gain = - (periodized_calibrated_probability - calibrated_probability)',  # It is postive gain
-        inplace = True,
-        )
-    survival_gain = mortality.reset_index()[
-        ['period', 'sex', 'age', 'initial_state', 'survival_gain']
-        ].copy()
-
-    stay_autonomous = (uncalibrated_probabilities
-        .reset_index()
-        .query('(initial_state == 0) & (final_state == 0)')
-        .merge(survival_gain)
-        .eval(
-            'periodized_calibrated_probability = @mu * survival_gain + calibrated_probability',
-            inplace = False,
-            )
-        )
-    assert (stay_autonomous.periodized_calibrated_probability <= 1).all()
-    # From autonomy to disablement
-    disabling_transitions_aggregate_probability = (uncalibrated_probabilities
-        .reset_index()
-        .query('(initial_state == 0) & (final_state != 0) & (final_state != 5)')
-        .groupby(['period', 'sex', 'age', 'initial_state'])['calibrated_probability'].sum()
-        .reset_index()
-        .rename(columns = dict(calibrated_probability = 'aggregate_calibrated_probability'))
-        )
-    become_disabled = (uncalibrated_probabilities
-        .reset_index()
-        .query('(initial_state == 0) & (final_state != 0) & (final_state != 5)')
-        .merge(disabling_transitions_aggregate_probability)
-        .merge(survival_gain)
-        .eval(
-            'periodized_calibrated_probability =  calibrated_probability * (1 + (1 - @mu) * survival_gain / aggregate_calibrated_probability)',
-            inplace = False,
-            )
-        )
-
-    # For initial_states >= 1
-    mortality.eval(
-        'cale_other_transitions = (1 - periodized_calibrated_probability) / (1 - calibrated_probability)',
-        inplace = True,
-        )
-    cale_other_transitions = mortality.reset_index()[
-        ['period', 'sex', 'age', 'initial_state', 'cale_other_transitions']
-        ].copy()
-    other_transitions = (uncalibrated_probabilities
-        .reset_index()
-        .query('(initial_state != 0) & (final_state != 5)')
-        .merge(cale_other_transitions)
-        .eval(
-            'periodized_calibrated_probability = calibrated_probability * cale_other_transitions',
-            inplace = False,
-            )
-        )
-
-    other_transitions = pd.concat([
-        stay_autonomous,
-        become_disabled,
-        other_transitions,
-        ])
-    return other_transitions
-
-
 def plot_projected_target(age_max = 100, age_min = 60, projected_target = None, sex = None, save = True,
         title = None, title_template = None, years = None):
 
@@ -611,7 +653,7 @@ def plot_projected_target(age_max = 100, age_min = 60, projected_target = None, 
             .rename(columns= dict(periodized_calibrated_probability = "probability"))
             )
         grid = sns.FacetGrid(data, row = "initial_state", col = "final_state", hue = "period", despine = True)
-        # sns.set(font_scale=1.5, rc={'text.usetex' : True})
+        # sns.set(font_scale=1.5, rc={'text.usetex' : Tr(''ue})
         # grid.set_titles(template = r"${row_name} \rightarrow {col_name}$")
         grid.set_titles(template = "{row_name} -> {col_name}")
         grid.map(plt.plot, 'age', 'probability')
@@ -647,7 +689,7 @@ def regularize(transition_matrix_dataframe = None, by = None, probability = None
     problematic_indices = (mortality_transitions[probability]
         .loc[mortality_transitions[probability] >= (1 - delta)]
         .reset_index()
-        .drop(['final_state', probability] , axis = 1)
+        .drop(['final_state', probability], axis = 1)
         )
     count = (problematic_indices
         .merge(
@@ -695,53 +737,25 @@ def regularize(transition_matrix_dataframe = None, by = None, probability = None
 
 
 if __name__ == '__main__':
+    logging.basicConfig(level = logging.INFO, stream = sys.stdout)
+    config = Config()
+    input_dir = config.get('til', 'input_dir')
 
     formula = 'final_state ~ I((age - 80) * 0.1) + I(((age - 80) * 0.1)**2) + I(((age - 80) * 0.1)**3)'
     period = 2010
 
-    transitions = get_transitions_from_formula(formula = formula)
-    mortality_calibrated_target = build_mortality_calibrated_target(transitions, period)
-    assert_probabilities(
-        dataframe = mortality_calibrated_target,
-        by = ['sex', 'age', 'initial_state'],
-        probability = 'calibrated_probability',
-        )
+    mortality_calibrated_target = build_mortality_calibrated_target_from_formula(
+        formula = formula, period = period)
 
-    def check(projected_target):
-        for period in range(2010, 2059):
-            x = projected_target.loc[(period, u'female', 89, 4, slice(0, 5)),]
-            print x
-            print (x.sum() - 1) / 1e-10
-
-    variant = 1
     for mu in [0, 0.5, 1]:
+        variant = 1
         title = "mu = {}, variant = {}".format(mu, variant)
-        years = [2010, 2020, 2030, 2040, 2050]
         projected_target = add_projection_corrections(
             mortality_calibrated_target = mortality_calibrated_target, mu = mu, variant = variant)
+        years = [2010, 2020, 2030, 2040, 2050]
         plot_projected_target(projected_target = projected_target, years = years, title = title)
-
-
-    BOUM
-    for sex in ['male', 'female']:
-        filename = os.path.join('/home/benjello/data/til/input/dependance_transition_{}.csv'.format(sex))
-        projected_target.to_csv('periodized_result.csv')
-
-        if filename is not None:
-            (projected_target
-                .query('sex == @sex')
-                .reset_index()
-                .drop('sex', axis = 1)
-                .set_index(['period', 'age', 'initial_state', 'final_state'])
-                .unstack()
-                .fillna(0)
-                .to_csv(filename, header = False)
-                )
-            # Add liam2 compatible header
-            verbatim_header = '''period,age,initial_state,final_state,,,,,
-,,,0,1,2,3,4,5
-'''
-            with file(filename, 'r') as original:
-                data = original.read()
-            with file(filename, 'w') as modified:
-                modified.write(verbatim_header + data)
+        filename_prefix = os.path.join(
+            input_dir,
+            'dependance_transition_mu_{}_variant_{}'.format(mu, variant)
+            )
+        export_calibrated_dependance_transition(projected_target, filename_prefix)
