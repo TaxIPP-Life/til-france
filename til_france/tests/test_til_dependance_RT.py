@@ -2,6 +2,7 @@
 
 
 import logging
+import numpy as np
 import sys
 
 
@@ -24,11 +25,18 @@ from til_france.plot.dependance import (
     plot_multi_prevalence_csv,
     )
 
+
 from til_france.plot.population import (
     plot_population,
     plot_ratio_demographique,
     population_diagnostic,
     )
+
+
+from til_france.tests.base import ipp_colors
+
+
+colors = [ipp_colors[cname] for cname in ['ipp_very_dark_blue', 'ipp_dark_blue', 'ipp_medium_blue', 'ipp_light_blue']]
 
 
 log = logging.getLogger(__name__)
@@ -53,11 +61,6 @@ def plot_results(simulation, option = None, age_max = None, age_min = None):
     # plot_population(simulation, backup = option)
 
     plot_dependance_csv(simulation, backup = option, year_min = 2011)
-
-
-
-
-    bim
     plot_dependance_by_age_separate(
         simulation,
         backup = option,
@@ -67,38 +70,82 @@ def plot_results(simulation, option = None, age_max = None, age_min = None):
         age_min = age_min,
         )
     #
-    Boum
 
 
-def extract_dependance_niveau(simulation, option = None):
-    assert option is not None
-    df = extract_dependance_niveau_csv(simulation, backup = option)
-    import os
-    import pkg_resources
-    assets_path = os.path.join(
-        pkg_resources.get_distribution('til-france').location,
-        'til_france',
-        'model',
-        'options',
-        'dependance_RT',
-        'assets',
+def plot_dependance_niveau_by_age_at_period(simulation, sexe = None, period = None):
+    assert period is not None
+
+    age_min = 65
+    age_max = 95
+    data = extract_dependance_niveau_csv(simulation)
+
+    if not age_min:
+        age_min = 60
+    if age_max:
+        query = '(age >= @age_min) and (age <= @age_max) and (period == @period)'
+    else:
+        query = '(age >= @age_min) and (period == @period)'
+
+    data_plot = data.query(query).copy()  # [['age', 'period', name, 'sexe']]
+
+    data_plot['dependance_niveau'] = data_plot.dependance_niveau.astype('str')
+
+    if sexe:
+        data_plot = data_plot.query('sexe == @sexe')
+    else:
+        data_plot = data_plot.groupby(['period', 'age', 'dependance_niveau'])['total'].sum().reset_index()
+
+    pivot_table = (data_plot[['dependance_niveau', 'total', 'age']]
+        .pivot('age', 'dependance_niveau', 'total')
+        .replace(0, np.nan)  # Next three lines to remove all 0 columns
+        .dropna(how = 'all', axis = 1)
+        .replace(np.nan, 0)
         )
+    pivot_table = pivot_table.divide(pivot_table.sum(axis=1), axis=0)
+    pivot_table.plot.area(stacked = True, color = colors)
 
-    df.to_csv(os.path.join(assets_path, 'dependance_niveau.csv'))
-    Boum
+
+def plot_dependance_niveau_by_period(simulation, sexe = None):
+    age_min = 65
+    age_max = 95
+    data = extract_dependance_niveau_csv(simulation)
+
+    if not age_min:
+        age_min = 60
+    if age_max:
+        query = '(age >= @age_min) and (age <= @age_max)'
+    else:
+        query = '(age >= @age_min)'
+
+    data_plot = data.query(query).copy()  # [['age', 'period', name, 'sexe']]
+    data_plot['dependance_niveau'] = data_plot.dependance_niveau.astype('str')
+    if sexe:
+        data_plot = data_plot.query('sexe == @sexe')
+    else:
+        data_plot = data_plot.groupby(['period', 'age', 'dependance_niveau'])['total'].sum().reset_index()
+
+    pivot_table = (data_plot[['period', 'dependance_niveau', 'total', 'age']]
+        .groupby(['period', 'dependance_niveau'])['total'].sum().reset_index()
+        .pivot('period', 'dependance_niveau', 'total')
+        .replace(0, np.nan)  # Next three lines to remove all 0 columns
+        .dropna(how = 'all', axis = 1)
+        .replace(np.nan, 0)
+        )
+    print pivot_table.index
+    print pivot_table
+    pivot_table.plot.line(color = colors)
+
+
 
 
 if __name__ == '__main__':
     logging.basicConfig(level = logging.DEBUG, stream = sys.stdout)
     option = 'dependance_RT_paquid'
     simulation = get_simulation(run = True, option = option)
-    # extract_dependance_niveau(simulation, option = option)
-    age_min = 65
-    age_max = 95
 
-    data = plot_dependance_prevalence_all_levels_by_age(simulation, years = [2010, 2025, 2040],
-                                                 age_max = age_max, age_min = age_min)
-
+    plot_dependance_niveau_by_age_at_period(simulation, period = 2010)
+    #plot_dependance_niveau_by_period(simulation)
+    BIM
     years = [2009, 2025, 2040]
     data.columns
     import numpy as np

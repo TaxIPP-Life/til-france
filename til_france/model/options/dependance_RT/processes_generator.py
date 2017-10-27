@@ -7,7 +7,10 @@ import pkg_resources
 import yaml
 
 
-from til_france.model.options.dependance_RT.life_expectancy.transition import final_states_by_initial_state
+from til_france.model.options.dependance_RT.life_expectancy.transition_matrices import (
+    final_states_by_initial_state,
+    get_formatted_params_by_initial_state,
+    )
 
 til_france_path = os.path.join(
     pkg_resources.get_distribution('Til-France').location,
@@ -85,6 +88,13 @@ def rename_variables(variables):
         'age_more90': '(age >= 90)',
         'seul': '(not INCOUPLE)',
         'femme': 'ISFEMALE',
+        'femme[t.true]': 'ISFEMALE',
+        'seul[t.true]': '(not INCOUPLE)',
+        'educ_2[t.true]': '((education_niveau >= 2) and (education_niveau <= 3))',
+        'educ_3[t.true]': '(education_niveau >= 4)',
+        # '((age - 80))': ,
+        # '(((age - 80)) ** 2)': ,
+        # '(((age - 80)) ** 3)': ,
         }
     for old_key, new_key in new_by_old_variable.iteritems():
         if old_key in variables:
@@ -128,7 +138,7 @@ def create_initialisation():
         yaml.dump(main, outfile, default_flow_style = False, width = 1000)
 
 
-def create_transition_functions(cohort = None):
+def create_transition_functions_from_RT_excel_files(cohort = None):
     assert cohort in ['paquid', '3c']
     process_by_initial_state = dict()
     processes = dict(processes = process_by_initial_state)
@@ -243,7 +253,7 @@ def create_scaled_transition_functions(cohort = 'paquid'):
         )
     generations = dict(generation = dict(fields = generation_fields, processes = generation_processes))
     generations_main = dict(entities = generations)
-
+    dependance_transition_mise_a_jour.append({'period_index': 'period - 2009'})
     for initial_state, final_states in final_states_by_initial_state.iteritems():
         initial_state_actions = list()
         process_by_initial_state['etat_{}()'.format(initial_state)] = initial_state_actions
@@ -268,12 +278,12 @@ def create_scaled_transition_functions(cohort = 'paquid'):
                 female_link: '{type: float, initialdata: False}'
                 })
             dependance_transition_mise_a_jour.append({
-                male_link: 'dependance_transition_homme[period - 2010, 0:121, {}, {}]'.format(
+                male_link: 'array(dependance_transition_homme[period_index, 0:121, {}, {}])'.format(
                     initial_state, final_state),
                 # First argument of transition is period
                 })
             dependance_transition_mise_a_jour.append({
-                female_link: 'dependance_transition_femme[period - 2010, 0:121, {}, {}]'.format(
+                female_link: 'array(dependance_transition_femme[period_index, 0:121, {}, {}])'.format(
                     initial_state, final_state),
                 })
         # return line for individus
@@ -306,8 +316,76 @@ def create_scaled_transition_functions(cohort = 'paquid'):
         outfile.write(filedata)
 
 
+def create_transition_functions(formula = None, variables = None, cohort = 'paquid'):
+    assert (formula is not None) and (variables is not None)
+    formatted_params_by_initial_state = get_formatted_params_by_initial_state(formula = formula, variables = variables)
+    constant = '(age > 0)'  # was  'cons'
+    process_by_initial_state = dict()
+    processes = dict(processes = process_by_initial_state)
+    individus = dict(individus = processes)
+    main = dict(entities = individus)
+
+    for initial_state, formatted_params in formatted_params_by_initial_state.iteritems():
+        variables_by_final_state = formatted_params
+        initial_state_actions = list()
+        process_by_initial_state['etat_{}()'.format(initial_state)] = initial_state_actions
+        for final_state, variables in variables_by_final_state.iteritems():
+            variables = rename_variables(variables)
+            value_formula = " + ".join([
+                "{value} * {key}".format(key = key, value = value)
+                for key, value in variables.iteritems()
+                if (key != constant) & (value != 0)
+                ])
+            if constant in variables and variables[constant] != 0:
+                value_formula = '{} + {}'.format(variables[constant], value_formula)
+            if value_formula == '':
+                value_formula = 0
+            initial_state_actions.append({
+                "prob_" + str(final_state): "exp({})".format(value_formula)
+                })
+
+        initial_state_actions.append({
+            "z": " + ".join([
+                "prob_" + str(final_state)
+                for final_state in variables_by_final_state.keys()
+                ])
+            })
+        for final_state in variables_by_final_state.keys():
+                initial_state_actions.append({
+                    "prob_" + str(final_state): "prob_{} / z".format(final_state)
+                    })
+
+        prob_final_states = sorted(["prob_{}".format(final_state) for final_state in variables_by_final_state.keys()])
+        probabilities_list_str = "[" + ", ".join(prob_final_states[:-1])
+        probabilities_list_str = probabilities_list_str + ", 1 - (" + ' + '.join(prob_final_states[:-1]) + ")]"
+        final_states_index_list_str = [
+            int(final_state[-1:]) for final_state in prob_final_states
+            ]
+        initial_state_actions.append(
+            "return choice({}, {})".format(
+                final_states_index_list_str,
+                probabilities_list_str
+                )
+            )
+    dependance_transition_yml_path = os.path.join(
+        pkg_resources.get_distribution('til-france').location,
+        'til_france',
+        'model',
+        'options',
+        'dependance_RT',
+        'dependance_{}_transition_functions.yml'.format(cohort)
+        )
+
+    with open(dependance_transition_yml_path, 'w') as outfile:
+        yaml.dump(main, outfile, default_flow_style = False, width = 1000)
+
+
 if __name__ == "__main__":
     # create_initialisation()
     # create_transition_functions(cohort = "paquid")
     # create_transition_functions(cohort = "3c")
+
+    # formula = 'final_state ~ I((age - 80)) + I(((age - 80))**2) + I(((age - 80))**3) + femme + seul + educ_2 + educ_3'
+    # variables = ['age', 'final_state', 'femme', 'seul', 'educ_2', 'educ_3']
+    # create_transition_functions(formula = formula, variables = variables)
     create_scaled_transition_functions(cohort = "paquid")

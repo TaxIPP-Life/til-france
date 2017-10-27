@@ -324,21 +324,20 @@ def plot_dependance_prevalence_by_age(simulation, years = None, ax = None, age_m
 
 def plot_dependance_prevalence_all_levels_by_age(simulation, years = None, ax = None, age_max = None, age_min = None,
         backup = None):
-    assert years is not None
     figures_directory = create_or_get_figures_directory(simulation, backup = backup)
 
     try:
         df = extract_dependance_gir_csv(simulation, backup = backup)
         log.debug("Extracting girs")
     except IOError:
-        log.debug("Abrot extracting girs because irrelevant")
+        log.debug("Abort extracting girs because irrelevant")
         df = extract_dependance_niveau_csv(simulation, backup = backup)
         log.debug("Extracting dependance_niveau")
 
-    data = clean_prevalence_all_levels_csv(df)
-    ylabel = u"taux de prévalence"
-    # # ylabel = "prevalence rate"
-    return data
+    return df
+    # data = clean_prevalence_all_levels_csv(df)
+    # ylabel = u"taux de prévalence"  # ylabel = "prevalence rate"
+    # return data
 #    return _plot_and_or_save(ax = ax, data = data, figures_directory = figures_directory,
 #         name = 'prevalence', pdf_name = None, years = years, age_max = age_max, age_min = age_min, ylabel = ylabel)
 
@@ -604,7 +603,6 @@ def multi_extract_prevalence_csv(simulation, backups = None):
         df.reset_index(inplace = True)
         df['option'] = backup
         dataframes.append(df)
-
     return pd.concat(dataframes)
 
 

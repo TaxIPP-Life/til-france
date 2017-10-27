@@ -2,57 +2,57 @@ entities:
   individus:
     processes:
       etat_0():
-      - prob_etat_5: exp(-4.28665608353 + 1.31701868254 * ((age >= 70) and (age < 80)) + -0.294637166516 * (education_niveau >= 4) + -0.5945369337 * ISFEMALE + 2.11588541315 * ((age >= 80) and (age < 90)) + 2.66979356715 * (age >= 90) + -0.0343675280401 * ((education_niveau >= 2) and (education_niveau <= 3)) + -0.297932089622 * (not INCOUPLE))
-      - prob_etat_4: exp(-18.7438724581 + 13.5620867059 * ((age >= 70) and (age < 80)) + 0.632657927117 * (education_niveau >= 4) + 0.089684634444 * ISFEMALE + 12.6784028566 * ((age >= 80) and (age < 90)) + 13.8740955621 * (age >= 90) + 0.399093015393 * ((education_niveau >= 2) and (education_niveau <= 3)) + -0.285620590783 * (not INCOUPLE))
-      - prob_etat_1: exp(-2.97071789209 + 0.593941511397 * ((age >= 70) and (age < 80)) + -0.717907737056 * (education_niveau >= 4) + -0.294987999295 * ISFEMALE + 1.06561058551 * ((age >= 80) and (age < 90)) + -0.452752096937 * (age >= 90) + 0.213506629609 * ((education_niveau >= 2) and (education_niveau <= 3)) + -0.0176362046131 * (not INCOUPLE))
-      - prob_etat_0: exp(0)
-      - z: prob_etat_5 + prob_etat_4 + prob_etat_1 + prob_etat_0
-      - prob_etat_5: prob_etat_5 / z
-      - prob_etat_4: prob_etat_4 / z
-      - prob_etat_1: prob_etat_1 / z
-      - prob_etat_0: prob_etat_0 / z
-      - return choice([5, 4, 1, 0], [prob_etat_5, prob_etat_4, prob_etat_1, prob_etat_0])
+      - prob_1: exp(0.317994962018 + 0.123896456255 * ((age - 80)) + -0.000819221600558 * (((age - 80)) ** 2) + -0.000240284745263 * (((age - 80)) ** 3) + -0.104724461981 * (not INCOUPLE) + 0.593070715832 * ISFEMALE + -0.407945339947 * (education_niveau >= 4) + -0.224489300648 * ((education_niveau >= 2) and (education_niveau <= 3)))
+      - prob_4: exp(-4.28732648301 + -0.0744623531069 * ((age - 80)) + -0.00200534882736 * (((age - 80)) ** 2) + 0.00154390939176 * (((age - 80)) ** 3) + -0.149573232437 * (not INCOUPLE) + -0.321869585501 * ISFEMALE + -18.0193745152 * (education_niveau >= 4) + 0.369390559951 * ((education_niveau >= 2) and (education_niveau <= 3)))
+      - prob_5: exp(-0.814973130444 + 0.0875101970385 * ((age - 80)) + 0.00227081632958 * (((age - 80)) ** 2) + -2.79232343275e-05 * (((age - 80)) ** 3) + -0.307966693748 * (not INCOUPLE) + -0.418228482986 * ISFEMALE + -1.1912547147 * (education_niveau >= 4) + -0.614672314386 * ((education_niveau >= 2) and (education_niveau <= 3)))
+      - prob_0: exp(0)
+      - z: prob_1 + prob_4 + prob_5 + prob_0
+      - prob_1: prob_1 / z
+      - prob_4: prob_4 / z
+      - prob_5: prob_5 / z
+      - prob_0: prob_0 / z
+      - return choice([0, 1, 4, 5], [prob_0, prob_1, prob_4, 1 - (prob_0 + prob_1 + prob_4)])
       etat_1():
-      - prob_etat_5: exp(-19.0297199128 + 15.8005997724 * ((age >= 70) and (age < 80)) + 0.436043754787 * (education_niveau >= 4) + -1.45549549733 * ISFEMALE + 17.6872611731 * ((age >= 80) and (age < 90)) + 18.5206098439 * (age >= 90) + 0.716600834554 * ((education_niveau >= 2) and (education_niveau <= 3)) + -0.347092515519 * (not INCOUPLE))
-      - prob_etat_4: exp(-21.046130989 + 15.0247695672 * ((age >= 70) and (age < 80)) + -14.2614454558 * (education_niveau >= 4) + 1.72393738488 * ISFEMALE + 17.0434069196 * ((age >= 80) and (age < 90)) + -3.52382619423 * (age >= 90) + 1.50764883192 * ((education_niveau >= 2) and (education_niveau <= 3)) + -14.5459256796 * (not INCOUPLE))
-      - prob_etat_2: exp(-2.23285451151 + 0.910847260499 * ((age >= 70) and (age < 80)) + 0.129761483102 * (education_niveau >= 4) + 0.697397072863 * ISFEMALE + 1.6155642228 * ((age >= 80) and (age < 90)) + 1.29154065085 * (age >= 90) + 0.0783957785413 * ((education_niveau >= 2) and (education_niveau <= 3)) + -0.0232967729707 * (not INCOUPLE))
-      - prob_etat_1: exp(-1.5754037169 + 0.601300945489 * ((age >= 70) and (age < 80)) + -0.881789823911 * (education_niveau >= 4) + 0.344081405693 * ISFEMALE + 1.03638184757 * ((age >= 80) and (age < 90)) + -22.1733714103 * (age >= 90) + -0.245669264303 * ((education_niveau >= 2) and (education_niveau <= 3)) + -0.00395684238889 * (not INCOUPLE))
-      - prob_etat_0: exp(0)
-      - z: prob_etat_5 + prob_etat_4 + prob_etat_2 + prob_etat_1 + prob_etat_0
-      - prob_etat_5: prob_etat_5 / z
-      - prob_etat_4: prob_etat_4 / z
-      - prob_etat_2: prob_etat_2 / z
-      - prob_etat_1: prob_etat_1 / z
-      - prob_etat_0: prob_etat_0 / z
-      - return choice([5, 4, 2, 1, 0], [prob_etat_5, prob_etat_4, prob_etat_2, prob_etat_1, prob_etat_0])
+      - prob_1: exp(1.5904319993 + 0.102057784774 * ((age - 80)) + -0.000312529749842 * (((age - 80)) ** 2) + -8.36180345604e-05 * (((age - 80)) ** 3) + -0.136952440255 * (not INCOUPLE) + 0.52158553629 * ISFEMALE + -0.309463110132 * (education_niveau >= 4) + -0.0710383384214 * ((education_niveau >= 2) and (education_niveau <= 3)))
+      - prob_2: exp(0.79447928992 + 0.196036838673 * ((age - 80)) + 0.00155727527798 * (((age - 80)) ** 2) + -8.12768407141e-06 * (((age - 80)) ** 3) + -0.110939721398 * (not INCOUPLE) + 0.970195716094 * ISFEMALE + -0.829733243046 * (education_niveau >= 4) + -0.504749365344 * ((education_niveau >= 2) and (education_niveau <= 3)))
+      - prob_4: exp(-2.87046676977 + 0.159527412733 * ((age - 80)) + 0.00362998180791 * (((age - 80)) ** 2) + 0.000195355709121 * (((age - 80)) ** 3) + 0.129275320138 * (not INCOUPLE) + 0.692051312125 * ISFEMALE + -0.765399204164 * (education_niveau >= 4) + -0.433924902758 * ((education_niveau >= 2) and (education_niveau <= 3)))
+      - prob_5: exp(0.839170149974 + 0.164880657403 * ((age - 80)) + 0.00341073320683 * (((age - 80)) ** 2) + -7.70593716963e-05 * (((age - 80)) ** 3) + -0.166794495149 * (not INCOUPLE) + -0.309648340894 * ISFEMALE + -0.727610051078 * (education_niveau >= 4) + -0.459574011088 * ((education_niveau >= 2) and (education_niveau <= 3)))
+      - prob_0: exp(0)
+      - z: prob_1 + prob_2 + prob_4 + prob_5 + prob_0
+      - prob_1: prob_1 / z
+      - prob_2: prob_2 / z
+      - prob_4: prob_4 / z
+      - prob_5: prob_5 / z
+      - prob_0: prob_0 / z
+      - return choice([0, 1, 2, 4, 5], [prob_0, prob_1, prob_2, prob_4, 1 - (prob_0 + prob_1 + prob_2 + prob_4)])
       etat_2():
-      - prob_etat_5: exp(-3.52238328017 + 1.50504382562 * ((age >= 70) and (age < 80)) + 0.38200522481 * (education_niveau >= 4) + -0.800669255624 * ISFEMALE + 2.19232382575 * ((age >= 80) and (age < 90)) + 2.98981987474 * (age >= 90) + 0.2636613231 * ((education_niveau >= 2) and (education_niveau <= 3)) + -0.0898739419364 * (not INCOUPLE))
-      - prob_etat_4: exp(-17.5859877315 + 13.0406112801 * ((age >= 70) and (age < 80)) + -0.096750828348 * (education_niveau >= 4) + 0.0376701960716 * ISFEMALE + 14.1671513834 * ((age >= 80) and (age < 90)) + 14.0181621652 * (age >= 90) + -0.193173892286 * ((education_niveau >= 2) and (education_niveau <= 3)) + -0.135996910588 * (not INCOUPLE))
-      - prob_etat_3: exp(-3.86708008162 + 1.8012126572 * ((age >= 70) and (age < 80)) + 0.0235241692469 * (education_niveau >= 4) + -0.0898745692394 * ISFEMALE + 2.50939506188 * ((age >= 80) and (age < 90)) + 2.14466493976 * (age >= 90) + -0.00224967892573 * ((education_niveau >= 2) and (education_niveau <= 3)) + -0.141719645359 * (not INCOUPLE))
-      - prob_etat_2: exp(-2.36005856193 + -0.842447062792 * ((age >= 70) and (age < 80)) + 0.900597343568 * (education_niveau >= 4) + -0.0291687299666 * ISFEMALE + -1.24480540355 * ((age >= 80) and (age < 90)) + -1.36837395965 * (age >= 90) + -0.127554792375 * ((education_niveau >= 2) and (education_niveau <= 3)) + -0.0494364963757 * (not INCOUPLE))
-      - prob_etat_1: exp(0)
-      - z: prob_etat_5 + prob_etat_4 + prob_etat_3 + prob_etat_2 + prob_etat_1
-      - prob_etat_5: prob_etat_5 / z
-      - prob_etat_4: prob_etat_4 / z
-      - prob_etat_3: prob_etat_3 / z
-      - prob_etat_2: prob_etat_2 / z
-      - prob_etat_1: prob_etat_1 / z
-      - return choice([5, 4, 3, 2, 1], [prob_etat_5, prob_etat_4, prob_etat_3, prob_etat_2, prob_etat_1])
+      - prob_2: exp(1.58955863251 + 0.124146159921 * ((age - 80)) + 0.00132489879434 * (((age - 80)) ** 2) + -0.0001872297829 * (((age - 80)) ** 3) + -0.187382713845 * (not INCOUPLE) + 0.154937789407 * ISFEMALE + -0.881724513061 * (education_niveau >= 4) + -0.345953139733 * ((education_niveau >= 2) and (education_niveau <= 3)))
+      - prob_3: exp(-0.00913336380009 + 0.182720215705 * ((age - 80)) + 0.00372351933428 * (((age - 80)) ** 2) + -0.000223814646772 * (((age - 80)) ** 3) + -0.184593852802 * (not INCOUPLE) + -0.0363302508259 * ISFEMALE + -0.909577813405 * (education_niveau >= 4) + -0.606779055388 * ((education_niveau >= 2) and (education_niveau <= 3)))
+      - prob_4: exp(-1.30079705762 + 0.182552339648 * ((age - 80)) + 0.00271893410861 * (((age - 80)) ** 2) + -0.000177233760448 * (((age - 80)) ** 3) + -0.0391540673123 * (not INCOUPLE) + 0.0683677044555 * ISFEMALE + -0.955810431369 * (education_niveau >= 4) + -0.652545550407 * ((education_niveau >= 2) and (education_niveau <= 3)))
+      - prob_5: exp(1.30897077221 + 0.15925370438 * ((age - 80)) + 0.00352507686305 * (((age - 80)) ** 2) + -0.00011723457052 * (((age - 80)) ** 3) + -0.331858371328 * (not INCOUPLE) + -0.725915417114 * ISFEMALE + -0.679740900331 * (education_niveau >= 4) + -0.303032371241 * ((education_niveau >= 2) and (education_niveau <= 3)))
+      - prob_1: exp(0)
+      - z: prob_2 + prob_3 + prob_4 + prob_5 + prob_1
+      - prob_2: prob_2 / z
+      - prob_3: prob_3 / z
+      - prob_4: prob_4 / z
+      - prob_5: prob_5 / z
+      - prob_1: prob_1 / z
+      - return choice([1, 2, 3, 4, 5], [prob_1, prob_2, prob_3, prob_4, 1 - (prob_1 + prob_2 + prob_3 + prob_4)])
       etat_3():
-      - prob_etat_5: exp(-1.39204432081 + -0.280714882234 * ((age >= 70) and (age < 80)) + -0.0526135373309 * (education_niveau >= 4) + -0.345936191549 * ISFEMALE + 0.635896320239 * ((age >= 80) and (age < 90)) + 1.40121315412 * (age >= 90) + 0.445160141746 * ((education_niveau >= 2) and (education_niveau <= 3)) + -1.02113180831 * (not INCOUPLE))
-      - prob_etat_4: exp(-14.320116254 + 11.7409412307 * ((age >= 70) and (age < 80)) + 0.178505032358 * (education_niveau >= 4) + -0.00410691171048 * ISFEMALE + 12.5107474901 * ((age >= 80) and (age < 90)) + 12.1367525938 * (age >= 90) + 0.678299409768 * ((education_niveau >= 2) and (education_niveau <= 3)) + -0.488820082184 * (not INCOUPLE))
-      - prob_etat_3: exp(-2.11215945903 + -0.097806237479 * ((age >= 70) and (age < 80)) + 0.395212702351 * (education_niveau >= 4) + 0.727255427004 * ISFEMALE + -0.502544945064 * ((age >= 80) and (age < 90)) + -0.544078832581 * (age >= 90) + 0.490551599562 * ((education_niveau >= 2) and (education_niveau <= 3)) + 0.0404456366264 * (not INCOUPLE))
-      - prob_etat_2: exp(0)
-      - z: prob_etat_5 + prob_etat_4 + prob_etat_3 + prob_etat_2
-      - prob_etat_5: prob_etat_5 / z
-      - prob_etat_4: prob_etat_4 / z
-      - prob_etat_3: prob_etat_3 / z
-      - prob_etat_2: prob_etat_2 / z
-      - return choice([5, 4, 3, 2], [prob_etat_5, prob_etat_4, prob_etat_3, prob_etat_2])
+      - prob_3: exp(0.90700140865 + 0.0617136575919 * ((age - 80)) + 0.00671436363408 * (((age - 80)) ** 2) + -0.000277572290162 * (((age - 80)) ** 3) + 0.0193012090062 * (not INCOUPLE) + -0.367622479329 * ISFEMALE + -0.0776672866019 * (education_niveau >= 4) + 0.056377937294 * ((education_niveau >= 2) and (education_niveau <= 3)))
+      - prob_4: exp(0.00735431016692 + 0.0785939960429 * ((age - 80)) + 0.00573224360027 * (((age - 80)) ** 2) + -0.000302534650667 * (((age - 80)) ** 3) + -0.510761358003 * (not INCOUPLE) + 0.0687892519175 * ISFEMALE + 0.381271384785 * (education_niveau >= 4) + 0.583097674626 * ((education_niveau >= 2) and (education_niveau <= 3)))
+      - prob_5: exp(1.26311486291 + 0.119301064083 * ((age - 80)) + 0.00736455827512 * (((age - 80)) ** 2) + -0.000326236384584 * (((age - 80)) ** 3) + -0.0512533921853 * (not INCOUPLE) + -0.690024168233 * ISFEMALE + 0.359659022066 * (education_niveau >= 4) + 0.186517753107 * ((education_niveau >= 2) and (education_niveau <= 3)))
+      - prob_2: exp(0)
+      - z: prob_3 + prob_4 + prob_5 + prob_2
+      - prob_3: prob_3 / z
+      - prob_4: prob_4 / z
+      - prob_5: prob_5 / z
+      - prob_2: prob_2 / z
+      - return choice([2, 3, 4, 5], [prob_2, prob_3, prob_4, 1 - (prob_2 + prob_3 + prob_4)])
       etat_4():
-      - prob_etat_5: exp(0.442674875297 + -1.02519535436 * ((age >= 70) and (age < 80)) + 0.0135010380365 * (education_niveau >= 4) + -0.442674875297 * ISFEMALE + -0.225091314418 * ((age >= 80) and (age < 90)) + 0.207259723499 * (age >= 90) + -0.0661731671139 * ((education_niveau >= 2) and (education_niveau <= 3)) + -0.790080410347 * (not INCOUPLE))
-      - prob_etat_4: exp(0)
-      - z: prob_etat_5 + prob_etat_4
-      - prob_etat_5: prob_etat_5 / z
-      - prob_etat_4: prob_etat_4 / z
-      - return choice([5, 4], [prob_etat_5, prob_etat_4])
+      - prob_5: exp(0.490464529642 + 0.059282338925 * ((age - 80)) + 0.00542938729322 * (((age - 80)) ** 2) + -0.000113553724091 * (((age - 80)) ** 3) + 0.129300655218 * (not INCOUPLE) + -0.726238319063 * ISFEMALE + -0.177140228568 * (education_niveau >= 4) + -0.00676914037923 * ((education_niveau >= 2) and (education_niveau <= 3)))
+      - prob_4: exp(0)
+      - z: prob_5 + prob_4
+      - prob_5: prob_5 / z
+      - prob_4: prob_4 / z
+      - return choice([4, 5], [prob_4, 1 - (prob_4)])

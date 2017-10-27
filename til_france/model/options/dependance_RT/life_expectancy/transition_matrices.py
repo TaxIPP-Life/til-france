@@ -70,13 +70,31 @@ replace_by_initial_state = {
     }
 
 
-def get_clean_paquid():
+def get_clean_paquid(extra_variables = None):
     """
     Get PAQUID relevant data free of missing observations
     """
     df = pd.read_stata(paquid_dta_path)
-    df = df[['numero', 'annee', 'age', 'scale5', 'sexe']].copy()
+    if 'seul' in extra_variables:
+        df['seul'] = df.conj == 1
+
+    log.debug("Paquid data contains the following variables: {}".format(df.columns))
+    variables = ['numero', 'annee', 'age', 'scale5', 'sexe']
+    if extra_variables:
+        assert isinstance(extra_variables, list)
+        variables = list(set(['numero', 'annee', 'age', 'scale5', 'sexe']).union(set(extra_variables)))
+
+    df = df[variables].copy()
     assert df[['numero', 'annee', 'age', 'sexe']].notnull().all().all(), df.notnull().all()
+
+    for bool_variable in ['femme', 'educ_1', 'educ_2', 'educ_3']:
+        if bool_variable in df:
+            df[bool_variable] = df[bool_variable] == 1
+
+    for extra_variable in extra_variables:
+        assert df[extra_variable].notnull().all(), "Variable {} contains null values. {}".format(
+            extra_variable, df[extra_variable].value_counts(dropna = False))
+
     filtered = (df
         .dropna()
         .rename(columns = {'scale5': 'initial_state'})
@@ -88,15 +106,20 @@ def get_clean_paquid():
 
     filtered["sexe"] = filtered["sexe"].astype('int').astype('category')
     filtered["initial_state"] = filtered["initial_state"].astype('int').astype('category')
+
+    if set(['educ_1', 'educ_2', 'educ_3']) < set(variables):
+        pass
+
     return filtered
 
 
-def build_estimation_sample(initial_state, sex = None):
+def build_estimation_sample(initial_state, sex = None, variables = None):
     """Build estimation sample from paquid data
     """
     final_states = final_states_by_initial_state[initial_state]
     assert (sex in ['male', 'female']) or (sex is None)
-    clean_paquid = get_clean_paquid()
+    extra_variables = [variable for variable in variables if variable not in ['final_state']]
+    clean_paquid = get_clean_paquid(extra_variables = extra_variables)
     assert clean_paquid.notnull().all().all()
     assert initial_state in final_states
     no_transition = (clean_paquid
@@ -200,7 +223,7 @@ def build_tansition_matrix_from_proba_by_initial_state(proba_by_initial_state, s
 def estimate_model(initial_state, formula, sex = None, variables = ['age', 'final_state']):
     assert (sex in ['male', 'female']) or (sex is None)
     final_states = final_states_by_initial_state[initial_state]
-    sample = build_estimation_sample(initial_state, sex = sex)
+    sample = build_estimation_sample(initial_state, sex = sex, variables = variables)
     result = smf.mnlogit(
         formula = formula,
         data = sample[variables],
@@ -243,12 +266,11 @@ def direct_compute_predicition(initial_state, formula, formatted_params, sex = N
     return computed_prediction
 
 
-def compute_prediction(initial_state, formula = None, variables = ['age'], exog = None, sex = None):
+def compute_prediction(initial_state = None, formula = None, variables = ['age'], sex = None):
+    assert initial_state is not None
     assert (sex in ['male', 'female']) or (sex is None)
-    sample = build_estimation_sample(initial_state, sex = sex)
-    if exog is None:
-        exog = sample[variables]
-
+    sample = build_estimation_sample(initial_state, sex = sex, variables = variables)
+    exog = sample[variables]
     result = smf.mnlogit(
         formula = formula,
         data = sample,
@@ -298,9 +320,30 @@ def test(formula = None, initial_state = None, sex = None):
     assert (diff.abs().max() < 1e-5).all(), "error is too big: {} > 1e-5".format(diff.abs().max())
 
 
+def get_formatted_params_by_initial_state(formula = None, variables = None):
+    formatted_params_by_initial_state = dict([
+        (
+            initial_state,
+            estimate_model(
+                initial_state = initial_state, formula = formula, sex = None, variables = variables)[1]
+            ) for initial_state in range(5)
+        ])
+    return formatted_params_by_initial_state
+
+
 if __name__ == '__main__':
     logging.basicConfig(level = logging.DEBUG, stream = sys.stdout)
     sex = None
-    formula = 'final_state ~ I((age - 80)) + I(((age - 80))**2) + I(((age - 80))**3)'
-    for initial_state in range(5):
+    formula = 'final_state ~ I((age - 80)) + I(((age - 80))**2) + I(((age - 80))**3) + femme + seul + educ_2 + educ_3'
+    variables = ['age', 'final_state', 'femme', 'seul', 'educ_2', 'educ_3']
+
+
+
+
+    result, formatted_params = estimate_model(initial_state, formula, sex = sex, variables = variables)
+
+    prediction = compute_prediction(initial_state = initial_state, formula = formula, sex = sex, variables = variables)
+    print prediction
+    BIM
+    for initial_state in range(1):
         test(initial_state = initial_state, formula = formula, sex = sex)
