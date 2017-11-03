@@ -105,9 +105,9 @@ def plot_dependance_niveau_by_age_at_period(simulation, sexe = None, period = No
     pivot_table.plot.area(stacked = True, color = colors)
 
 
-def plot_dependance_niveau_by_period(simulation, sexe = None):
+def plot_dependance_niveau_by_period(simulation, sexe = None, area = False):
     age_min = 65
-    age_max = 95
+    age_max = 100
     data = extract_dependance_niveau_csv(simulation)
 
     if not age_min:
@@ -131,11 +131,14 @@ def plot_dependance_niveau_by_period(simulation, sexe = None):
         .dropna(how = 'all', axis = 1)
         .replace(np.nan, 0)
         )
-    print pivot_table.index
-    print pivot_table
-    pivot_table.plot.line(color = colors)
+    if area:
+        pivot_table = pivot_table.divide(pivot_table.sum(axis=1), axis=0)
+        ax = pivot_table.plot.area(stacked = True)
+    else:
+        ax = pivot_table.plot.line()
 
-
+    from matplotlib.ticker import MaxNLocator
+    ax.xaxis.set_major_locator(MaxNLocator(integer=True))
 
 
 if __name__ == '__main__':
@@ -143,8 +146,8 @@ if __name__ == '__main__':
     option = 'dependance_RT_paquid'
     simulation = get_simulation(run = True, option = option)
 
-    plot_dependance_niveau_by_age_at_period(simulation, period = 2010)
-    #plot_dependance_niveau_by_period(simulation)
+    # plot_dependance_niveau_by_age_at_period(simulation, period = 2009)
+    plot_dependance_niveau_by_period(simulation, area = True)
     BIM
     years = [2009, 2025, 2040]
     data.columns

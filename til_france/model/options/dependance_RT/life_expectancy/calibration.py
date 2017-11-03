@@ -400,7 +400,9 @@ def export_calibrated_dependance_transition(projected_target = None, filename_pr
     assert projected_target is not None
     for sex in ['male', 'female']:
         if filename_prefix is None:
-            filename = os.path.join('/home/benjello/data/til/input/dependance_transition_{}.csv'.format(sex))
+            config = Config()
+            input_dir = config.get('til', 'input_dir')
+            filename = os.path.join(input_dir, 'dependance_transition_{}.csv'.format(sex))
         else:
             filename = os.path.join('{}_{}.csv'.format(filename_prefix, sex))
         projected_target.to_csv('periodized_result.csv')
@@ -431,26 +433,30 @@ def get_mortality_after_imputation(period = 2010, mortality_table = None):
     data_by_sex = dict()
     for sex in ['male', 'female']:
         sexe_nbr = 0 if sex == 'male' else 1
-        df = (pd.read_csv(os.path.join(assets_path, 'dependance_niveau.csv'), index_col = 0)
-            .query('(period == @period) and (age >= 60)'))
-        assert (df.query('dependance_niveau == -1')['total'] == 0).all()
+        sexe = 'homme' if sex == 'male' else 'femme'
+        config = Config()
+        input_dir = config.get('til', 'input_dir')
+        filename = os.path.join(input_dir, 'dependance_initialisation_{}.csv'.format(sexe))
+        df = (pd.read_csv(filename, names = ['age', 0, 1, 2, 3, 4], skiprows = 1)
+            .query('(age >= 60)')
+            )
+        df['age'] = df['age'].astype('int')
+        df = (pd.melt(df, id_vars = ['age'], value_vars = [0, 1, 2, 3, 4], var_name = 'initial_state', value_name = 'total')
+            .sort_values(['age', 'initial_state'])
+            .set_index(['age', 'initial_state'])
+            )
+        assert (df.query('initial_state == -1')['total'] == 0).all()
         data_by_sex[sex] = (df
-            .query('dependance_niveau != -1')
-            .query('sexe == @sexe_nbr')
-            .query('dependance_niveau != 5')
-            .rename(columns = dict(dependance_niveau = 'initial_state'))
             .assign(sex = sex)
-            .drop('sexe', axis = 1)
             )
 
-    data = pd.concat(data_by_sex.values())
+    data = pd.concat(data_by_sex.values()).reset_index()
     mortality_after_imputation = (data
         .merge(
             mortality_table.reset_index()[['sex', 'age', 'initial_state', 'mortality']],
             on = ['sex', 'age', 'initial_state'],
             how = 'inner',
             )
-        .drop('period', axis = 1)
         .groupby(['sex', 'age'])[['total', 'mortality']].apply(lambda x: (
             (x.total * x.mortality).sum() / (x.total.sum() + (x.total.sum() == 0))
             ))

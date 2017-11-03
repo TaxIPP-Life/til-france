@@ -3,11 +3,11 @@
 import:
    - ../../standard/console.yml
    - ../generations/generation.yml
-   - dependance_initialisation_functions.yml
+   # - dependance_initialisation_functions.yml
+   - dependance_generation_initialisation.yml
    - deces_dependance.yml
    - dependance_transition.yml
    - dependance_generation_transition_calibration_variables.yml
-
 
 globals:
   dependance_transition_homme:

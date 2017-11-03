@@ -1,0 +1,84 @@
+globals:
+  # periodic do not work
+  dependance_prevalence_all_years:
+    type: float
+
+entities:
+  individus:
+    fields:
+      #  Etat 0 : autonomie et aucune atteinte ´
+      #  Etat 1 : limitations fonctionnelles ´
+      #  Etat 2 : restrictions dans les IADL (Echelle de Lawton) ´
+      #  Etat 3 : restrictions dans les ADL (Echelle de Katz) ´
+      #  Etat 4 : restrictions dans les ADL les plus sévères ´
+      #  Etat 5 : décès
+      - dependance_anciennete: {type: int, initialdata: False, default: -1}
+      - dependance_niveau: {type: int, initialdata: True}
+
+    processes:
+      dependance_initialisation:
+        - dependance_niveau: 0
+        # TODO age min ?
+        - dependance_niveau: if(
+            (age >= 650) and ISMALE,
+            choice[,
+            dependance_niveau
+            )
+        - show("compute_dependance_niveau_homme_sup_75")
+        - dependance_niveau: if(
+            (age >= 60) and ISMALE and (age >= 75),
+            compute_dependance_niveau_homme_sup_75(lq, nb_enfants),
+            dependance_niveau
+            )
+        # TODO age min ?
+        - show("compute_dependance_niveau_femme_inf_80")
+        - dependance_niveau: if(
+            (age >= 60) and ISFEMALE and (age < 80),
+            compute_dependance_niveau_femme_inf_80(lq, nb_enfants),
+            dependance_niveau
+            )
+        - show("compute_dependance_niveau_femme_sup_80")
+        - dependance_niveau: if(
+            (age >= 60) and ISFEMALE and (age >= 80),
+            compute_dependance_niveau_femme_sup_80(lq, nb_enfants),
+            dependance_niveau
+            )
+        - age_category: if(
+            age >= 60,
+            min(trunc(age / 5) - 12 + 1, 6),
+            0
+            )
+        - dependance_anciennete: if(dependance_niveau >= 1, 1, -1)
+        - show('\nNombre initial de dépendants avant alignement', groupby(dependance_niveau, data_origin))
+        # TODO parameters/dependance/dependance_prevalence_2010.csv depends on weight
+
+      dependance:
+        # Transitions depuis les états initiaux suivants
+        - period_modulo: period % 2
+        - dependance_niveau_from_0: etat_0()
+        - dependance_niveau_from_1: etat_1()
+        - dependance_niveau_from_2: etat_2()
+        - dependance_niveau_from_3: etat_3()
+        - dependance_niveau_from_4: etat_4()
+        - dependance_niveau: if(
+            (age >= 65) & ((id % 2) == period_modulo),
+            if(
+                dependance_niveau == 0,
+                dependance_niveau_from_0,
+                if(
+                dependance_niveau == 1,
+                dependance_niveau_from_1,
+                if(
+                    dependance_niveau == 2,
+                    dependance_niveau_from_2,
+                    if(
+                    dependance_niveau == 3,
+                    dependance_niveau_from_3,
+                    dependance_niveau_from_4
+                    )
+                    )
+                )
+                ),
+            0
+            )
+        - dependance_anciennete: if(dependance_niveau >= 1, dependance_anciennete + 1, -1)

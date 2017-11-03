@@ -74,6 +74,8 @@ def get_clean_paquid(extra_variables = None):
     """
     Get PAQUID relevant data free of missing observations
     """
+    if extra_variables is None:
+        extra_variables = list()
     df = pd.read_stata(paquid_dta_path)
     if 'seul' in extra_variables:
         df['seul'] = df.conj == 1
@@ -266,17 +268,22 @@ def direct_compute_predicition(initial_state, formula, formatted_params, sex = N
     return computed_prediction
 
 
-def compute_prediction(initial_state = None, formula = None, variables = ['age'], sex = None):
+def compute_prediction(initial_state = None, formula = None, variables = ['age'], exog = None, sex = None):
+    """
+    Compute prediction on exogneous if given or on sample
+    """
     assert initial_state is not None
     assert (sex in ['male', 'female']) or (sex is None)
     sample = build_estimation_sample(initial_state, sex = sex, variables = variables)
-    exog = sample[variables]
+    if exog is None:
+        exog = sample[variables]
+
     result = smf.mnlogit(
         formula = formula,
         data = sample,
         ).fit()
     expurged_formula = formula.split('~', 1)[-1]
-    x = patsy.dmatrix(expurged_formula, data= exog)  # df is data for prediction
+    x = patsy.dmatrix(expurged_formula, data= exog)  # exog is data for prediction
     prediction = result.predict(x, transform=False)
     (abs(prediction.sum(axis = 1) - 1) < .00001).all()
     prediction = pd.DataFrame(prediction)
@@ -295,7 +302,7 @@ def get_transitions_from_formula(formula = None):
             proba_by_initial_state[initial_state] = pd.concat(
                 [
                     exog,
-                    compute_prediction(initial_state, formula, exog = exog, sex = sex)
+                    compute_prediction(initial_state, formula, sex = sex, exog = exog)
                     ],
                 axis = 1,
                 )
@@ -336,8 +343,6 @@ if __name__ == '__main__':
     sex = None
     formula = 'final_state ~ I((age - 80)) + I(((age - 80))**2) + I(((age - 80))**3) + femme + seul + educ_2 + educ_3'
     variables = ['age', 'final_state', 'femme', 'seul', 'educ_2', 'educ_3']
-
-
 
 
     result, formatted_params = estimate_model(initial_state, formula, sex = sex, variables = variables)

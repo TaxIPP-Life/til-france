@@ -116,7 +116,7 @@ def separate_cuts_from_variables(parameters_value_by_name):
     return cuts, parameters
 
 
-def create_initialisation():
+def create_initialisation_from_RT_excel():
     process_by_initial_state = dict()
     processes = dict(processes = process_by_initial_state)
     individus = dict(individus = processes)

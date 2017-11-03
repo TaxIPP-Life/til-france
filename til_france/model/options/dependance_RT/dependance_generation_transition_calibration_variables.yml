@@ -41,6 +41,7 @@ entities:
     - dependance_transition_femme_4_4: {type: float, initialdata: False}
     - dependance_transition_homme_4_5: {type: float, initialdata: False}
     - dependance_transition_femme_4_5: {type: float, initialdata: False}
+
     processes:
       dependance_transition_mise_a_jour:
       - period_index: period - 2010
@@ -87,7 +88,4 @@ entities:
       mise_a_jour:
       - education()
       - mortality_rates_update()
-      - dependance_transition_mise_a_jour()
-      options_initialisation:
-      - mortality_rates_initialisation()
       - dependance_transition_mise_a_jour()
