@@ -1,3 +1,3 @@
--e git+https://github.com/benjello/Til.git@til_core#egg=Til-Core
+-e git+https://github.com/TaxIPP-Life/til-core.git#egg=Til-Core
 -e git+https://github.com/liam2/liam2.git#egg=liam2
 -e .

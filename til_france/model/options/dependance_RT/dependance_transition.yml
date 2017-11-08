@@ -3,6 +3,24 @@ globals:
   dependance_prevalence_all_years:
     type: float
 
+  dependance_niveau_initialisation_homme:
+    path: dependance_initialisation_homme.csv
+    type: float
+
+  dependance_niveau_initialisation_femme:
+    path: dependance_initialisation_femme.csv
+    type: float
+
+  dependance_transition_homme:
+    path: dependance_transition_mu_0.5_variant_1_male.csv
+    type: float
+
+  dependance_transition_femme:
+    path: dependance_transition_mu_0.5_variant_1_female.csv
+    type: float
+
+
+
 entities:
   individus:
     fields:
@@ -17,51 +35,33 @@ entities:
 
     processes:
       dependance_initialisation:
-        - qm: if(
-            ISMALE,
-            individu2generation.qm_male,
-            individu2generation.qm_female
-            )
-        - qm_2010: if(
-            ISMALE,
-            individu2generation.qm_male_2010,
-            individu2generation.qm_female_2010
-            )
-        - lq: log((MU * qm + (1 - MU) * qm_2010)) / (1 - (MU * qm + (1 - MU) * qm_2010))
-        # primaire, college; lycee, premier cycle du superieur, second cyle du superieur, troisieme cycle du superieur
-        - etudes: (education_niveau > individu2generation.education_niveau)
-        - nb_enfants: if(
-            ISMALE,
-            invl_pere.count(),
-            invl_mere.count()
-            )
         - dependance_niveau: 0
-        # TODO age min ?
-        - show("\ncompute_dependance_niveau_homme_inf_75 free")
-        - compute_dependance_niveau_homme_inf_75(lq, nb_enfants)
-        - show("\ncompute_dependance_niveau_homme_inf_75")
+        - show('individu2generation.dependance_niveau_homme_0', individu2generation.dependance_niveau_homme_0)
         - dependance_niveau: if(
-            (age >= 60) and ISMALE and (age < 75),
-            compute_dependance_niveau_homme_inf_75(lq, nb_enfants),
-            dependance_niveau
-            )
-        - show("compute_dependance_niveau_homme_sup_75")
-        - dependance_niveau: if(
-            (age >= 60) and ISMALE and (age >= 75),
-            compute_dependance_niveau_homme_sup_75(lq, nb_enfants),
-            dependance_niveau
-            )
-        # TODO age min ?
-        - show("compute_dependance_niveau_femme_inf_80")
-        - dependance_niveau: if(
-            (age >= 60) and ISFEMALE and (age < 80),
-            compute_dependance_niveau_femme_inf_80(lq, nb_enfants),
-            dependance_niveau
-            )
-        - show("compute_dependance_niveau_femme_sup_80")
-        - dependance_niveau: if(
-            (age >= 60) and ISFEMALE and (age >= 80),
-            compute_dependance_niveau_femme_sup_80(lq, nb_enfants),
+            age >= 65,
+            if(
+              ISMALE,
+              choice(
+                [0, 1, 2, 3, 4],
+                [
+                  individu2generation.dependance_niveau_homme_0,
+                  individu2generation.dependance_niveau_homme_1,
+                  individu2generation.dependance_niveau_homme_2,
+                  individu2generation.dependance_niveau_homme_3,
+                  individu2generation.dependance_niveau_homme_4
+                  ]
+                ),
+              choice(
+                [0, 1, 2, 3, 4],
+                [
+                  individu2generation.dependance_niveau_femme_0,
+                  individu2generation.dependance_niveau_femme_1,
+                  individu2generation.dependance_niveau_femme_2,
+                  individu2generation.dependance_niveau_femme_3,
+                  individu2generation.dependance_niveau_femme_4
+                  ]
+                )
+              ),
             dependance_niveau
             )
         - age_category: if(
@@ -70,11 +70,16 @@ entities:
             0
             )
         - dependance_anciennete: if(dependance_niveau >= 1, 1, -1)
-        - show('\nNombre initial de dépendants avant alignement', groupby(dependance_niveau, data_origin))
+        - show('\nNombre initial de dépendants', groupby(age, dependance_niveau, filter = (age >= 65), percent = True))
         # TODO parameters/dependance/dependance_prevalence_2010.csv depends on weight
 
       dependance:
         # Transitions depuis les états initiaux suivants
+        - dependance_niveau: if(
+            dependance_niveau < 0,
+            0,
+            dependance_niveau
+            )
         - period_modulo: period % 2
         - dependance_niveau_from_0: etat_0()
         - dependance_niveau_from_1: etat_1()
@@ -100,6 +105,6 @@ entities:
                     )
                 )
                 ),
-            0
+            dependance_niveau
             )
         - dependance_anciennete: if(dependance_niveau >= 1, dependance_anciennete + 1, -1)

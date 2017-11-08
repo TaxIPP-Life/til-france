@@ -331,14 +331,13 @@ def plot_dependance_prevalence_all_levels_by_age(simulation, years = None, ax = 
         df = extract_dependance_gir_csv(simulation, backup = backup)
         log.debug("Extracting girs")
     except IOError:
-        log.debug("Abrot extracting girs because irrelevant")
+        log.debug("Abort extracting girs because irrelevant")
         df = extract_dependance_niveau_csv(simulation, backup = backup)
         log.debug("Extracting dependance_niveau")
 
     data = clean_prevalence_all_levels_csv(df)
-    ylabel = u"taux de prévalence"
-    # # ylabel = "prevalence rate"
-    return data
+    # ylabel = u"taux de prévalence"  # ylabel = "prevalence rate"
+    # return data
 #    return _plot_and_or_save(ax = ax, data = data, figures_directory = figures_directory,
 #         name = 'prevalence', pdf_name = None, years = years, age_max = age_max, age_min = age_min, ylabel = ylabel)
 
@@ -604,7 +603,6 @@ def multi_extract_prevalence_csv(simulation, backups = None):
         df.reset_index(inplace = True)
         df['option'] = backup
         dataframes.append(df)
-
     return pd.concat(dataframes)
 
 
@@ -626,7 +624,6 @@ def plot_multi_prevalence_csv(simulation, options = None, save_figure = True, ye
     colors = [ipp_colors[cname] for cname in [
         'ipp_very_dark_blue', 'ipp_dark_blue', 'ipp_medium_blue', 'ipp_light_blue']]
     color_by_period = dict(zip(data_plot['period'].unique(), colors))
-    color_by_option = dict(zip(data_plot['option'].unique(), colors))
     name_by_option = dict(dependance_aligned = 'aligned', dependance = 'optimistic')
     legend_handles, legend_labels = list(), list()
     for grouped in data_plot.groupby(['period', 'sexe', 'option']):

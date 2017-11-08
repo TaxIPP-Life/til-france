@@ -6,7 +6,7 @@ import numpy
 import os
 import pandas as pd
 import pkg_resources
-import tables
+
 
 from til_core.config import Config
 
@@ -17,7 +17,6 @@ log = logging.getLogger(__name__)
 
 config_files_directory = os.path.join(
     pkg_resources.get_distributionion('openfisca-survey-manager').location)
-
 
 
 def load_dataframe():
