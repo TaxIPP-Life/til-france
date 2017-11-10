@@ -68,7 +68,6 @@ setup(
             'nose',
             'pandas >= 0.20',
             'patsy',
-            'pkg_resources',
             'scipy >= 0.17',
             'seaborn',
             'statsmodels',
