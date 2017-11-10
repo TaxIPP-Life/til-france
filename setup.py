@@ -67,7 +67,7 @@ setup(
             'nose',
             'pandas >= 0.17',
             'patsy',
-            'pkg_resources',
+            # 'pkg_resources',
             'scipy >= 0.17',
             'statsmodels',
             'webcolors',
