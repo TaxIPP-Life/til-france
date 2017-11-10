@@ -3,19 +3,19 @@
 import:
    - ../../standard/console.yml
    - ../generations/generation.yml
-   - dependance_initialisation_functions.yml
+   # - dependance_initialisation_functions.yml
+   - dependance_generation_initialisation.yml
    - deces_dependance.yml
    - dependance_transition.yml
    - dependance_generation_transition_calibration_variables.yml
 
-
 globals:
   dependance_transition_homme:
-    path: dependance_transition_male.csv
+    path: dependance_transition_mu_0.5_variant_1_male.csv
     type: float
 
   dependance_transition_femme:
-    path: dependance_transition_female.csv
+    path: dependance_transition_mu_0.5_variant_1_female.csv
     type: float
 
 entities:

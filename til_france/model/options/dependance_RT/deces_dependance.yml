@@ -48,14 +48,15 @@ entities:
             align(decede_score, 'parameters/population/hyp_mortaliteH.csv'),
             align(decede_score, 'parameters/population/hyp_mortaliteF.csv')
             )
-        # par simplicite pour l'heritage (parce que pour le reste ca marche)
+        # par simplicite pour l'héritage (parce que pour le reste ca marche)
         # on ne fait mourir qu une seule personne
         # A retirer pour tester, ca doit etre bon maintenant
         - decede: if(l_partner.decede and l_partner.id < id, False, decede)
         - decede: if(l_pere.decede, False, decede)
         - decede: if(l_mere.decede, False, decede)
         - show('Age moyen des partenaires', round(avg(l_partner.age, filter = l_partner.age > -1), 2))
-        - show('\nNombre de personne dépendante décédées', count(decede and (dependance_niveau > 0)) * uniform_weight)
+        - show('\nNombre de personnes dépendantes décédées', count(decede and (dependance_niveau > 0)) * uniform_weight)
+        - show('TEST', groupby(age, filter = (not decede) and (dependance_niveau == 5)))
         - return decede
 
       statistiques_deces(decede):

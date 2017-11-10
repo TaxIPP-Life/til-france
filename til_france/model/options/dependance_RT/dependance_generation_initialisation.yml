@@ -1,0 +1,31 @@
+entities:
+  generation:
+    fields:
+    - dependance_niveau_homme_0: {type: float, initialdata: False}
+    - dependance_niveau_homme_1: {type: float, initialdata: False}
+    - dependance_niveau_homme_2: {type: float, initialdata: False}
+    - dependance_niveau_homme_3: {type: float, initialdata: False}
+    - dependance_niveau_homme_4: {type: float, initialdata: False}
+    - dependance_niveau_femme_0: {type: float, initialdata: False}
+    - dependance_niveau_femme_1: {type: float, initialdata: False}
+    - dependance_niveau_femme_2: {type: float, initialdata: False}
+    - dependance_niveau_femme_3: {type: float, initialdata: False}
+    - dependance_niveau_femme_4: {type: float, initialdata: False}
+
+    processes:
+      dependance_initialisation:
+        - dependance_niveau_homme_0: array(dependance_niveau_initialisation_homme[0:121, 0])
+        - dependance_niveau_homme_1: array(dependance_niveau_initialisation_homme[0:121, 1])
+        - dependance_niveau_homme_2: array(dependance_niveau_initialisation_homme[0:121, 2])
+        - dependance_niveau_homme_3: array(dependance_niveau_initialisation_homme[0:121, 3])
+        - dependance_niveau_homme_4: array(dependance_niveau_initialisation_homme[0:121, 4])
+        - dependance_niveau_femme_0: array(dependance_niveau_initialisation_femme[0:121, 0])
+        - dependance_niveau_femme_1: array(dependance_niveau_initialisation_femme[0:121, 1])
+        - dependance_niveau_femme_2: array(dependance_niveau_initialisation_femme[0:121, 2])
+        - dependance_niveau_femme_3: array(dependance_niveau_initialisation_femme[0:121, 3])
+        - dependance_niveau_femme_4: array(dependance_niveau_initialisation_femme[0:121, 4])
+        - show('dependance_niveau_homme_0', dependance_niveau_homme_0)
+
+      options_initialisation:
+        - mortality_rates_initialisation()
+        - dependance_initialisation()
