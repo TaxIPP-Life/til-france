@@ -4,7 +4,7 @@
 import os
 import shutil
 
-from ipp_macro_series_parsers.demographie.build_parameters import run_all
+from ipp_macro_series_parser.demographie.build_parameters import run_all
 
 
 def test_build_parameters():
