@@ -63,11 +63,14 @@ setup(
         },
     extras_require = dict(
         test = [
+            'ipp-macro-series-parser',
             'matplotlib',
             'nose',
-            'pandas >= 0.20',
+            'pandas >= 0.17',
+            'patsy',
             'scipy >= 0.17',
             'seaborn',
+            'statsmodels',
             'webcolors',
             'xlrd',
             ],

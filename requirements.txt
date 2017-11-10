@@ -1,3 +1,4 @@
--e git+https://github.com/TaxIPP-Life/til-core.git#egg=Til-Core
+-e git+https://github.com/TaxIPP-Life/til-core.git#egg=til-core
 -e git+https://github.com/liam2/liam2.git#egg=liam2
+-e git+https://github.com/taxipp/ipp-macro-series-parser#egg=ipp-macro-series-parser
 -e .
