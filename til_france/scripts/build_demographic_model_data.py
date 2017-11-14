@@ -32,7 +32,7 @@ def build_dataframe(year = 2010, weight_threshold = 200):
 
         low_weight_dataframe = dataframe.query('weight < @weight_threshold')
         weights_of_random_picks = low_weight_dataframe.weight.sum()
-        number_of_picks = weights_of_random_picks // weight_threshold
+        number_of_picks = int(weights_of_random_picks / weight_threshold)
         log.info('Extracting {} from {} observations with weights lower than {} representing {} individuals'.format(
             number_of_picks,
             low_weight_dataframe.weight.count(),
@@ -74,12 +74,21 @@ def main():
             'individus.csv'
             )
     file_path = os.path.abspath(file_path)
-    if os.path.exists(file_path) and not args.force:
-        log.info('File {} already exists. Use option -f to overwrite.'.format(file_path))
+    if os.path.exists(file_path):
+        if not args.force:
+            log.info('File {} already exists. Use option -f to overwrite.'.format(file_path))
+        else:
+            log.info('Writing data in {}.'.format(file_path))
+            dataframe.to_csv(file_path)
     else:
-        log.info('Writing data in {}.'.format(file_path))
+        log.info('Path {} does not exists, creating it'.format(file_path))
+        dirs_to_be_created = [os.path.dirname(file_path)]
+        while not os.path.exists(dirs_to_be_created[-1]):
+            dirs_to_be_created.append(os.path.dirname(dirs_to_be_created[-1]))
+        for dir in dirs_to_be_created[1::-1]:
+            print(dir)
+            os.mkdir(dir)
         dataframe.to_csv(file_path)
-
 
 if __name__ == "__main__":
     sys.exit(main())
