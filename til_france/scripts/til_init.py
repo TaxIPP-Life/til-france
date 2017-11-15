@@ -10,8 +10,10 @@ import pip
 from shutil import copy
 from subprocess import call
 import sys
+import til_core
 
-from til_france.data.data.Patrimoine import test_build as patrimoine_main
+
+from til_france.data.data.Patrimoine import test_build as patrimoine
 
 
 app_name = os.path.splitext(os.path.basename(__file__))[0]
@@ -21,19 +23,6 @@ log = logging.getLogger(app_name)
 def til_configuration():
     log.info('Starting Til Core configuration ...')
 
-    til_core_install_exit_value = install_til_core()
-    assert til_core_install_exit_value in [0, 1], "Could not install Til Core"
-
-    # now til-core is installed or the script broke before
-    global til_core
-    import til_core
-
-    if til_core_install_exit_value:
-        log.info('Creating a Til Core configuration template...')
-        init_file_exit_value = copy_init_file_to_config()
-        assert init_file_exit_value == 0, "Unable to copy Til Core init template to your .config folder"
-
-    # now we have at worst a config template in the right place, at best a config file with all we want
     config_dir = get_config_dir()
     config_filename = get_config_filename()
 
@@ -41,6 +30,10 @@ def til_configuration():
         config_dir,
         config_filename
         )
+
+    if not os.path.isfile(fichier_config):        
+        init_file_exit_value = copy_init_file_to_config()
+        assert init_file_exit_value == 0, "Unable to copy Til Core init template to your .config folder"
 
     assert os.path.isfile(fichier_config), "Config template was not created"
 
@@ -56,7 +49,7 @@ def til_configuration():
         "NB: If your editor is not well set, this will start vim as a default editor.\n" +
         "If you are lost, you can exit it by pressing escape then :q! then enter.\n" +
         "Set your editor properly and re-run this script.\n" +
-        "Press any key to continue\n"
+        "Press ENTER to continue\n"
         ))
 
     editor = os.environ.get('EDITOR', 'vim')
@@ -78,6 +71,8 @@ def read_config_example():
 
 
 def copy_init_file_to_config():
+    log.info('Creating a Til Core configuration template...')
+
     config_dir = get_config_dir()
 
     if not os.path.exists(config_dir):
@@ -128,40 +123,13 @@ def get_config_filename():
     return(filename)
 
 
-def install_til_core():
-    installed_packages = pip.get_installed_distributions()
-    installed_packages_names = [package.project_name for package in installed_packages]
-    if 'Til-Core' not in installed_packages_names:
-        answer = raw_input((
-            "Til-Core is not installed but is required. " +
-            "Do you want to download and install Til Core? " +
-            "y/n \n"
-            )).lower()
-
-        if answer in ['y', 'yes']:
-            log.info('Installing Til Core...')
-            pip.main(['install', 'Til-Core'])
-            installed_packages = pip.get_installed_distributions()
-            installed_packages_names = [package.project_name for package in installed_packages]
-            assert 'Til-Core' in installed_packages_names, "Failed to install Til-Core with pip"
-            return(1)
-        elif answer in ['n', 'no']:
-            log.info('Til Core is required. Aborting...')
-            return(-2)
-        else:
-            log.info('Could not understand answer. Aborting...')
-            return(-1)
-
-    return(0)
-
-
 def build_insee_data():
     return(0)
 
 
 def build_patrimoine_data():
     log.info(u"Starting Patrimoine data processing ...")
-    # patrimoine_main()
+    patrimoine()
     log.info('... done')
     return(0)
 
