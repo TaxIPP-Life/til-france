@@ -9,14 +9,14 @@ import pkg_resources
 import statsmodels.api as sm
 
 from til_core.config import Config
+from xdg import BaseDirectory
 
 from openfisca_survey_manager.survey_collections import SurveyCollection
 
 
 log = logging.getLogger(__name__)
 
-config_files_directory = os.path.join(
-    pkg_resources.get_distribution('openfisca-survey-manager').location)
+config_files_directory = BaseDirectory.save_config_path('openfisca-survey-manager')
 
 
 def compute_nans_and_missing_values(dataframe, column):
@@ -186,6 +186,8 @@ def expand_data(dataframe, weight_threshold):
 def save(dataframe):
     config = Config()
     hsi_data_directory = config.get('raw_data', 'hsi_data_directory')
+    if not os.path.exists(hsi_data_directory):
+      os.mkdir(hsi_data_directory)
     dataframe.to_hdf(os.path.join(hsi_data_directory, "hsi_extract.h5"), 'individus_institutions')
 
 
