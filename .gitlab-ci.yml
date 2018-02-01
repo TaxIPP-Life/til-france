@@ -12,7 +12,7 @@ test_til_france:
   script:
     # Install til-core
     - pwd
-    - git clone https://github.com/benjello/Til.git ../til-core
+    - git clone https://github.com/TaxIPP-Life/til-core.git ../til-core
     - pip install -e ../til-core/.
     # Install liam2
     - git clone https://github.com/benjello/liam2.git ../liam2
