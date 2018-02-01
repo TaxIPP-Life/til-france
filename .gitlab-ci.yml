@@ -23,7 +23,6 @@ test_til_france:
     - cd ../liam2
     - python setup.py build_ext --inplace
     # Install til-france
-    - rm -rf ../til-france
     - cd ../til-france
     - pip install -e .
     - cd /home/ipp
