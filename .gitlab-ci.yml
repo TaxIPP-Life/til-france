@@ -18,7 +18,7 @@ test_til_france:
     # Install liam2
     - rm -rf ../liam2
     - git clone https://github.com/benjello/liam2.git ../liam2
-    - git --git-dir=../liam2/.git --work-tree=../liam2 checkout global_parameter
+    # - git --git-dir=../liam2/.git --work-tree=../liam2 checkout MYBRANCH
     - pip install -e ../liam2/.
     - cd ../liam2
     - python setup.py build_ext --inplace
