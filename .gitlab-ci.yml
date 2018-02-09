@@ -1,0 +1,25 @@
+image: taxipp/til-france
+
+test_til_france:
+  only:
+    - gitlab-runner
+  script:
+    # Install til-core
+    - pwd
+    - rm -rf ../til-core
+    - git clone https://github.com/TaxIPP-Life/til-core.git ../til-core
+    - pip install -e ../til-core/.
+    # Install liam2
+    - rm -rf ../liam2
+    - git clone https://github.com/benjello/liam2.git ../liam2
+    # - git --git-dir=../liam2/.git --work-tree=../liam2 checkout MYBRANCH
+    - pip install -e ../liam2/.
+    - cd ../liam2
+    - python setup.py build_ext --inplace
+    # Install til-france
+    - cd ../til-france
+    - pip install -e .
+    - cd /home/ipp
+    - ls . | cat
+
+  stage: build
