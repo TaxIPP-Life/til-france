@@ -57,7 +57,7 @@ til_france_path = os.path.join(
     )
 
 
-def create_til_simulation(input_name = None, option = None, output_name_suffix = 'output', uniform_weight = None):
+def create_til_simulation(input_name = None, option = None, output_name_suffix = 'output', uniform_weight = None, no_output = False):
     assert input_name is not None
     config = Config()
     name = input_name.lower()
@@ -89,7 +89,7 @@ You should also check that the input path is correctly set in your config_local.
         input_dir = input_dir,
         input_file = input_file,
         output_dir = output_dir,
-        output_file = '{}_{}.h5'.format(name, output_name_suffix),
+        output_file = '' if no_output else '{}_{}.h5'.format(name, output_name_suffix),
         uniform_weight = uniform_weight,
         # tax_benefit_system = 'tax_benefit_system',  # Add the OpenFisca TaxBenfitSystem to use
         )
