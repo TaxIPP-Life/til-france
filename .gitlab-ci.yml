@@ -21,5 +21,6 @@ test_til_france:
     - pip install -e .
     - cd /home/ipp
     - ls . | cat
-
+    - ls -alrth
+    
   stage: build
