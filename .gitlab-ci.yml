@@ -19,7 +19,7 @@ test_til_france:
     # Install til-france
     - cd ../til-france
     - pip install -e .
-    - cd /home/ipp
+    - cd /home/ipp/data
     - ls . | cat
     - ls -alrth
     
