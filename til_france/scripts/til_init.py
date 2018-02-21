@@ -13,7 +13,7 @@ from shutil import copyfile
 from subprocess import call
 
 
-import openfisca_survey_manager as osm
+import openfisca_survey_manager
 import til_core
 
 
@@ -22,8 +22,8 @@ from til_france.data.data.handicap_sante_institutions import create_hsi_data as 
 from openfisca_survey_manager.scripts import build_collection
 
 
-from build_demographic_model_data import main as bdmd
-from population_and_dependance_builder import main as build_parameters
+from build_demographic_model_data import main as build_demographic_model_data_
+from population_and_dependance_builder import main as build_parameters_
 
 
 app_name = os.path.splitext(os.path.basename(__file__))[0]
@@ -73,7 +73,7 @@ def copy_init_file_to_config(attributes):
 
     copyfile(init_template, destination)
 
-    return(0)
+    return
 
 
 def remove_templateini(s):
@@ -94,9 +94,9 @@ def get_config_dir(option):
 
 
 def get_config_filename(option):
-    assert option in ['til', 'osm']
+    assert option in ['til', 'openfisca_survey_manager']
 
-    module = til_core if option == 'til' else osm
+    module = til_core if option == 'til' else openfisca_survey_manager
     module_path = os.path.dirname(module.__file__)
 
     search = os.path.join(
@@ -114,7 +114,7 @@ def get_config_filename(option):
 
 # main functions
 def configuration(option):
-    assert option in ['til', 'osm', 'hsi'], "Unrecognized option"
+    assert option in ['til', 'openfisca_survey_manager', 'hsi'], "Unrecognized option"
 
     last_words = (
         "NB: If your editor is not well set, this will start vim as a default editor.\n" +
@@ -124,40 +124,48 @@ def configuration(option):
         )
 
     attributes_by_option = {
-        'til': {'raw_input': ["You now will be taken to your text editor.\n" +
-                              "You must give appropriate directories for where raw data should be stored, " +
-                              "as well as appropriate directories for Til Core. \n" +
-                              "Your config file should contain at least:\n\n",
-                              last_words],
-                'module': til_core,
-                'name': 'Til Core',
-                'config_dir': get_config_dir('til'),
-                'config_filename': get_config_filename('til'),
-                'config_example': read_config_example('til'),
-                },
-        'osm': {'raw_input': ["You now will be taken to your text editor.\n" +
-                              "HSI data is first processed by openfisca survey manager (osm), " +
-                              "then by til_france. You must give directories where to store osm files\n" +
-                              "Your config file should contain at least:\n\n",
-                              "If it is already the case, just close your editor.\n" +
-                              last_words],
-                'module': osm,
-                'name': 'Openfisca Survey Manager',
-                'config_dir': get_config_dir('osm'),
-                'config_filename': 'config_template.ini',
-                'config_example': read_config_example('osm')
-                },
-        'hsi': {'raw_input': ["You now will be taken to your text editor (for the last time).\n" +
-                              "You must give a directory where to get HSI raw data. " +
-                              "Your config file should contain at least:\n\n",
-                              "If it is already the case, just close your editor.\n" +
-                              last_words],
-                'module': osm,
-                'name': 'HSI raw data',
-                'config_dir': get_config_dir('osm'),
-                'config_filename': 'raw_data_template.ini',
-                'config_example': read_config_example('hsi')
-                }
+        'til': {
+            'raw_input': [
+                "You now will be taken to your text editor.\n" +
+                "You must give appropriate directories for where raw data should be stored, " +
+                "as well as appropriate directories for Til Core. \n" +
+                "Your config file should contain at least:\n\n",
+                last_words],
+            'module': til_core,
+            'name': 'Til Core',
+            'config_dir': get_config_dir('til'),
+            'config_filename': get_config_filename('til'),
+            'config_example': read_config_example('til'),
+            },
+        'openfisca_survey_manager': {
+            'raw_input': [
+                "You now will be taken to your text editor.\n" +
+                "HSI data is first processed by openfisca survey manager (openfisca_survey_manager), " +
+                "then by til_france. You must give directories where to store openfisca_survey_manager files\n" +
+                "Your config file should contain at least:\n\n",
+                "If it is already the case, just close your editor.\n" +
+                last_words
+                ],
+            'module': openfisca_survey_manager,
+            'name': 'Openfisca Survey Manager',
+            'config_dir': get_config_dir('openfisca_survey_manager'),
+            'config_filename': 'config_template.ini',
+            'config_example': read_config_example('openfisca_survey_manager')
+            },
+        'hsi': {
+            'raw_input': [
+                "You now will be taken to your text editor (for the last time).\n" +
+                "You must give a directory where to get HSI raw data. " +
+                "Your config file should contain at least:\n\n",
+                "If it is already the case, just close your editor.\n" +
+                last_words
+                ],
+            'module': openfisca_survey_manager,
+            'name': 'HSI raw data',
+            'config_dir': get_config_dir('openfisca_survey_manager'),
+            'config_filename': 'raw_data_template.ini',
+            'config_example': read_config_example('hsi')
+            }
         }
 
     attributes = attributes_by_option[option]
@@ -191,21 +199,21 @@ def configuration(option):
     call([editor, fichier_config], shell = True)
     # from now on, assume we have a correct config file
 
-    return(0)
+    return
 
 
 def build_insee_data():
     log.info(u"Starting basic insee data processing ...")
-    bdmd()
+    build_demographic_model_data_()
     log.info('... done')
-    return(0)
+    return
 
 
 def build_patrimoine_data():
     log.info(u"Starting Patrimoine data processing ...")
     patrimoine()
     log.info('... done')
-    return(0)
+    return
 
 
 def build_hsi_data():
@@ -214,20 +222,22 @@ def build_hsi_data():
     build_collection.main()
     hsi()
     log.info('... done')
-    return(0)
+    return
 
 
 def build_parameters():
     sys.argv.extend(['-d'])
-    build_parameters()
-    return(0)
+    build_parameters_()
+    return
 
 
 def data_prompt():
-    raw_input(("Make sure the input folders you chose actually contain the input data " +
-               "(Patrimoine and HSI) and press ENTER to proceed" 
-             ))
-    return(0)
+    raw_input((
+        "Make sure the input folders you chose actually contain the input data " +
+        "(Patrimoine and HSI) and press ENTER to proceed"
+        ))
+    return
+
 
 def main():
     sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
@@ -250,7 +260,7 @@ def main():
 
     to_do = [
         lambda: configuration('til'),
-        lambda: configuration('osm'),
+        lambda: configuration('openfisca_survey_manager'),
         lambda: configuration('hsi'),
         data_prompt,
         build_insee_data,
@@ -261,9 +271,10 @@ def main():
 
     for task in to_do:
         exit_value = task()
-        assert exit_value == 0, "{} failed".format(task.__name__)
+        assert exit_value is None, "{} failed".format(task.__name__)
 
-    return(0)
+    return
+
 
 if __name__ == "__main__":
     sys.exit(main())
