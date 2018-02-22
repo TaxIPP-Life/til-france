@@ -8,15 +8,16 @@ import pandas as pd
 import pkg_resources
 
 
-from til_core.config import Config
+from xdg import BaseDirectory
 
+
+from til_core.config import Config
 from openfisca_survey_manager.survey_collections import SurveyCollection
 
 
 log = logging.getLogger(__name__)
 
-config_files_directory = os.path.join(
-    pkg_resources.get_distributionion('openfisca-survey-manager').location)
+config_files_directory = BaseDirectory.save_config_path('openfisca-survey-manager')
 
 
 def load_dataframe():

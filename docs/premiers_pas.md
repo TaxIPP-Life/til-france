@@ -9,19 +9,7 @@ Pour l'instant, TILF s'appuie sur deux sources de données :
 - l'enquête Patrimoine de 2010
 - les données HSI de 2009-2010
 
-Il faut utiliser le script `Patrimoine.py` présent dans [/til-france/til_france/data/data](../til_france/data/data)
-pour mettre en forme les données Patrimoine. Il faut préalablement avoir réglé
-les options de configuration de [til-core](https://github.com/TaxIPP-Life/til-core).
-
-Pour les données HSI, il faut créer un fichier .h5 à via open-fisca-survey-manager
-(une collection avec un seul survey), puis à partir du fichier créé par 
-[open-fisca-survey-manager](https://github.com/openfisca/openfisca-survey-manager), utiliser le script `handicap_sante_institutions.py`
-également présent dans [/til-france/til_france/data/data](../til_france/data/data)
-
-### Paramètres
-
-Ils sont stockés [ici](../til_france/param/demo). On peut les reconstruire via IPP Macro Series Parser et son [script `build_parameters.py` de `population`](https://github.com/taxipp/ipp-macro-series-parser/blob/master/ipp_macro_series_parser/demographie/build_parameters.py). 
-
+Il faut utiliser le script `til_init.py` pour tout initialiser. Ce script suppose que vous avez accès aux données Patrimoine et HSI.
 ### Utilisation
 
 Pour exécuter une simulation, il faut
