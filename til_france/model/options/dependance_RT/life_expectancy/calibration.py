@@ -1051,7 +1051,7 @@ def plot_projected_target(age_max = 100, age_min = 60, projected_target = None, 
         if save:
             # if filename is None:
             filename = slugify(fig_title, separator = '_')
-            log.info("Saving matrix tranisitions graph to file {}".format(os.path.abspath(filename)))
+            log.info("Saving matrix transitions graph to file {}".format(os.path.abspath(filename)))
             grid.savefig(filename + ".png")
             grid.savefig(filename + ".pdf")
 
