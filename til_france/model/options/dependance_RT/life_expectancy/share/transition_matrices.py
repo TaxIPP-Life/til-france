@@ -13,6 +13,10 @@ import statsmodels.formula.api as smf
 import sys
 
 
+from scipy import stats
+stats.chisqprob = lambda chisq, df: stats.chi2.sf(chisq, df)
+
+
 log = logging.getLogger(__name__)
 
 
@@ -32,71 +36,74 @@ assets_path = config_files_directory = os.path.join(
     )
 
 
-paquid_path = u'/home/benjello/data/dependance/paquid_panel_3.csv'
-paquid_dta_path = u'/home/benjello/data/dependance/paquid_panel_3_utf8.dta'
+data_path = os.path.join('/mnt/ipp_projets/Dependance/SHARE/Traitement/Tables/base_microsimu.csv')
 
 
 # Transition matrix structure
 final_states_by_initial_state = {
-    0: [0, 2, 4, 5],
-    2: [0, 2, 3, 4, 5],
-    3: [2, 3, 4, 5],
-    4: [4, 5],
-    }
-
+  0: [0, 1, 4],
+  1: [0, 1, 2, 4],
+  2: [1, 2, 3, 4],
+  3: [2, 3, 4],
+  }
 
 replace_by_initial_state = {
-    0: {
-        3: 2,
-        },
-    # 2: {
-    #     0: 1,
-    #     },
-    3: {
-        0: 2,
-        1: 2,
-        },
-    4: {
-        0: 4,
-        2: 4,
-        3: 4,
-        },
-    }
+  0: {
+      2: 1,
+      3: 1,
+      },
+  1: {
+      3: 2
+      },
+  2: {
+      0: 1,
+      },
+  3: {
+      0: 2,
+      1: 2,
+      },
+  }
 
 
-def get_clean_paquid(extra_variables = None):
+def get_clean_share(extra_variables = None):
     """
-    Get PAQUID relevant data free of missing observations
+    Get SHARE relevant data free of missing observations
     """
     if extra_variables is None:
         extra_variables = list()
-    df = pd.read_stata(paquid_dta_path)
-    if 'seul' in extra_variables:
-        df['seul'] = df.conj == 1
+    df = pd.read_csv(data_path)
 
-    log.debug("Paquid data contains the following variables: {}".format(df.columns))
-    variables = ['numero', 'annee', 'age', 'scale5', 'sexe']
+    log.debug("Share data contains the following variables: {}".format(df.columns))
+
+    df = df.rename(columns = {
+        'scale': 'initial_state',
+        'mergeid': 'id',
+        'year_int': 'year',
+        'age_int_new': 'age',
+        })
+    # 'male, sexe == 1'
+    # 'female, sexe == 2'
+    df['sexe'] = df.male + 2 * (df.male == 0)
+    del df['male']
+    variables = ['id', 'initial_state', 'sexe', 'year', 'age']
+
     if extra_variables:
         assert isinstance(extra_variables, list)
-        variables = list(set(['numero', 'annee', 'age', 'scale5', 'sexe']).union(set(extra_variables)))
+        variables = list(set(['id', 'initial_state', 'sexe', 'year', 'age']).union(set(extra_variables)))
 
-    df = df[variables].copy()
-    assert df[['numero', 'annee', 'age', 'sexe']].notnull().all().all(), df.notnull().all()
-
-    for bool_variable in ['femme', 'educ_1', 'educ_2', 'educ_3']:
-        if bool_variable in df:
-            df[bool_variable] = df[bool_variable] == 1
+    df = df[variables].copy().dropna()  # TODO Remove the dropna
+    assert df.notnull().all().all(), \
+        "Some columns contains NaNs:\n {}".format(df.isnull().sum())
 
     for extra_variable in extra_variables:
         assert df[extra_variable].notnull().all(), "Variable {} contains null values. {}".format(
             extra_variable, df[extra_variable].value_counts(dropna = False))
 
-    filtered = (df
-        .dropna()
-        .rename(columns = {'scale5': 'initial_state'})
-        )
-    filtered.replace({'initial_state': {1: 0}}, inplace = True)
-    log.debug("There are {} missing observation of scale5 out of {}".format(df.scale5.isnull().sum(), len(df)))
+    assert df.sexe.isin([1, 2]).all()
+
+    filtered = df.dropna()
+    log.debug("There are {} missing observation of initial_state out of {}".format(df.initial_state.isnull().sum(), len(df)))
+
     log.debug("There are {} valid observations out of {} for the following variables {}".format(
         len(filtered), len(df), df.columns))
 
@@ -105,13 +112,10 @@ def get_clean_paquid(extra_variables = None):
     filtered["sexe"] = filtered["sexe"].astype('int').astype('category')
     filtered["initial_state"] = filtered["initial_state"].astype('int').astype('category')
 
-    if set(['educ_1', 'educ_2', 'educ_3']) < set(variables):
-        pass
-
     return filtered
 
 
-def build_estimation_sample(initial_state, sex = None, variables = None):
+def build_estimation_sample(initial_state, sex = None, variables = None, readjust = False):
     """Build estimation sample from paquid data
     """
     final_states = final_states_by_initial_state[initial_state]
@@ -119,40 +123,38 @@ def build_estimation_sample(initial_state, sex = None, variables = None):
     extra_variables = None
     if variables is not None:
         extra_variables = [variable for variable in variables if variable not in ['final_state']]
-    clean_paquid = get_clean_paquid(extra_variables = extra_variables)
-
-    assert clean_paquid.notnull().all().all()
+    clean_share = get_clean_share(extra_variables = extra_variables)
+    assert clean_share.notnull().all().all()
     assert initial_state in final_states
-    no_transition = (clean_paquid
-        .groupby('numero')['initial_state']
+    no_transition = (clean_share
+        .groupby('id')['initial_state']
         .count() == 1
         )
-    no_transition_with_specific_initial_state = clean_paquid.loc[
-        clean_paquid.numero.isin(no_transition.index[no_transition].tolist())
+    no_transition_with_specific_initial_state = clean_share.loc[
+        clean_share.id.isin(no_transition.index[no_transition].tolist())
         ].query('initial_state == {}'.format(initial_state))
     log.info(
         "There are {} individuals out of {} with only one observation (no transition) with intiial state = {}".format(
             len(no_transition_with_specific_initial_state), no_transition.sum(), initial_state))
 
-    clean_paquid['final_state'] = clean_paquid.groupby('numero')['initial_state'].shift(-1).copy()
-    print clean_paquid.head(50)
-    log.debug(clean_paquid['final_state'].value_counts(dropna = False))
+    clean_share['final_state'] = clean_share.groupby('id')['initial_state'].shift(-1).copy()
     log.info("There are {} individuals with intiial state = {} with no subsequent transition".format(
         len(
-            clean_paquid.loc[clean_paquid.final_state.isnull()]
+            clean_share.loc[clean_share.final_state.isnull()]
             .query('(initial_state == {})'.format(initial_state))
             ),
         initial_state,
         ))
-    log.debug(clean_paquid
-        .query('(initial_state == {})'.format(initial_state))
-        .count()
-        )
-    log.debug('\n' + str(clean_paquid
-        .query('(initial_state == {})'.format(initial_state))
-        ['final_state'].value_counts(dropna = False).sort_index()
+    log.debug("Transifions from initial_state = {}:\n {}".format(
+        initial_state,
+        (
+            clean_share
+            .query('(initial_state == {})'.format(initial_state))['final_state']
+            .value_counts(dropna = False)
+            .sort_index()
+            )
         ))
-    wrong_transition = (clean_paquid.loc[clean_paquid.final_state.notnull()]
+    wrong_transition = (clean_share.loc[clean_share.final_state.notnull()]
         .query('(initial_state == {}) & (final_state not in {})'.format(
             initial_state, final_states)
             )
@@ -162,34 +164,36 @@ def build_estimation_sample(initial_state, sex = None, variables = None):
     log.info("There are {} individuals with intiial state = {} transiting to forbidden states: \n {}".format(
         wrong_transition.sum(), initial_state, wrong_transition[wrong_transition > 0]))
 
-    log.info(clean_paquid.final_state.value_counts(dropna = False))
-    if initial_state in replace_by_initial_state.keys():
-        log.info("Using the following replacement rule: {}".format(
-            replace_by_initial_state[initial_state]
-            ))
-        log.debug("Sample size before cleaning bad final_states {}".format(
-            len(clean_paquid
-                .query('(initial_state == {})'.format(
-                    initial_state,
-                    ))
+    log.info("Final states:\n {}".format(clean_share.final_state.value_counts(dropna = False)))
+
+    if wrong_transition.sum() > 0:
+        if initial_state in replace_by_initial_state.keys():
+            log.info("Using the following replacement rule: {}".format(
+                replace_by_initial_state[initial_state]
+                ))
+            log.debug("Sample size before cleaning bad final_states:\n {}".format(
+                len(clean_share
+                    .query('(initial_state == {})'.format(
+                        initial_state,
+                        ))
+                    .dropna()
+                    )
+                ))
+            log.info(clean_share.query('(initial_state == {})'.format(
+                initial_state,
+                )).final_state.value_counts(dropna = False))
+            sample = (clean_share
+                .query('initial_state == {}'.format(initial_state))
                 .dropna()
+                .replace({
+                    'final_state': replace_by_initial_state[initial_state]
+                    })
+                .copy()
                 )
-            ))
-        log.info(clean_paquid.query('(initial_state == {})'.format(
-                    initial_state,
-                    )).final_state.value_counts(dropna = False))
-        sample = (clean_paquid
-            .query('initial_state == {}'.format(initial_state))
-            .dropna()
-            .replace({
-                'final_state': replace_by_initial_state[initial_state]
-                })
-            .copy()
-            )
-        log.debug("Sample size after cleaning bad final_states {}".format(len(sample)))
-        log.info(sample.final_state.value_counts())
+            log.debug("Sample size after cleaning bad final_states:\n {}".format(len(sample)))
+            log.info(sample.final_state.value_counts())
     else:
-        sample = (clean_paquid
+        sample = (clean_share
             .query('(initial_state == {})'.format(
                 initial_state,
                 ))
@@ -197,12 +201,13 @@ def build_estimation_sample(initial_state, sex = None, variables = None):
             .copy()
             )
 
+    log.debug("Sample size after eventually cleaning bad final_states {}".format(len(sample)))
+
     if sex:
         if sex == 'male':
             sample = sample.query('sexe == 1').copy()
         elif sex == 'female':
             sample = sample.query('sexe == 2').copy()
-
     sample["final_state"] = sample["final_state"].astype('int').astype('category')
 
     if sex:
@@ -210,7 +215,6 @@ def build_estimation_sample(initial_state, sex = None, variables = None):
     else:
         log.info("Keeping sample of size {}".format(len(sample)))
         del sample['sexe']
-
 
     assert set(sample.final_state.value_counts().index.tolist()) == set(final_states), '{} differs from {}'.format(
         set(sample.final_state.value_counts().index.tolist()), set(final_states)
@@ -312,12 +316,12 @@ def compute_prediction(initial_state = None, formula = None, variables = ['age']
     return prediction.reset_index(drop = True)
 
 
-def get_transitions_from_formula(formula = None):
+def get_transitions_from_formula(formula = None, age_min = 50, age_max = 120):
     transitions = None
     for sex in ['male', 'female']:
         assert formula is not None
         proba_by_initial_state = dict()
-        exog = pd.DataFrame(dict(age = range(65, 120)))
+        exog = pd.DataFrame(dict(age = range(age_min, age_max + 1)))
         for initial_state, final_states in final_states_by_initial_state.iteritems():
             proba_by_initial_state[initial_state] = pd.concat(
                 [
@@ -353,39 +357,30 @@ def get_formatted_params_by_initial_state(formula = None, variables = None):
             initial_state,
             estimate_model(
                 initial_state = initial_state, formula = formula, sex = None, variables = variables)[1]
-            ) for initial_state in [0, 2, 3, 4]
+            ) for initial_state in range(5)
         ])
     return formatted_params_by_initial_state
 
 
 if __name__ == '__main__':
+
     logging.basicConfig(level = logging.DEBUG, stream = sys.stdout)
 
-    import matplotlib.pyplot as plt
-    for sex in ['male', 'female']:
-        fig, axes = plt.subplots(nrows = 4, ncols=2)
-        i = 0
-        for initial_state in [0, 2, 3 ,4]:
-            sample = build_estimation_sample(initial_state, sex = sex)
-            sample['age'] = sample.age.round().astype(int)
-            data = sample.groupby(['age', 'final_state'])['final_state'].count()
-            data.name = 'count'
-            data = data.unstack(('final_state'))
-            data.plot.bar(stacked = True, ax = axes[i, 0])
-            data.fillna(0).div(data.fillna(0).sum(axis = 1), axis = 'index').plot.line(ax = axes[i, 1])
-            i += 1
+    # df = get_clean_share()
+    # sex = None
+    # initial_state = 1
+    # sample = build_estimation_sample(initial_state, sex = sex)
+    # BIM
 
     sex = None
-    formula = 'final_state ~ I((age - 80)) + I(((age - 80))**2) + I(((age - 80))**3) + femme + seul + educ_2 + educ_3'
-    variables = ['age', 'final_state', 'femme', 'seul', 'educ_2', 'educ_3']
+    formula = 'final_state ~ I((age - 80)) + I(((age - 80))**2) + I(((age - 80))**3)'
+    variables = ['age', 'final_state']
+
     initial_state = 0
     result, formatted_params = estimate_model(initial_state, formula, sex = sex, variables = variables)
 
     prediction = compute_prediction(initial_state = initial_state, formula = formula, sex = sex, variables = variables)
     print prediction
 
-    formula = 'final_state ~ I((age - 80)) + I(((age - 80))**2) + I(((age - 80))**3)'
-    for initial_state in [0, 2, 3, 4]:
+    for initial_state in range(1):
         test(initial_state = initial_state, formula = formula, sex = sex)
-
-
