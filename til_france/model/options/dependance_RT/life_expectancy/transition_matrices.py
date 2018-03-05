@@ -368,11 +368,11 @@ if __name__ == '__main__':
     formula = 'final_state ~ I((age - 80)) + I(((age - 80))**2) + I(((age - 80))**3) + femme + seul + educ_2 + educ_3'
     variables = ['age', 'final_state', 'femme', 'seul', 'educ_2', 'educ_3']
 
-
+    initial_state = 0
     result, formatted_params = estimate_model(initial_state, formula, sex = sex, variables = variables)
 
     prediction = compute_prediction(initial_state = initial_state, formula = formula, sex = sex, variables = variables)
     print prediction
-    BIM
+
     for initial_state in range(1):
         test(initial_state = initial_state, formula = formula, sex = sex)

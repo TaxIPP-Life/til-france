@@ -158,19 +158,98 @@ def create_dependance_initialisation_merged_0_1(filename_prefix = None, smooth =
             log.info('Saving {}'.format(filename))
 
 
-def get_hsi_prevalence_pivot_table(sexe = None):
+def create_dependance_initialisation_share(filename_prefix = None, smooth = False, window = 7, std = 2,
+        survey = 'hsm'):
+    """
+    Create dependance_niveau variable initialisation file for use in til-france model (option dependance_RT)
+    """
     config = Config()
-    xls_path = os.path.join(config.get('raw_data', 'hsm_dependance_niveau'), 'hsi_desc_dependance_scale5_gir.xls')
-    data = pd.read_excel(xls_path)
-    log.debug('Droping NA values {}'.format(data.loc[data.age.isnull()]))
-    data = (data
-        .dropna()
-        .rename(columns = {
-            'scale5_c': 'dependance_niveau',
-            #   est1_gir_s	est2_gir_s
-        })
-        )
+    input_dir = config.get('til', 'input_dir')
+    assert survey in ['both', 'hsm']
+    for sexe in ['homme', 'femme']:
+        if survey == 'hsm':
+            pivot_table = get_hsm_prevalence_pivot_table(sexe = sexe, scale = 4)
+        else:
+            pivot_table = get_hsi_hsm_prevalence_pivot_table(sexe = sexe, scale = 4)
 
+        if smooth:
+            pivot_table = smooth_pivot_table(pivot_table, window = window, std = std)
+
+        if filename_prefix is None:
+            filename = os.path.join(input_dir, 'dependance_initialisation_level_share_{}.csv'.format(sexe))
+        else:
+            filename = os.path.join('{}_level_share_{}.csv'.format(filename_prefix, sexe))
+        level_pivot_table = (pivot_table.copy()
+            .reset_index()
+            .merge(pd.DataFrame({'age': range(0, 121)}), how = 'right')
+            .sort_values('age')
+            )
+        level_pivot_table['age'] = level_pivot_table['age'].astype(int)
+        level_pivot_table.fillna(0, inplace = True)
+        level_pivot_table.to_csv(filename, index = False)
+        log.info('Saving {}'.format(filename))
+
+        # Go from levels to pct
+        pivot_table = pivot_table.divide(pivot_table.sum(axis=1), axis=0)
+        if filename_prefix is None:
+            filename = os.path.join(input_dir, 'dependance_initialisation_share_{}.csv'.format(sexe))
+        else:
+            filename = os.path.join('{}_share_{}.csv'.format(filename_prefix, sexe))
+
+        if filename is not None:
+            pivot_table = (pivot_table
+                .reset_index()
+                .merge(pd.DataFrame({'age': range(0, 121)}), how = 'right')
+                .sort_values('age')
+                )
+            pivot_table['age'] = pivot_table['age'].astype(int)
+
+            pivot_table.fillna(0, inplace = True)
+            pivot_table.loc[pivot_table.age < 60, 0] = 1
+            pivot_table.set_index('age', inplace = True)
+            pivot_table.loc[pivot_table.sum(axis = 1) == 0, 4] = 1
+            pivot_table.to_csv(filename, header = False)
+            assert ((pivot_table.sum(axis = 1) - 1).abs() < 1e-15).all(), \
+                pivot_table.sum(axis = 1).loc[((pivot_table.sum(axis = 1) - 1).abs() > 1e-15)]
+
+            # Add liam2 compatible header
+            verbatim_header = '''age,initial_state,,,
+,0,1,2,3,4
+'''
+            with file(filename, 'r') as original:
+                data = original.read()
+            with file(filename, 'w') as modified:
+                modified.write(verbatim_header + data)
+            log.info('Saving {}'.format(filename))
+
+
+def get_hsi_prevalence_pivot_table(sexe = None, scale = None):
+    config = Config()
+    assert scale in [4, 5], "scale should be equal to 4 or 5"
+    if scale == 5:
+        xls_path = os.path.join(config.get('raw_data', 'hsm_dependance_niveau'), 'hsi_desc_dependance_scale5_gir.xls')
+        data = pd.read_excel(xls_path)
+        log.debug('Droping NA values {}'.format(data.loc[data.age.isnull()]))
+        data = (data
+            .dropna()
+            .rename(columns = {
+                'scale5_c': 'dependance_niveau',
+                #   est1_gir_s	est2_gir_s
+            })
+            )
+    elif scale == 4:
+        xls_path = os.path.join(config.get('raw_data', 'hsm_dependance_niveau'), 'desc_dependance_scale4_HSI.xls')
+        data = pd.read_excel(xls_path)
+        log.debug('Droping NA values {}'.format(data.loc[data.age.isnull()]))
+        data = (data
+            .dropna()
+            .rename(columns = {
+                'scale4': 'dependance_niveau',
+                'woman': 'sexe'
+                #   est1_gir_s	est2_gir_s
+            })
+            )
+    assert data.sexe.isin([0, 1]).all()
     assert sexe in ['homme', 'femme']
     sexe = 1 if sexe == 'femme' else 0
     assert sexe in data.sexe.unique(), "sexe should be in {}".format(data.sexe.unique().tolist())
@@ -186,12 +265,20 @@ def get_hsi_prevalence_pivot_table(sexe = None):
     return pivot_table.copy()
 
 
-def get_hsm_prevalence_pivot_table(sexe = None):
+def get_hsm_prevalence_pivot_table(sexe = None, scale = None):
     config = Config()
-    xls_path = os.path.join(config.get('raw_data', 'hsm_dependance_niveau'), 'desc_dependance_scale5.xls')
-    data = (pd.read_excel(xls_path)
-        .rename(columns = {'disability_scale5': 'dependance_niveau', 'woman': 'sexe'})
-        )
+    assert scale in [4, 5], "scale should be equal to 4 or 5"
+    if scale == 5:
+        xls_path = os.path.join(config.get('raw_data', 'hsm_dependance_niveau'), 'desc_dependance_scale5.xls')
+        data = (pd.read_excel(xls_path)
+            .rename(columns = {'disability_scale5': 'dependance_niveau', 'woman': 'sexe'})
+            )
+    elif scale == 4:
+        xls_path = os.path.join(config.get('raw_data', 'hsm_dependance_niveau'), 'scale4_010318.xlsx')
+        data = (pd.read_excel(xls_path)
+            .rename(columns = {'scale4': 'dependance_niveau', 'Women': 'sexe'})
+            )
+
     assert sexe in ['homme', 'femme']
     sexe = 1 if sexe == 'femme' else 0
     assert sexe in data.sexe.unique(), "sexe should be in {}".format(data.sexe.unique().tolist())
@@ -207,10 +294,10 @@ def get_hsm_prevalence_pivot_table(sexe = None):
     return pivot_table
 
 
-def get_hsi_hsm_prevalence_pivot_table(sexe = None):
+def get_hsi_hsm_prevalence_pivot_table(sexe = None, scale = None):
     return (
-        get_hsm_prevalence_pivot_table(sexe = sexe).add(
-            get_hsi_prevalence_pivot_table(sexe = sexe), fill_value=0)
+        get_hsm_prevalence_pivot_table(sexe = sexe, scale = scale).add(
+            get_hsi_prevalence_pivot_table(sexe = sexe, scale = scale), fill_value=0)
         )
 
 
@@ -395,12 +482,12 @@ if __name__ == "__main__":
     logging.basicConfig(level = logging.DEBUG, stream = sys.stdout)
     from til_france.model.options.dependance_RT.life_expectancy.transition_matrices import assets_path
 
+    boum
+    create_dependance_initialisation_share(smooth = True, survey = 'both')
+    plot_prevalence(smooth = True, survey = 'both')
 
-    print get_hsi_hsm_dependance_gir_mapping(sexe = 'homme')
-
-    BIM
+    boum
     plot_prevalence(save_figure = True, smooth = True, survey = 'both')
-    create_dependance_initialisation_merged_0_1(smooth = True, survey = 'both')
 
     BIM
 

@@ -8,11 +8,13 @@ import logging
 import numpy as np
 import os
 import pandas as pd
+import seaborn as sns
 import sys
+
 
 from til_core.config import Config
 
-from til_france.model.options.dependance_RT.life_expectancy.merged_0_1_state.transition_matrices import (
+from til_france.model.options.dependance_RT.life_expectancy.share.transition_matrices import (
     assets_path,
     get_transitions_from_formula,
     )
@@ -24,7 +26,7 @@ from til_france.model.options.dependance_RT.life_expectancy.calibration import (
     regularize
     )
 
-from til_france.model.options.dependance_RT.life_expectancy.merged_0_1_state.calibration import (
+from til_france.model.options.dependance_RT.life_expectancy.share.calibration import (
     build_mortality_calibrated_target_from_formula,
     build_mortality_calibrated_target_from_transitions,
     correct_transitions_for_mortality,
@@ -32,7 +34,8 @@ from til_france.model.options.dependance_RT.life_expectancy.merged_0_1_state.cal
     )
 
 from til_france.tests.base import ipp_colors
-colors = [ipp_colors[cname] for cname in ['ipp_very_dark_blue', 'ipp_dark_blue', 'ipp_medium_blue', 'ipp_light_blue']]
+colors = [ipp_colors[cname] for cname in [
+    'ipp_very_dark_blue', 'ipp_dark_blue', 'ipp_medium_blue', 'ipp_light_blue']]
 
 
 log = logging.getLogger(__name__)
@@ -43,7 +46,7 @@ life_table_path = os.path.join(
     'lifetables_period.xlsx'
     )
 
-figures_directory = '/home/benjello/figures'
+figures_directory = '/home/benjello/figures/share'
 
 
 def add_65_66_population(population = None):
@@ -79,6 +82,7 @@ def add_65_66_population(population = None):
 
 
 def apply_transition_matrix(population = None, transition_matrix = None):
+    death_state = 4
     assert population is not None and transition_matrix is not None
     assert len(population.period.unique()) == 1
     final_population = (population
@@ -94,7 +98,7 @@ def apply_transition_matrix(population = None, transition_matrix = None):
         )
 
     simulated_mortality = (final_population
-        .query('(initial_state == 5) & (age <= 120) & (age >= 65)')
+        .query('(initial_state == @death_state) & (age <= 120) & (age >= 65)')
         .groupby(['sex', 'age'])['population']
         .sum() / final_population
         .query('(age <= 120) & (age >= 65)')
@@ -104,7 +108,7 @@ def apply_transition_matrix(population = None, transition_matrix = None):
 
     period = population.period.unique()[0]
     mortality = get_insee_projected_mortality().query('(year == @period) and (age >= 65)').reset_index().eval(
-        'two_year_mortality = 1 - (1 - mortality) ** 2')
+        'two_year_mortality = 1 - (1 - mortality) ** 2', inplace = False)
 
     log.debug(simulated_mortality.merge(mortality).query("sex == 'male'").head(50))
     log.debug(simulated_mortality.merge(mortality).query("sex == 'female'").head(50))
@@ -112,7 +116,7 @@ def apply_transition_matrix(population = None, transition_matrix = None):
     final_population = (final_population
         .eval('age = age + 2', inplace = False)
         .eval('period = period + 2', inplace = False)
-        .query('(initial_state != 5) & (age <= 120)')
+        .query('(initial_state != @death_state) & (age <= 120)')
         .copy()
         )
     assert final_population.age.max() <= 120
@@ -131,33 +135,37 @@ def check_67_and_over(population):
 
 
 def corrrect_transitions(transitions, probability_name = 'calibrated_probability'):
-    assert probability_name in transitions.columns, "Column {} not found in tarnsitions columns {}".format(
+    assert probability_name in transitions.columns, "Column {} not found in transitions columns {}".format(
         probability_name, transitions.columns)
+    correction = False
+    if correction:
+        central_age = 93
+        width = 2
 
-    central_age = 93
-    width = 2
+        transitions = transitions.copy().rename(columns = {probability_name: 'calibrated_probability'})
 
-    transitions = transitions.copy().rename(columns = {probability_name: 'calibrated_probability'})
+        corrections = transitions.query('(initial_state == 3) & (final_state == 4)').copy()
+        corrections.eval('factor = (1 + tanh( (age- @central_age) / @width)) / 2', inplace = True)
+        corrections.eval('calibrated_probability = factor * calibrated_probability + 0 * (1 - factor)', inplace = True)
 
-    corrections = transitions.query('(initial_state == 3) & (final_state == 4)').copy()
-    corrections.eval('factor = (1 + tanh( (age- @central_age) / @width)) / 2', inplace = True)
-    corrections.eval('calibrated_probability = factor * calibrated_probability + 0 * (1 - factor)', inplace = True)
+        transitions.update(corrections)
 
-    transitions.update(corrections)
+        corrections_3_3 = (1 - (
+            transitions
+                .query('(initial_state == 3) and (final_state != 3)')
+                .groupby(['period', 'sex', 'age', 'initial_state'])['calibrated_probability'].sum()
+                )).reset_index()
 
-    corrections_3_3 = (1 - (
-        transitions
-            .query('(initial_state == 3) and (final_state != 3)')
-            .groupby(['period', 'sex', 'age', 'initial_state'])['calibrated_probability'].sum()
-            )).reset_index()
+        corrections_3_3['final_state'] = 3
+        corrections_3_3 = corrections_3_3.set_index(['period', 'sex', 'age', 'initial_state', 'final_state'])
+        transitions.update(corrections_3_3)
+        #    transitions.query(
+        #        "(period == 2012) and (sex == 'male') and (age <= 100) and (initial_state == 3) and (final_state == 3)"
+        #        ).plot(y = ['calibrated_probability'])
+        return transitions.rename(columns = {'calibrated_probability': probability_name})
 
-    corrections_3_3['final_state'] = 3
-    corrections_3_3 = corrections_3_3.set_index(['period', 'sex', 'age', 'initial_state', 'final_state'])
-    transitions.update(corrections_3_3)
-#    transitions.query(
-#        "(period == 2012) and (sex == 'male') and (age <= 100) and (initial_state == 3) and (final_state == 3)"
-#        ).plot(y = ['calibrated_probability'])
-    return transitions.rename(columns = {'calibrated_probability': probability_name})
+    else:
+        return transitions
 
 
 def get_initial_population():
@@ -166,9 +174,9 @@ def get_initial_population():
         sexe = 'homme' if sex == 'male' else 'femme'
         config = Config()
         input_dir = config.get('til', 'input_dir')
-        filename = os.path.join(input_dir, 'dependance_initialisation_level_merged_0_1_{}.csv'.format(sexe))
+        filename = os.path.join(input_dir, 'dependance_initialisation_level_share_{}.csv'.format(sexe))
         log.info('Loading initial population dependance states from {}'.format(filename))
-        df = (pd.read_csv(filename, names = ['age', 0, 2, 3, 4], skiprows = 1)
+        df = (pd.read_csv(filename, names = ['age', 0, 1, 2, 3], skiprows = 1)
             .query('(age >= 65)')
             )
         df['age'] = df['age'].astype('int')
@@ -177,7 +185,7 @@ def get_initial_population():
             pd.melt(
                 df,
                 id_vars = ['age'],
-                value_vars = [0, 2, 3, 4],
+                value_vars = [0, 1, 2, 3],
                 var_name = 'initial_state',
                 value_name = 'population'
                 )
@@ -414,11 +422,11 @@ def load_and_plot_scenarios_difference(survival_gain_cast = None, mu = None):
     reference_pivot_table = population_reference.groupby(['period', 'initial_state'])['population'].sum().unstack()
 
     diff_pivot_table = pivot_table - reference_pivot_table
-    diff_pivot_table.to_csv(os.path.join(figures_directory, 'merged_0_1_proj_{}.csv'.format(
+    diff_pivot_table.to_csv(os.path.join(figures_directory, 'share_proj_{}.csv'.format(
         suffix)))
     ax = diff_pivot_table.plot.line()
     figure = ax.get_figure()
-    figure.savefig(os.path.join(figures_directory, 'merged_0_1_diff_proj_{}.pdf'.format(
+    figure.savefig(os.path.join(figures_directory, 'share_diff_proj_{}.pdf'.format(
         suffix)), bbox_inches = 'tight')
 
     pct_pivot_table = pivot_table.divide(pivot_table.sum(axis=1), axis=0)
@@ -426,10 +434,10 @@ def load_and_plot_scenarios_difference(survival_gain_cast = None, mu = None):
     diff_pct_pivot_table = pct_pivot_table - pct_reference_pivot_table
     ax = diff_pct_pivot_table.plot.line()
     figure = ax.get_figure()
-    pct_pivot_table.to_csv(os.path.join(figures_directory, 'merged_0_1_diff_proj_pct_{}.csv'.format(
+    pct_pivot_table.to_csv(os.path.join(figures_directory, 'share_diff_proj_pct_{}.csv'.format(
         suffix)))
-    figure.savefig(os.path.join(figures_directory, 'merged_0_1_diff_proj_pct_{}.pdf'.format(suffix)), bbox_inches = 'tight')
-
+    figure.savefig(os.path.join(figures_directory, 'share_diff_proj_pct_{}.pdf'.format(suffix)), bbox_inches = 'tight')
+plot_projected_target
 
 def plot_dependance_niveau_by_age(population, period, sexe = None, area = False, pct = True, age_max = None, suffix = None):
     assert 'period' in population.columns, 'period is not present in population columns: {}'.format(population.columns)
@@ -613,27 +621,44 @@ def save_data_and_graph(uncalibrated_transitions, mu = None, survival_gain_cast 
         )
 
     pivot_table = population.groupby(['period', 'initial_state'])['population'].sum().unstack()
-    pivot_table.to_csv(os.path.join(figures_directory, 'merged_0_1_proj_{}.csv'.format(
+    pivot_table.to_csv(os.path.join(figures_directory, 'share_proj_{}.csv'.format(
         suffix)))
     ax = pivot_table.plot.line()
     figure = ax.get_figure()
-    figure.savefig(os.path.join(figures_directory, 'merged_0_1_proj_{}.pdf'.format(
+    figure.savefig(os.path.join(figures_directory, 'share_proj_{}.pdf'.format(
         suffix)), bbox_inches = 'tight')
 
     pct_pivot_table = pivot_table.divide(pivot_table.sum(axis = 1), axis = 0)
     ax = pct_pivot_table.plot.line()
     figure = ax.get_figure()
-    pct_pivot_table.to_csv(os.path.join(figures_directory, 'merged_0_1_proj_pct_{}.csv'.format(
+    pct_pivot_table.to_csv(os.path.join(figures_directory, 'share_proj_pct_{}.csv'.format(
         suffix)))
-    figure.savefig(os.path.join(figures_directory, 'merged_0_1_proj_pct_{}.pdf'.format(suffix)), bbox_inches = 'tight')
+    figure.savefig(os.path.join(figures_directory, 'share_proj_pct_{}.pdf'.format(suffix)), bbox_inches = 'tight')
 
 
 if __name__ == '__main__':
     logging.basicConfig(level = logging.INFO, stream = sys.stdout)
+    sns.set_style("whitegrid")
+#    formula = 'final_state ~ I((age - 80) * 0.1) + I(((age - 80) * 0.1) ** 2) + I(((age - 80) * 0.1) ** 3)'
+#    age_min = 50
+#    age_max = 120
+#
+#    uncalibrated_transitions = get_transitions_from_formula(
+#        formula = formula,
+#        age_min = age_min,
+#        age_max = age_max,
+#        )
+#    from til_france.data.data.hsm_dependance_niveau import create_dependance_initialisation_share
+#    create_dependance_initialisation_share(smooth = True, survey = 'both')
+#    formula = 'final_state ~ I((age - 80) * 0.1) + I(((age - 80) * 0.1) ** 2) + I(((age - 80) * 0.1) ** 3)'
+#
+#    save_data_and_graph(uncalibrated_transitions = uncalibrated_transitions)
+#
+#    transitions = load_and_plot_projected_target(survival_gain_cast = None, age_max = 100)
 
     def run(survival_gain_casts = None):
-        from til_france.data.data.hsm_dependance_niveau import create_dependance_initialisation_merged_0_1
-        create_dependance_initialisation_merged_0_1(smooth = True, survey = 'both')
+        from til_france.data.data.hsm_dependance_niveau import create_dependance_initialisation_share
+        create_dependance_initialisation_share(smooth = True, survey = 'both')
         formula = 'final_state ~ I((age - 80) * 0.1) + I(((age - 80) * 0.1) ** 2) + I(((age - 80) * 0.1) ** 3)'
         uncalibrated_transitions = get_transitions_from_formula(formula = formula)
         # life_expectancy_diagnostic(uncalibrated_transitions = uncalibrated_transitions, initial_period = 2010)
@@ -652,206 +677,24 @@ if __name__ == '__main__':
                     survival_gain_cast = survival_gain_cast,
                     )
 
-    def plot_differences(survival_gain_casts = None):
-        for survival_gain_cast in survival_gain_casts:
-            if survival_gain_cast in ['initial_vs_others', 'autonomy_vs_disability']:
-                for mu in [0, 1]:
-                    load_and_plot_scenarios_difference(survival_gain_cast = survival_gain_cast, mu = mu)
-            else:
-                load_and_plot_scenarios_difference(survival_gain_cast = survival_gain_cast)
-
-    def plot_girs(survival_gain_casts):
-        for survival_gain_cast in survival_gain_casts:
-            if survival_gain_cast in ['initial_vs_others', 'autonomy_vs_disability']:
-                for mu in [0, 1]:
-                    load_and_plot_gir_projections(survival_gain_cast = survival_gain_cast, mu = mu)
-            else:
-                load_and_plot_gir_projections(survival_gain_cast = survival_gain_cast)
-
-    def load_and_plot_summary():
-        renaming = {
-            'homogeneous': u'gains homogènes',
-            'initial_vs_others_mu_1': u'transitions ralenties',
-            'initial_vs_others_mu_0': u'transitions accélérées',
-            'autonomy_vs_disability_mu_1': u'gain de survie en autonomie',
-            'autonomy_vs_disability_mu_0': u'gain de survie en dépendance',
-            'increase_gradual_disability': u'gain de survie en dépendance modérée',
-            }
-        meta_dependance_niveaux = [
-            [2],
-            [3],
-            [4],
-            [2, 3, 4],
-            [3, 4],
-            ]
-
-        style = {
-            'homogeneous': 'r-',
-            'initial_vs_others_mu_1': 'b-',
-            'initial_vs_others_mu_0': 'b--',
-            'autonomy_vs_disability_mu_1': 'b-',
-            'autonomy_vs_disability_mu_0': 'b--',
-            'increase_gradual_disability': 'c-.',
-            }
-
-        style = dict(
-            (new_name, style[scenario])
-            for scenario, new_name in renaming.iteritems()
-            )
-
-        survival_gain_casts_by_theme = dict(
-            acceleration = [
-                'homogeneous',
-                'initial_vs_others',
-                ],
-            entry = [
-                'homogeneous',
-                'autonomy_vs_disability',
-                'increase_gradual_disability',
-                ]
-            )
-
-        for theme, survival_gain_casts in survival_gain_casts_by_theme.iteritems():
-            for dependance_niveaux in meta_dependance_niveaux:
-                suffixes = list()
-                for survival_gain_cast in survival_gain_casts:
-                    suffix = survival_gain_cast
-                    if survival_gain_cast in ['initial_vs_others', 'autonomy_vs_disability']:
-                        for mu in [0, 1]:
-                            tmp_suffix = suffix + '_mu_{}'.format(mu)
-                            suffixes.append(tmp_suffix)
-                    else:
-                        suffixes.append(suffix)
-
-                population = pd.DataFrame()
-                for suffix in suffixes:
-                    population = pd.concat([
-                        population,
-                        (pd.read_csv(os.path.join(figures_directory, 'population_{}.csv'.format(suffix)), index_col = 0)
-                            .drop('sex', axis = 1)
-                            .query('age >= 65')
-                            .query('(period > 2010) & (period <= 2060)')
-                            .query('initial_state in @dependance_niveaux')
-                            .assign(scenario = suffix)
-                            .groupby(['period', 'scenario'])['population'].sum()
-                            .reset_index())
-                            .rename(columns = {'period': u'Année'})
-                        ])
-
-                pivot_table = population.pivot(index = u'Année', columns = 'scenario', values = 'population')
-                pivot_table.rename(columns = renaming, inplace = True)
-                if pivot_table.max().max() > 1e6:
-                    pivot_table = pivot_table / 1e6
-                    unite = 'Effectifs (millions)'
-                else:
-                    pivot_table = pivot_table / 1e3
-                    unite = 'Effectifs (milliers)'
-
-                ax = pivot_table.plot.line(
-                    xlim = [2012, 2060],
-                    style = style,
-                    )
-                ax.set_ylabel(unite)
-                ax.legend(frameon = True, edgecolor = 'k', framealpha = 1)
-                figure = ax.get_figure()
-                figure_path_name = os.path.join(figures_directory, 'multi_scenario_{}_{}'.format(
-                    theme,
-                    '_'.join([str(dependance_niveau) for dependance_niveau in dependance_niveaux]))
-                    )
-                # ax.set_title(u'Effectifs dépendants {}'.format(dependance_niveaux))
-                figure.savefig(figure_path_name, bbox_inches = 'tight')
-                figure.savefig(figure_path_name + ".pdf", bbox_inches = 'tight', format = 'pdf')
-
-    import seaborn as sns
-    sns.set_style("whitegrid")
-    BOUM
-    load_and_plot_summary()
-    BIM
-    transitions = load_and_plot_projected_target(survival_gain_cast = 'homogeneous', age_max = 100, initial_states = [2],
-        final_states = None)
-    BAM
     survival_gain_casts = [
         'homogeneous',
-        'initial_vs_others',
-        'autonomy_vs_disability',
-        'increase_gradual_disability',
+#        'initial_vs_others',
+#        'autonomy_vs_disability',
+#        'increase_gradual_disability',
         ]
     run(survival_gain_casts)
-    plot_differences(survival_gain_casts)
-    plot_girs(survival_gain_casts)
+    BADABOUM
+    load_and_plot_summary()
+    BIM
+    transitions = load_and_plot_projected_target(survival_gain_cast = 'homogeneous', age_max = 100,
+        initial_states = [2], final_states = None)
+    BAM
+
+    # plot_differences(survival_gain_casts)
+    # plot_girs(survival_gain_casts)
 
     BIM
     load_and_plot_dependance_niveau_by_period(survival_gain_cast = 'homogeneous', periods = None, area = True)
 
     BIM
-
-    insee_population = get_insee_projected_population()
-    insee_population.reset_index().query('(age >= 65) and (year > 2010)').groupby('year')['population'].sum().plot()
-    insee_population.query('(age >= 65) and (year == 2008)').sum()
-    initial_population = get_initial_population()
-    initial_population['population'].sum()
-
-    BIM
-
-
-def mbj_plot(data, pdf_dump, grain):
-    """
-    pd.DataFrame*str*float -> None
-    Plot the data à la MBJ (2017) and put in the pdf_dump directory
-    """
-    pdf_path = os.path.join(pdf_dump, 'plot.pdf')
-    pdf_file = PdfPages(pdf_path)
-
-    grain = .001
-    suffix = 'homogeneous'
-    sex = 'male'
-
-
-    population = (
-        pd.read_csv(os.path.join(figures_directory, 'population_{}.csv'.format(suffix)), index_col = 0)
-        .drop('sex', axis = 1)
-        .query('age >= 65')
-        .query('period == 2010')
-        .copy()
-        )
-    pivot_table = population.groupby(['age', 'initial_state'])['population'].sum().unstack()
-
-
-    pct_pivot_table = pivot_table.divide(pivot_table.sum(axis=1), axis=0)
-    pct_pivot_table['population'] = pivot_table.sum(axis = 1)
-    data = pct_pivot_table.reset_index()
-    data['tick'] = data['population'] * grain  # bigger grain : able to smooth more if needed
-    data['tick'] = data['tick'].astype(np.int)
-
-    data_expanded = data.loc[np.repeat(data.index.values, data['tick'])].reset_index(drop=True)
-
-    f = plt.figure()
-    f.set_size_inches(24, 13.5)
-    ax = f.add_subplot(1,1,1)
-
-    shares = [data_expanded[col] for col in [0, 2, 3, 4]]
-
-    # adjust to smooth
-    smoothed_shares = [share.rolling(100, center = True,win_type='gaussian').mean(std = 15).fillna(method='bfill').fillna(method='ffill') for share in shares]
-    y = np.row_stack(tuple(smoothed_shares))
-
-    x = range(len(smoothed_shares[0]))
-
-    ax.set_xticks([])
-    ax.set_xlim(0, max(x))
-    ax.set_ylim(0,1)
-    ax.stackplot(x,y)
-
-    x = np.cumsum([0] + list(data['population'].values))
-    xplot = list((x[1:] + x[:-1]) / 2)
-    ax2 = ax.twiny()
-    ax2.set_xticks(xplot)
-    ax2.set_xlim(0, sum(data['population']))
-    ax2.set_xticklabels(list(data['age'].values))
-
-    pdf_file.savefig()
-    plt.close()
-    pdf_file.close()
-
-    return(None)
-
