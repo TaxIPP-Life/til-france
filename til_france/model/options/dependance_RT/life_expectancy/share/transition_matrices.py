@@ -36,7 +36,7 @@ assets_path = config_files_directory = os.path.join(
     )
 
 
-data_path = os.path.join('/mnt/ipp_projets/Dependance/SHARE/Traitement/Tables/base_microsimu.csv')
+data_path = os.path.join('/mnt/ipp_projets/Dependance/SHARE/Traitement/Tables/base_microsimu2.csv')
 
 
 # Transition matrix structure
@@ -85,11 +85,11 @@ def get_clean_share(extra_variables = None):
     # 'female, sexe == 2'
     df['sexe'] = df.male + 2 * (df.male == 0)
     del df['male']
-    variables = ['id', 'initial_state', 'sexe', 'year', 'age']
+    variables = ['id', 'initial_state', 'sexe', 'year', 'age', 'vague']
 
     if extra_variables:
         assert isinstance(extra_variables, list)
-        variables = list(set(['id', 'initial_state', 'sexe', 'year', 'age']).union(set(extra_variables)))
+        variables = list(set(['id', 'initial_state', 'sexe', 'year', 'age', 'vague']).union(set(extra_variables)))
 
     df = df[variables].copy().dropna()  # TODO Remove the dropna
     assert df.notnull().all().all(), \
@@ -115,7 +115,7 @@ def get_clean_share(extra_variables = None):
     return filtered
 
 
-def build_estimation_sample(initial_state, sex = None, variables = None, readjust = False):
+def build_estimation_sample(initial_state, sex = None, variables = None, readjust = False, vagues = None):
     """Build estimation sample from paquid data
     """
     final_states = final_states_by_initial_state[initial_state]
@@ -216,6 +216,9 @@ def build_estimation_sample(initial_state, sex = None, variables = None, readjus
         log.info("Keeping sample of size {}".format(len(sample)))
         del sample['sexe']
 
+    if vagues:
+        sample = sample.query('vague in @vagues').copy()
+
     assert set(sample.final_state.value_counts().index.tolist()) == set(final_states), '{} differs from {}'.format(
         set(sample.final_state.value_counts().index.tolist()), set(final_states)
         )
@@ -292,13 +295,13 @@ def direct_compute_predicition(initial_state, formula, formatted_params, sex = N
     return computed_prediction
 
 
-def compute_prediction(initial_state = None, formula = None, variables = ['age'], exog = None, sex = None):
+def compute_prediction(initial_state = None, formula = None, variables = ['age'], exog = None, sex = None, vagues = None):
     """
     Compute prediction on exogneous if given or on sample
     """
     assert initial_state is not None
     assert (sex in ['male', 'female']) or (sex is None)
-    sample = build_estimation_sample(initial_state, sex = sex, variables = variables)
+    sample = build_estimation_sample(initial_state, sex = sex, variables = variables, vagues = vagues)
     if exog is None:
         exog = sample[variables]
 
@@ -316,7 +319,7 @@ def compute_prediction(initial_state = None, formula = None, variables = ['age']
     return prediction.reset_index(drop = True)
 
 
-def get_transitions_from_formula(formula = None, age_min = 50, age_max = 120):
+def get_transitions_from_formula(formula = None, age_min = 50, age_max = 120, vagues = None):
     transitions = None
     for sex in ['male', 'female']:
         assert formula is not None
@@ -326,7 +329,7 @@ def get_transitions_from_formula(formula = None, age_min = 50, age_max = 120):
             proba_by_initial_state[initial_state] = pd.concat(
                 [
                     exog,
-                    compute_prediction(initial_state, formula, sex = sex, exog = exog)
+                    compute_prediction(initial_state, formula, sex = sex, exog = exog, vagues = vagues)
                     ],
                 axis = 1,
                 )
