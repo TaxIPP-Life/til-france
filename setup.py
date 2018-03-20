@@ -78,7 +78,7 @@ setup(
     install_requires = [
         'liam2',
         'numpy',
-        'openfisca-survey-manager',
+        'openfisca-survey-manager >= 0.9.8',
         'PyYAML >= 3.10',
         'til-core',
         ],
