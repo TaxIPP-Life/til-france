@@ -17,3 +17,8 @@ Afin d'installer les dépendances pour exécuter également les tests, il faut a
 ````
 pip install -e .[test] --user
 ````
+
+
+## Premiers pas
+
+[En cours de rédaction](./docs/premiers_pas.md)
