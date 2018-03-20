@@ -46,7 +46,7 @@ doc_lines = __doc__.split('\n')
 
 setup(
     name = 'Til-France',
-    version = '0.1.dev0',
+    version = '0.1.1',
 
     author = 'TaxIPP-Life (TIL) Team',
     author_email = 'alexis.eidelman.pro@gmail.com',
@@ -59,6 +59,7 @@ setup(
     entry_points = {
         'console_scripts': [
             'build_parameters=til_france.scripts.build_parameters:main',
+            'til_init=til_france.scripts.til_init:main',
             ]
         },
     extras_require = dict(
