@@ -1,0 +1,8 @@
+[raw_data]
+patrimoine_data_directory = /where/patrimoine/data/is
+hsi_data_directory = /where/hsi/data/is
+
+[til]
+output_dir = where/til/output/goes
+input_dir = where/til/input/comes/from
+temp_dir = where/til/temp/files/go
