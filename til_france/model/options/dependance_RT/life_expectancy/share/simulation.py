@@ -31,8 +31,7 @@ from til_france.model.options.dependance_RT.life_expectancy.calibration import (
 from til_france.model.options.dependance_RT.life_expectancy.share.calibration import (
     build_mortality_calibrated_target_from_formula,
     build_mortality_calibrated_target_from_transitions,
-    correct_transitions_for_mortality,
-    export_calibrated_dependance_transition,
+    correct_transitions_for_mortality
     )
 
 from til_france.tests.base import ipp_colors
@@ -444,7 +443,7 @@ def load_and_plot_scenarios_difference(survival_gain_cast = None, mu = None):
     pct_pivot_table.to_csv(os.path.join(figures_directory, 'share_diff_proj_pct_{}.csv'.format(
         suffix)))
     figure.savefig(os.path.join(figures_directory, 'share_diff_proj_pct_{}.pdf'.format(suffix)), bbox_inches = 'tight')
-plot_projected_target
+
 
 def plot_dependance_niveau_by_age(population, period, sexe = None, area = False, pct = True, age_max = None, suffix = None):
     assert 'period' in population.columns, 'period is not present in population columns: {}'.format(population.columns)
@@ -667,116 +666,119 @@ def graph_uncalibrated_transitions(initial_states = None, final_states = None):
         final_states = final_states,
         )
 
+def comparison_share_early_late():
+    suffixes = ['homogeneous1_2', 'homogeneous4_5_6']
+    population = pd.DataFrame()
+    for suffix in suffixes:
+        population = pd.concat([
+            population,
+            (pd.read_csv(os.path.join(figures_directory, 'population_{}.csv'.format(suffix)), index_col = 0)
+                .drop('sex', axis = 1)
+                .query('age >= 65')
+                .query('(period > 2010) & (period <= 2060)')
+                # .query('initial_state in @dependance_niveaux')
+                .assign(scenario = suffix)
+                .groupby(['period', 'initial_state', 'scenario'])['population'].sum()
+                .reset_index())
+                .rename(columns = {'period': u'Années'})
+            ])
 
-    def comparison_share_early_late():
-        suffixes = ['homogeneous1_2', 'homogeneous4_5_6']
-        population = pd.DataFrame()
-        for suffix in suffixes:
-            population = pd.concat([
-                population,
-                (pd.read_csv(os.path.join(figures_directory, 'population_{}.csv'.format(suffix)), index_col = 0)
-                    .drop('sex', axis = 1)
-                    .query('age >= 65')
-                    .query('(period > 2010) & (period <= 2060)')
-                    # .query('initial_state in @dependance_niveaux')
-                    .assign(scenario = suffix)
-                    .groupby(['period', 'initial_state', 'scenario'])['population'].sum()
-                    .reset_index())
-                    .rename(columns = {'period': u'Années'})
-                ])
+    fig, ax = plt.subplots()
+    linestyle_by_scenario = {
+        'homogeneous1_2': "--",
+        'homogeneous4_5_6': "-",
+        }
 
-        fig, ax = plt.subplots()
-        linestyle_by_scenario = {
-            'homogeneous1_2': "--",
-            'homogeneous4_5_6': "-",
-            }
+    for scenario, grp in sorted(population.groupby('scenario'), reverse = True):
+        pivot_table = grp.groupby([u'Années', 'initial_state'])['population'].sum().unstack()
+        if pivot_table.max().max() > 1e6:
+            pivot_table = pivot_table / 1e6
+            unite = 'Effectifs (millions)'
+        else:
+            pivot_table = pivot_table / 1e3
+            unite = 'Effectifs (milliers)'
 
-        for scenario, grp in sorted(population.groupby('scenario'), reverse = True):
-            pivot_table = grp.groupby([u'Années', 'initial_state'])['population'].sum().unstack()
-            if pivot_table.max().max() > 1e6:
-                pivot_table = pivot_table / 1e6
-                unite = 'Effectifs (millions)'
-            else:
-                pivot_table = pivot_table / 1e3
-                unite = 'Effectifs (milliers)'
-
-            lines = pivot_table.plot.line(
-                label =str(scenario),
-                ax=ax,
-                linestyle = linestyle_by_scenario[scenario],
-                color =  ['b', 'g', 'y', 'r'],
-                xlim = [2012, 2060],
-                )
-            ax.set_ylabel(unite)
-
-        ax.legend(["0", "1", "2", "3"], frameon = True, edgecolor = 'k',
-            framealpha = 1, title = u" vagues A --\n vagues B -")
-
-        figure = ax.get_figure()
-        figure_path_name = os.path.join(figures_directory, 'multi_scenario_vagues')
-        # ax.set_title(u'Effectifs dépendants {}'.format(dependance_niveaux))
-        figure.savefig(figure_path_name, bbox_inches = 'tight')
-        figure.savefig(figure_path_name + ".pdf", bbox_inches = 'tight', format = 'pdf')
-
-    def comparison_share_paquid():
-        suffix = 'homogeneous4_5_6'
-        share_population = (pd.read_csv(os.path.join(figures_directory, 'population_{}.csv'.format(suffix)), index_col = 0)
-            .drop('sex', axis = 1)
-            .query('age >= 65')
-            .query('(period > 2010) & (period <= 2060)')
-            .replace({'initial_state': {1: 0}})
-            .assign(scenario = suffix)
-            .groupby(['period', 'initial_state', 'scenario'])['population'].sum()
-            .reset_index()
-            .rename(columns = {'period': u'Années'})
+        lines = pivot_table.plot.line(
+            label =str(scenario),
+            ax=ax,
+            linestyle = linestyle_by_scenario[scenario],
+            color = ['b', 'g', 'y', 'r'],
+            xlim = [2012, 2060],
             )
+        ax.set_ylabel(unite)
 
-        suffix = 'homogeneous'
-        paquid_population = (pd.read_csv(os.path.join(figures_directory, '..', 'population_{}.csv'.format(suffix)), index_col = 0)
-            .drop('sex', axis = 1)
-            .query('age >= 65')
-            .query('(period > 2010) & (period <= 2060)')
-            .replace({'initial_state': {4: 3}})
-            .assign(scenario = suffix)
-            .groupby(['period', 'initial_state', 'scenario'])['population'].sum()
-            .reset_index()
-            .rename(columns = {'period': u'Années'})
+    ax.legend(["0", "1", "2", "3"], frameon = True, edgecolor = 'k',
+        framealpha = 1, title = u" vagues A --\n vagues B -")
+
+    figure = ax.get_figure()
+    figure_path_name = os.path.join(figures_directory, 'multi_scenario_vagues')
+    # ax.set_title(u'Effectifs dépendants {}'.format(dependance_niveaux))
+    figure.savefig(figure_path_name, bbox_inches = 'tight')
+    figure.savefig(figure_path_name + ".pdf", bbox_inches = 'tight', format = 'pdf')
+
+
+def comparison_share_paquid():
+    suffix = 'homogeneous4_5_6'
+    share_population = (pd.read_csv(os.path.join(figures_directory, 'population_{}.csv'.format(suffix)), index_col = 0)
+        .drop('sex', axis = 1)
+        .query('age >= 65')
+        .query('(period > 2010) & (period <= 2060)')
+        .replace({'initial_state': {1: 0}})
+        .assign(scenario = suffix)
+        .groupby(['period', 'initial_state', 'scenario'])['population'].sum()
+        .reset_index()
+        .rename(columns = {'period': u'Années'})
+        )
+
+    suffix = 'homogeneous'
+    paquid_population = (pd.read_csv(
+            os.path.join(figures_directory, '..', 'population_{}.csv'.format(suffix)),
+            index_col = 0
             )
+        .drop('sex', axis = 1)
+        .query('age >= 65')
+        .query('(period > 2010) & (period <= 2060)')
+        .replace({'initial_state': {4: 3}})
+        .assign(scenario = suffix)
+        .groupby(['period', 'initial_state', 'scenario'])['population'].sum()
+        .reset_index()
+        .rename(columns = {'period': u'Années'})
+        )
 
-        population = pd.concat([share_population, paquid_population])
+    population = pd.concat([share_population, paquid_population])
 
-        fig, ax = plt.subplots()
-        linestyle_by_scenario = {
-            'homogeneous': "--",
-            'homogeneous4_5_6': "-",
-            }
+    fig, ax = plt.subplots()
+    linestyle_by_scenario = {
+        'homogeneous': "--",
+        'homogeneous4_5_6': "-",
+        }
 
-        for scenario, grp in sorted(population.groupby('scenario'), reverse = True):
-            pivot_table = grp.groupby([u'Années', 'initial_state'])['population'].sum().unstack()
-            if pivot_table.max().max() > 1e6:
-                pivot_table = pivot_table / 1e6
-                unite = 'Effectifs (millions)'
-            else:
-                pivot_table = pivot_table / 1e3
-                unite = 'Effectifs (milliers)'
+    for scenario, grp in sorted(population.groupby('scenario'), reverse = True):
+        pivot_table = grp.groupby([u'Années', 'initial_state'])['population'].sum().unstack()
+        if pivot_table.max().max() > 1e6:
+            pivot_table = pivot_table / 1e6
+            unite = 'Effectifs (millions)'
+        else:
+            pivot_table = pivot_table / 1e3
+            unite = 'Effectifs (milliers)'
 
-            lines = pivot_table.plot.line(
-                label =str(scenario),
-                ax=ax,
-                linestyle = linestyle_by_scenario[scenario],
-                color = ['b', 'y', 'r'],
-                xlim = [2012, 2060],
-                )
-            ax.set_ylabel(unite)
+        lines = pivot_table.plot.line(
+            label =str(scenario),
+            ax=ax,
+            linestyle = linestyle_by_scenario[scenario],
+            color = ['b', 'y', 'r'],
+            xlim = [2012, 2060],
+            )
+        ax.set_ylabel(unite)
 
-        ax.legend(["0-1", "2", "3-4"], frameon = True, edgecolor = 'k',
-            framealpha = 1, title = u" PAQUID --\n SHARE -")
+    ax.legend(["0-1", "2", "3-4"], frameon = True, edgecolor = 'k',
+        framealpha = 1, title = u" PAQUID --\n SHARE -")
 
-        figure = ax.get_figure()
-        figure_path_name = os.path.join(figures_directory, 'paquid_vs_share')
-        # ax.set_title(u'Effectifs dépendants {}'.format(dependance_niveaux))
-        figure.savefig(figure_path_name, bbox_inches = 'tight')
-        figure.savefig(figure_path_name + ".pdf", bbox_inches = 'tight', format = 'pdf')
+    figure = ax.get_figure()
+    figure_path_name = os.path.join(figures_directory, 'paquid_vs_share')
+    # ax.set_title(u'Effectifs dépendants {}'.format(dependance_niveaux))
+    figure.savefig(figure_path_name, bbox_inches = 'tight')
+    figure.savefig(figure_path_name + ".pdf", bbox_inches = 'tight', format = 'pdf')
 
 
 def plot_share_late(sex = None):
@@ -856,13 +858,15 @@ if __name__ == '__main__':
     logging.basicConfig(level = logging.INFO, stream = sys.stdout)
     sns.set_style("whitegrid")
 
-    plot_share_late(sex = 'female')
-    BIM
     survival_gain_casts = [
-        'homogeneous',
+        'initial_vs_others',  # 'autonomy_vs_disability'
         ]
     run(survival_gain_casts, vagues = [4, 5, 6])
     BADABOUM
+
+    plot_share_late(sex = 'male')
+    BIM
+
     transitions = load_and_plot_projected_target(survival_gain_cast = 'homogeneous', age_max = 100)
     BAM
     load_and_plot_summary()
