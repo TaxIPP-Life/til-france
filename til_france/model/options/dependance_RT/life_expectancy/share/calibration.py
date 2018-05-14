@@ -826,7 +826,7 @@ def _compute_calibration_coefficient(age_min = 50, period = None, transitions = 
 
     projected_mortality = (get_insee_projected_mortality()  # brings in variable mortality
         .query('year == @period')
-        .rename(columns = {'year': 'period'))
+        .rename(columns = {'year': 'period'})
         )
     model_to_target = (mortality_after_imputation
         .merge(
