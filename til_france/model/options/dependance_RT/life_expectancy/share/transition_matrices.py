@@ -17,6 +17,8 @@ from scipy import stats
 stats.chisqprob = lambda chisq, df: stats.chi2.sf(chisq, df)
 
 
+from til_core.config import Config
+
 log = logging.getLogger(__name__)
 
 
@@ -27,7 +29,7 @@ til_france_path = os.path.join(
     'til_france',
     )
 
-assets_path = config_files_directory = os.path.join(
+assets_path = os.path.join(
     til_france_path,
     'model',
     'options',
@@ -36,7 +38,11 @@ assets_path = config_files_directory = os.path.join(
     )
 
 
-data_path = os.path.join('/mnt/ipp_projets/Dependance/SHARE/Traitement/Tables/base_microsimu2.csv')
+config = Config()
+data_path = os.path.join(
+    config.get('raw_data', 'share'),
+    'base_microsimu2.csv',
+    )
 
 
 # Transition matrix structure

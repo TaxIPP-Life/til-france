@@ -811,8 +811,8 @@ def _compute_calibration_coefficient(age_min = 50, period = None, transitions = 
     """
     assert period is not None, "Mortality profile period is not set"
     assert transitions is not None
-    predicted_mortality_table = get_predicted_mortality_table(transitions = transitions)
-    mortality_after_imputation = (
+    predicted_mortality_table = get_predicted_mortality_table(transitions = transitions)  # From 2yr mortality to 1yr mortality by age, sex and intial_state
+    mortality_after_imputation = (  # From 1yr mrotality by age sex (use dependance_initialisation to sum over initial_state)
         get_mortality_after_imputation(
             mortality_table = predicted_mortality_table,
             dependance_initialisation = dependance_initialisation,
@@ -824,9 +824,9 @@ def _compute_calibration_coefficient(age_min = 50, period = None, transitions = 
     assert (mortality_after_imputation.avg_mortality > 0).all(), \
         mortality_after_imputation.loc[~(mortality_after_imputation.avg_mortality > 0)]
 
-    projected_mortality = (get_insee_projected_mortality()
+    projected_mortality = (get_insee_projected_mortality()  # brings in variable mortality
         .query('year == @period')
-        .rename(columns = dict(year = 'period'))
+        .rename(columns = {'year': 'period'))
         )
     model_to_target = (mortality_after_imputation
         .merge(

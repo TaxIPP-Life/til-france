@@ -47,7 +47,9 @@ life_table_path = os.path.join(
     'lifetables_period.xlsx'
     )
 
-figures_directory = '/home/benjello/figures/share'
+config = Config()
+
+figures_directory = config.get('dependance', 'figures_directory')
 
 
 def add_65_66_population(population = None):
@@ -643,10 +645,8 @@ if __name__ == '__main__':
     logging.basicConfig(level = logging.INFO, stream = sys.stdout)
     sns.set_style("whitegrid")
 
-
     def graph_uncalibrated_transitions(initial_states = None, final_states = None):
         formula = 'final_state ~ I((age - 80) * 0.1) + I(((age - 80) * 0.1) ** 2) + I(((age - 80) * 0.1) ** 3)'
-
         uncalibrated_transitions_12 = get_transitions_from_formula(formula = formula, vagues = [1, 2])
         uncalibrated_transitions_456 = get_transitions_from_formula(formula = formula, vagues = [4, 5, 6])
 
@@ -667,6 +667,7 @@ if __name__ == '__main__':
             final_states = final_states,
             )
 
+    
     def run(survival_gain_casts = None, vagues = [1, 2]):
         from til_france.data.data.hsm_dependance_niveau import create_dependance_initialisation_share
         create_dependance_initialisation_share(smooth = True, survey = 'both')
@@ -689,14 +690,14 @@ if __name__ == '__main__':
                     survival_gain_cast = survival_gain_cast,
                     vagues = vagues
                     )
-
+    
+    
     survival_gain_casts = [
         'homogeneous',
         ]
-    run(survival_gain_casts)
+    run(survival_gain_casts, vagues = [4, 5, 6])
     BIM
     #
-    graph_uncalibrated_transitions(initial_states = [0], final_states = [0, 1, 4])
     BIM
     BADABOUM
     transitions = load_and_plot_projected_target(survival_gain_cast = 'homogeneous', age_max = 100)
