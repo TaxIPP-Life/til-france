@@ -784,7 +784,7 @@ if __name__ == '__main__':
         ax = pivot_table.plot.line(
             ax=ax,
             linestyle = '-',
-            color =  ['b', 'g', 'y', 'r'],
+            color = ['b', 'g', 'y', 'r'],
             xlim = [2012, 2060],
             )
         ax.set_ylabel(unite)
