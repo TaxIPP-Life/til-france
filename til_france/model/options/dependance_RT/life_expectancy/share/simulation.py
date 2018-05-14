@@ -718,7 +718,6 @@ def graph_uncalibrated_transitions(initial_states = None, final_states = None):
         figure.savefig(figure_path_name, bbox_inches = 'tight')
         figure.savefig(figure_path_name + ".pdf", bbox_inches = 'tight', format = 'pdf')
 
-
     def comparison_share_paquid():
         suffix = 'homogeneous4_5_6'
         share_population = (pd.read_csv(os.path.join(figures_directory, 'population_{}.csv'.format(suffix)), index_col = 0)
