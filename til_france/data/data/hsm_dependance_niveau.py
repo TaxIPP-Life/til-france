@@ -159,10 +159,12 @@ def create_dependance_initialisation_merged_0_1(filename_prefix = None, smooth =
 
 
 def create_dependance_initialisation_share(filename_prefix = None, smooth = False, window = 7, std = 2,
-        survey = 'hsm'):
+        survey = 'hsm', age_min = None, scale = 4):
     """
     Create dependance_niveau variable initialisation file for use in til-france model (option dependance_RT)
     """
+    assert scale in [4, 5], "scale should be equal to 4 or 5"
+    assert age_min is not None
     config = Config()
     input_dir = config.get('til', 'input_dir')
     assert survey in ['both', 'hsm']
@@ -172,8 +174,6 @@ def create_dependance_initialisation_share(filename_prefix = None, smooth = Fals
         else:
             pivot_table = get_hsi_hsm_prevalence_pivot_table(sexe = sexe, scale = 4)
 
-        if smooth:
-            pivot_table = smooth_pivot_table(pivot_table, window = window, std = std)
 
         if filename_prefix is None:
             filename = os.path.join(input_dir, 'dependance_initialisation_level_share_{}.csv'.format(sexe))
@@ -186,6 +186,10 @@ def create_dependance_initialisation_share(filename_prefix = None, smooth = Fals
             )
         level_pivot_table['age'] = level_pivot_table['age'].astype(int)
         level_pivot_table.fillna(0, inplace = True)
+
+        if smooth:
+            pivot_table = smooth_pivot_table(pivot_table, window = window, std = std)
+
         level_pivot_table.to_csv(filename, index = False)
         log.info('Saving {}'.format(filename))
 
@@ -205,7 +209,7 @@ def create_dependance_initialisation_share(filename_prefix = None, smooth = Fals
             pivot_table['age'] = pivot_table['age'].astype(int)
 
             pivot_table.fillna(0, inplace = True)
-            pivot_table.loc[pivot_table.age < 60, 0] = 1
+            pivot_table.loc[pivot_table.age < age_min, 0] = 1
             pivot_table.set_index('age', inplace = True)
             pivot_table.loc[pivot_table.sum(axis = 1) == 0, 4] = 1
             pivot_table.to_csv(filename, header = False)
@@ -221,6 +225,8 @@ def create_dependance_initialisation_share(filename_prefix = None, smooth = Fals
             with file(filename, 'w') as modified:
                 modified.write(verbatim_header + data)
             log.info('Saving {}'.format(filename))
+
+    return pivot_table
 
 
 def get_hsi_prevalence_pivot_table(sexe = None, scale = None):
@@ -238,16 +244,17 @@ def get_hsi_prevalence_pivot_table(sexe = None, scale = None):
             })
             )
     elif scale == 4:
-        xls_path = os.path.join(config.get('raw_data', 'hsm_dependance_niveau'), 'desc_dependance_scale4_HSI.xls')
+        xls_path = os.path.join(
+            config.get('raw_data', 'hsm_dependance_niveau'), 'desc_dependance_scale4_HSI_20180525.xls')
         data = pd.read_excel(xls_path)
         log.debug('Droping NA values {}'.format(data.loc[data.age.isnull()]))
         data = (data
             .dropna()
             .rename(columns = {
                 'scale4': 'dependance_niveau',
-                'woman': 'sexe'
+                'femme': 'sexe'
                 #   est1_gir_s	est2_gir_s
-            })
+                })
             )
     assert data.sexe.isin([0, 1]).all()
     assert sexe in ['homme', 'femme']
@@ -274,9 +281,14 @@ def get_hsm_prevalence_pivot_table(sexe = None, scale = None):
             .rename(columns = {'disability_scale5': 'dependance_niveau', 'woman': 'sexe'})
             )
     elif scale == 4:
-        xls_path = os.path.join(config.get('raw_data', 'hsm_dependance_niveau'), 'scale4_010318.xlsx')
+        xls_path = os.path.join(
+            config.get('raw_data', 'hsm_dependance_niveau'), 'desc_dependance_scale4_HSM_20180525.xls')
         data = (pd.read_excel(xls_path)
-            .rename(columns = {'scale4': 'dependance_niveau', 'Women': 'sexe'})
+            .rename(columns = {
+                'Scale4': 'dependance_niveau',
+                'femme': 'sexe',
+                'poids': 'poids_hsm',
+                })
             )
 
     assert sexe in ['homme', 'femme']
@@ -451,6 +463,7 @@ def smooth_pivot_table(pivot_table, window = 7, std = 2):
             .rolling(win_type = 'gaussian', center = True, window = window, axis = 0)
             .mean(std = std)
             )
+
     return smoothed_pivot_table
 
 
@@ -480,10 +493,14 @@ def diagnostic_prevalence():
 
 if __name__ == "__main__":
     logging.basicConfig(level = logging.DEBUG, stream = sys.stdout)
-    from til_france.model.options.dependance_RT.life_expectancy.transition_matrices import assets_path
 
-    boum
-    create_dependance_initialisation_share(smooth = True, survey = 'both')
+    pivot_table = create_dependance_initialisation_share(smooth = False, survey = 'both', age_min = 50)
+    print pivot_table
+    BIM
+
+    smoothed_pivot_table  = smooth_pivot_table(pivot_table, window = 7, std = 2)
+    BIM
+    #
     plot_prevalence(smooth = True, survey = 'both')
 
     boum
