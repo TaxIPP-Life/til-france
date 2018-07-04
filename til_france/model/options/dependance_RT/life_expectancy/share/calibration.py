@@ -603,15 +603,15 @@ def autonomy_vs_disability(mortality = None, mu = None, uncalibrated_probabiliti
 
 
 def assert_probabilities(dataframe = None, by = ['period', 'sex', 'age', 'initial_state'],
-        probability = 'calibrated_probability', cut_off = 1e-9):
+        probability = 'calibrated_probability', cut_off = 1e-8):
     assert dataframe is not None
     assert not (dataframe[probability] < 0).any(), dataframe.loc[dataframe[probability] < 0]
     assert not (dataframe[probability] > 1).any(), dataframe.loc[dataframe[probability] > 1]
     diff = (
         dataframe.reset_index().groupby(by)[probability].sum() - 1)
     diff.name = 'error'
-    assert (diff.abs().max() < cut_off).all(), "error is too big: {} > 1e-10. Example: {}".format(
-        diff.abs().max(), (dataframe
+    assert (diff.abs().max() < cut_off).all(), "error is too big: {} > {}. Example: {}".format(
+        diff.abs().max(), cut_off, (dataframe
             .reset_index()
             .set_index(by)
             .loc[diff.abs().argmax(), ['final_state', probability]]

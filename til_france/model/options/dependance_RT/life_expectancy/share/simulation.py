@@ -19,6 +19,7 @@ from til_core.config import Config
 from til_france.model.options.dependance_RT.life_expectancy.share.transition_matrices import (
     assets_path,
     get_transitions_from_formula,
+    get_transitions_from_file,
     )
 
 from til_france.model.options.dependance_RT.life_expectancy.calibration import (
@@ -34,16 +35,18 @@ from til_france.model.options.dependance_RT.life_expectancy.share.calibration im
     correct_transitions_for_mortality
     )
 
+from til_france.data.data.hsm_dependance_niveau import (
+    create_dependance_initialisation_share,
+    get_hsi_hsm_dependance_gir_mapping,
+    )
+
+
 from til_france.tests.base import ipp_colors
 colors = [ipp_colors[cname] for cname in [
     'ipp_very_dark_blue', 'ipp_dark_blue', 'ipp_medium_blue', 'ipp_light_blue']]
 
 
-from til_france.data.data.hsm_dependance_niveau import create_dependance_initialisation_share
-
-
 log = logging.getLogger(__name__)
-
 
 life_table_path = os.path.join(
     assets_path,
@@ -61,27 +64,14 @@ def add_lower_age_population(population = None, age_min = None):
     assert len(population.period.unique().tolist()) == 1, 'More than one period are present: {}'.format(
         population.period.unique().tolist())
     period = population.period.unique().tolist()[0]
-    initial_population = (get_initial_population(age_min = age_min)
-        .query('(age in [@age_min, @age_min + 1])')
+    lower_age_population = (get_initial_population(age_min = age_min, rescale = True, period = period)
+        .query('age in [@age_min, @age_min + 1]')
         )
-    initial_population['part'] = (
-        initial_population / initial_population.groupby(['age', 'sex']
-        ).transform(sum))['population']
-    del initial_population['population']
-
-    lower_age_population = (get_insee_projected_population()
-        .reset_index()
-        .rename(columns = {'year': 'period'})
-        .query('(period == @period) and (age in [@age_min, @age_min + 1])')
-        .merge(initial_population, on = ['sex', 'age'], how = 'left')
-        .eval('population = population * part', inplace = False)
-        .drop('part', axis = 1)
-        )
-
-    lower_age_population[['sex', 'age', 'period', 'initial_state', 'population']]
-
+    lower_age_population['period'] = period
     completed_population = pd.concat([lower_age_population, population]).sort_values(
         ['period', 'age', 'sex', 'initial_state'])
+
+    assert completed_population.notnull().all().all(), completed_population.notnull().all()
 
     assert completed_population.notnull().all().all(), 'Missing values are present: {}'.format(
         completed_population.loc[completed_population.isnull()])
@@ -133,17 +123,27 @@ def apply_transition_matrix(population = None, transition_matrix = None, age_min
     return final_population
 
 
-def check_67_and_over(population):
+def build_suffix(survival_gain_cast = None, mu = None, vagues = None):
+    suffix = survival_gain_cast
+    if mu is not None:
+        suffix += '_mu_{}'.format(mu)
+    if vagues is not None:
+        suffix += slugify.slugify(str(vagues), separator = "_")
+
+    return suffix
+
+
+def check_67_and_over(population, age_min):
     period = population.period.max()
     insee_population = get_insee_projected_population()
     log.info("period {}: insee = {} vs {} = til".format(
         period,
-        insee_population.query('(age >= 67) and (year == @period)')['population'].sum(),
-        population.query('(age >= 67) and (period == @period)')['population'].sum()
+        insee_population.query('(age >= @age_min) and (year == @period)')['population'].sum(),
+        population.query('(age >= @age_min) and (period == @period)')['population'].sum()
         ))
 
 
-def corrrect_transitions(transitions, probability_name = 'calibrated_probability'):
+def correct_transitions(transitions, probability_name = 'calibrated_probability'):
     assert probability_name in transitions.columns, "Column {} not found in transitions columns {}".format(
         probability_name, transitions.columns)
     correction = False
@@ -177,8 +177,10 @@ def corrrect_transitions(transitions, probability_name = 'calibrated_probability
         return transitions
 
 
-def get_initial_population(age_min = None):
+def get_initial_population(age_min = None, period = None, rescale = False):
     assert age_min is not None
+    if rescale:
+        assert period is not None
     data_by_sex = dict()
     for sex in ['male', 'female']:
         sexe = 'homme' if sex == 'male' else 'femme'
@@ -209,20 +211,43 @@ def get_initial_population(age_min = None):
             .assign(sex = sex)
             )
     data = pd.concat(data_by_sex.values()).reset_index()
+
+    if rescale:
+        insee_population = get_insee_projected_population()
+        assert period in insee_population.reset_index().year.unique()
+        rescaled_data = (
+            data.groupby(['sex', 'age'])['population'].sum().reset_index()
+            .merge(
+                (insee_population.query("year == @period")
+                    .reset_index()
+                    .rename(columns = {"population": "insee_population"})
+                    )
+                    ,
+                how = 'left',
+                )
+            .eval("calibration = insee_population / population", inplace = False)
+            )
+
+        data = (data
+            .merge(rescaled_data[['sex', 'age', 'calibration']])
+            .eval("population = calibration *population", inplace = False)
+            )[['sex', 'age', 'initial_state', 'population']].fillna(0).copy()
+
+    assert data.notnull().all().all(), data.notnull().all()
+
     return data
 
 
 def get_population_by_gir(population):
-    from til_france.data.data.hsm_dependance_niveau import get_hsi_hsm_dependance_gir_mapping
     gir = (pd.concat([
             get_hsi_hsm_dependance_gir_mapping(sexe = sexe)
             .assign(sex = 'male' if sexe == 'homme' else 'female')
             for sexe in ['homme', 'femme']
             ])
         .reset_index()
-        .set_index(['age', 'dependance_niveau', 'sex', 'est1_gir_s'])
-        .rename(columns = dict(poids = 'gir'))
-        .unstack('est1_gir_s').fillna(0).reset_index()
+        .set_index(['age', 'dependance_niveau', 'sex', 'gir'])
+        .rename(columns = dict(poids = 'population_gir'))
+        .unstack('gir').fillna(0).reset_index()
         )
 
     # Joining in dependance_niveau = 0 and dependance_niveau = 1
@@ -234,18 +259,20 @@ def get_population_by_gir(population):
 
     population = population.rename(columns = {'initial_state': 'dependance_niveau'})
     population_by_gir = population.merge(gir)
+
     population_by_gir = pd.melt(
         population_by_gir,
         id_vars = ['age', 'dependance_niveau', 'sex', 'period', 'population'],
-        value_vars = ['gir{}'.format(i) for i in range(1, 7)],
+        value_vars = ['population_gir{}'.format(i) for i in range(1, 7)],
         var_name = 'gir',
         )
     population_by_gir['population'] = population_by_gir['population'] * population_by_gir['value']
-    population_by_gir['gir'] = population_by_gir['gir'].str[3]
+    population_by_gir['gir'] = population_by_gir['gir'].str[-1:]
     return population_by_gir
 
 
 def life_expectancy_diagnostic(uncalibrated_transitions = None, initial_period = 2010, age_min = None):
+    assert age_min is not None
     initial_population = get_initial_population(age_min = age_min)
     initial_population['period'] = initial_period
     population = initial_population.copy()
@@ -254,7 +281,6 @@ def life_expectancy_diagnostic(uncalibrated_transitions = None, initial_period =
         period = initial_period,
         dependance_initialisation = population,
         )
-    transitions = corrrect_transitions(transitions)
     delta = 1e-7
     transitions = regularize(
         transition_matrix_dataframe = transitions,
@@ -278,7 +304,7 @@ def life_expectancy_diagnostic(uncalibrated_transitions = None, initial_period =
     life_expectancy_path = os.path.join(figures_directory, 'life_expectancy.txt')
     with open(life_expectancy_path, "w") as text_file:
         for sex in ['male', 'female']:
-            population_sex = population.query('(sex == @sex) & (period - age == 2010 - 65)').copy()
+            population_sex = population.query('(sex == @sex) & (period - age == 2010 - @age_min)').copy()
             population_sex['total'] = population_sex.query('period == 2010').population.sum()
             population_sex['probability'] = population_sex.population / population_sex.total
 
@@ -312,7 +338,7 @@ def life_expectancy_diagnostic(uncalibrated_transitions = None, initial_period =
 #                population_sex
 #                .groupby('age')['probability'].sum()
 #                .reindex(range(65, 120))
-#                .interpolate('cubic')
+#                .interpolate('cubic')population_{}
 #                .sum() - .5
 #                ))
 #            for level in [2, 3, 4]:
@@ -324,25 +350,26 @@ def life_expectancy_diagnostic(uncalibrated_transitions = None, initial_period =
 #                    ))
 
 
-def load_and_plot_dependance_niveau_by_period(survival_gain_cast = None, mu = None, periods = None, area = False):
-    suffix = survival_gain_cast
-    if mu is not None:
-        suffix += '_mu_{}'.format(mu)
+def load_and_plot_dependance_niveau_by_period(survival_gain_cast = None, mu = None, periods = None, area = False,
+          vagues = None):
+    suffix = build_suffix(survival_gain_cast, mu, vagues)
 
     population = pd.read_csv(os.path.join(figures_directory, 'population_{}.csv'.format(suffix)))
     periods = range(2010, 2050, 2) if periods is None else periods
     for period in periods:
-        plot_dependance_niveau_by_age(population, period, age_max = 100, area = area)
+        plot_dependance_niveau_by_age(population, period, age_min = 50, age_max = 100, area = area)
 
 
-def load_and_plot_gir_projections(survival_gain_cast = None, mu = None, age_min = 65):
+def load_and_plot_gir_projections(survival_gain_cast = None, mu = None, age_min = 50, vagues = None):
     assert survival_gain_cast is not None
-    suffix = survival_gain_cast
-    if mu is not None:
-        suffix += '_mu_{}'.format(mu)
+    suffix = build_suffix(survival_gain_cast, mu, vagues)
+    if vagues is not None:
+        vagues_suffix = slugify.slugify(str(vagues), separator = "_")
 
     reference_population = (
-        pd.read_csv(os.path.join(figures_directory, 'population_{}.csv'.format('homogeneous')), index_col = 0)
+        pd.read_csv(
+            os.path.join(figures_directory, 'population_{}{}.csv'.format('homogeneous', vagues_suffix)), index_col = 0
+            )
         .query('age >= @age_min')
         .copy()
         )
@@ -393,11 +420,10 @@ def load_and_plot_gir_projections(survival_gain_cast = None, mu = None, age_min 
     figure.savefig(figure_path_name + ".pdf", bbox_inches = 'tight', format = 'pdf')
 
 
-def load_and_plot_projected_target(survival_gain_cast = None, mu = None, age_min = 65, age_max = 100,
-        initial_states = None, final_states = None):
-    suffix = survival_gain_cast
-    if mu is not None:
-        suffix += '_mu_{}'.format(mu)
+def load_and_plot_projected_target(survival_gain_cast = None, mu = None, age_min = 50, age_max = 100,
+        initial_states = None, final_states = None, vagues = None):
+    suffix = build_suffix(survival_gain_cast, mu, vagues)
+
     transitions = pd.read_csv(os.path.join(figures_directory, 'transitions_{}.csv'.format(suffix)))
     plot_projected_target(
         age_min = age_min,
@@ -414,6 +440,7 @@ def load_and_plot_projected_target(survival_gain_cast = None, mu = None, age_min
 
 
 def load_and_plot_scenarios_difference(survival_gain_cast = None, mu = None, age_min = None):
+    # TODO adapt to vagues
     assert age_min is not None
     suffix = survival_gain_cast
     if mu is not None:
@@ -452,7 +479,8 @@ def load_and_plot_scenarios_difference(survival_gain_cast = None, mu = None, age
     figure.savefig(os.path.join(figures_directory, 'share_diff_proj_pct_{}.pdf'.format(suffix)), bbox_inches = 'tight')
 
 
-def plot_dependance_niveau_by_age(population, period, sexe = None, area = False, pct = True, age_max = None, suffix = None):
+def plot_dependance_niveau_by_age(population, period, sexe = None, area = False, pct = True, age_max = None,
+          age_min = None, suffix = None):
     assert 'period' in population.columns, 'period is not present in population columns: {}'.format(population.columns)
     assert period in population.period.unique()
     data = population.query('period == @period').copy()
@@ -474,7 +502,10 @@ def plot_dependance_niveau_by_age(population, period, sexe = None, area = False,
         )
 
     if age_max:
-        pivot_table = pivot_table.query('age < @age_max').copy()
+        pivot_table = pivot_table.query('age <= @age_max').copy()
+
+    if age_max:
+        pivot_table = pivot_table.query('age >= @age_min').copy()
 
     xlim = [pivot_table.reset_index()['age'].min(), pivot_table.reset_index()['age'].max()]
     ylim = [0, 1]
@@ -551,7 +582,7 @@ def run_calibration(uncalibrated_transitions = None, initial_population = None, 
 
     transitions_by_period = dict()
 
-    while period < 2060:
+    while period < 2058:
         print 'Running period {}'.format(period)
         period = population['period'].max()
         plot_dependance_niveau_by_age(population, period)
@@ -597,7 +628,7 @@ def run_calibration(uncalibrated_transitions = None, initial_population = None, 
             transition_matrix = transitions,
             age_min = age_min,
             )
-        check_67_and_over(iterated_population)
+        check_67_and_over(iterated_population, age_min = age_min + 2)
         iterated_population = add_lower_age_population(population = iterated_population, age_min = age_min)
         population = pd.concat([population, iterated_population])
 
@@ -608,7 +639,7 @@ def save_data_and_graph(uncalibrated_transitions, mu = None, survival_gain_cast 
     assert age_min is not None
     log.info("Running with survival_gain_cast = {}".format(survival_gain_cast))
     initial_period = 2010
-    initial_population = get_initial_population(age_min = age_min)
+    initial_population = get_initial_population(age_min = age_min, rescale = True, period = initial_period)
     initial_population['period'] = initial_period
     population, transitions_by_period = run_calibration(
         uncalibrated_transitions = uncalibrated_transitions,
@@ -617,12 +648,8 @@ def save_data_and_graph(uncalibrated_transitions, mu = None, survival_gain_cast 
         survival_gain_cast = survival_gain_cast,
         age_min = age_min,
         )
-    suffix = survival_gain_cast
-    if mu is not None:
-        suffix += '_mu_{}'.format(mu)
-    if vagues is not None:
-        suffix += slugify.slugify(str(vagues), separator = "_")
 
+    suffix = build_suffix(survival_gain_cast, mu, vagues)
     population_path = os.path.join(figures_directory, 'population_{}.csv'.format(suffix))
     log.info("Saving population data to {}".format(population_path))
     population.to_csv(population_path)
@@ -820,7 +847,7 @@ def plot_share_late(sex = None, age_min = 65):
         unite = 'Effectifs (milliers)'
 
     ax = pivot_table.plot.line(
-        ax=ax,
+        ax = ax,
         linestyle = '-',
         color = ['b', 'g', 'y', 'r'],
         xlim = [2012, 2060],
@@ -838,11 +865,11 @@ def plot_share_late(sex = None, age_min = 65):
     figure.savefig(figure_path_name + ".pdf", bbox_inches = 'tight', format = 'pdf')
 
 
-def run(survival_gain_casts = None, vagues = [4, 5, 6], age_min = None):
+def run(survival_gain_casts = None, uncalibrated_transitions = None, vagues = [4, 5, 6], age_min = None):
     assert age_min is not None
+    assert uncalibrated_transitions is not None
     create_dependance_initialisation_share(smooth = True, survey = 'both', age_min = age_min)
-    formula = 'final_state ~ I((age - 80) * 0.1) + I(((age - 80) * 0.1) ** 2) + I(((age - 80) * 0.1) ** 3)'
-    uncalibrated_transitions = get_transitions_from_formula(formula = formula, vagues = vagues)
+
     # life_expectancy_diagnostic(uncalibrated_transitions = uncalibrated_transitions, initial_period = 2010)
 
     for survival_gain_cast in survival_gain_casts:
@@ -864,27 +891,169 @@ def run(survival_gain_casts = None, vagues = [4, 5, 6], age_min = None):
                 )
 
 
+def graph_transitions_by_label(transitions_by_label, initial_states = None, final_states = None, title = None,
+        age_min = None, age_max = None, title_template = None, legend_title = None):
+
+    for label, transitions in transitions_by_label.iteritems():
+        transitions['period'] = label
+
+    concatenated_transitions= pd.concat(transitions_by_label.values())
+
+    plot_projected_target(
+        age_min = age_min,
+        age_max = age_max,
+        projected_target = concatenated_transitions,
+        years = transitions_by_label.keys(),
+        probability_name = 'probability',
+        french = True,
+        save = True,
+        title = title,
+        initial_states = initial_states,
+        final_states = final_states,
+        title_template = title_template,
+        legend_title = legend_title,
+        )
+
+
+
 if __name__ == '__main__':
     logging.basicConfig(level = logging.INFO, stream = sys.stdout)
     sns.set_style("whitegrid")
-    survival_gain_casts = [
-        'homogeneous'
-        ]
-    run(survival_gain_casts, vagues = [1, 2], age_min = 50)
-    BOUM
-    comparison_share_early_late()
-    # BIM
+
+    STOP
+#
+#    print("til = {} vs insee = {}".format(
+#        data_bis.groupby(['sex']).population.sum() / 1e6,
+#        (insee_population
+#            .query("year == @year")
+#            .query("50 <= age")
+#            .groupby(['sex']).population.sum() / 1e6,
+#            )
+#        ))
+#
+#
+    transitions_by_label = {
+#        "2004-2006": get_transitions_from_formula(formula = formula, vagues = [1, 2]),
+#        "2011-2013-2015": get_transitions_from_formula(formula = formula, vagues = [4, 5, 6]),
+        "Standard": get_transitions_from_file(),
+        "Sans Alzheimer": get_transitions_from_file(alzheimer = 0),
+        "Alzheimer": get_transitions_from_file(alzheimer = 1),
+        }
+
+    graph_transitions_by_label(transitions_by_label, age_min = 65, age_max = 90, title_template = "Effet Alzheimer - {}")
 
 #
-#    plot_share_late(sex = 'male')
-#    BIM
+#        insee_pyramid_data = (insee_population.reset_index()
+#           .query("year == @year")
+#           .query("sex == @sex")
+#            .query("50 <= age <= 100")
+#            .sort_values('age')
+#            )
+#
+#        bar_plot = sns.barplot(
+#            x = "population",
+#            y = "age",
+#            color = "blue",
+#            order = range(100, 49, -1),
+#            data = pyramid_data,
+#            orient = 'h'
+#            )
+#
+#        insee_bar_plot = sns.barplot(
+#            x = "population",
+#            y = "age",
+#            color = "blue",
+#            order = range(100, 49, -1),
+#            data = insee_pyramid_data,
+#            orient = 'h'
+#            )
+#
+#        insee_pyramid_data.set_index(['sex', 'age']) / pyramid_data.set_index(['sex', 'age'])
+#
+#        print("til = {} vs insee = {}".format(
+#            pyramid_data.population.sum() / 1e6,
+#            insee_pyramid_data.population.sum() / 1e6,
+#            ))
+#
+#    BADABOUM
 
 
-    transitions = load_and_plot_projected_target(survival_gain_cast = 'autonomy_vs_disability', mu = 1, age_max = 100)
+    # uncalibrated_transitions = get_transitions_from_file()
+    vagues = [1, 2]
+    formula = 'final_state ~ I((age - 80) * 0.1) + I(((age - 80) * 0.1) ** 2) + I(((age - 80) * 0.1) ** 3)'
+    uncalibrated_transitions = get_transitions_from_formula(formula = formula, vagues = vagues)
+
+    survival_gain_casts = [
+        'homogeneous',
+        ]
+    run(survival_gain_casts, uncalibrated_transitions = uncalibrated_transitions, vagues = vagues, age_min = 50)
+    BOUM
+
+    load_and_plot_gir_projections(survival_gain_cast = 'homogeneous', vagues = [4, 5, 6], age_min = 60)
     BAM
-    load_and_plot_summary()
+
+    comparison_share_early_late()
     BIM
-    BIM
-    load_and_plot_dependance_niveau_by_period(survival_gain_cast = 'homogeneous', periods = None, area = True)
+
+
+#
+    plot_share_late(sex = 'female')
+#    BIM
+    transitions = load_and_plot_projected_target(
+        survival_gain_cast = 'homogeneous',
+        age_min = 50,
+        age_max = 120,
+        vagues = [4, 5, 6],
+        )
+    BAM
+    load_and_plot_dependance_niveau_by_period(survival_gain_cast = 'homogeneous', periods = None, area = True, vagues = [4, 5, 6])
 
     BIM
+    transitions_by_label = {
+        "Standard": get_transitions_from_file(),
+        "Sans Alzheimer": get_transitions_from_file(alzheimer = 0),
+        "Alzheimer": get_transitions_from_file(alzheimer = 1),
+        }
+
+    graph_transitions_by_label(
+        transitions_by_label,
+        age_min = 65,
+        age_max = 90,
+        title_template = "Effet Alzheimer - {}",
+        legend_title = "",
+        initial_states = [0, 1],
+        final_states = [0, 1, 2, 4],
+        )
+
+    formula = 'final_state ~ I((age - 80) * 0.1) + I(((age - 80) * 0.1) ** 2) + I(((age - 80) * 0.1) ** 3)'
+    transitions_by_label = {
+        "2004-2006": get_transitions_from_formula(formula = formula, vagues = [1, 2], age_min = 50, age_max = 100),
+        "2011-2013-2015": get_transitions_from_formula(formula = formula, vagues = [4, 5, 6], age_min = 50, age_max = 100),
+        }
+
+    graph_transitions_by_label(
+        transitions_by_label,
+        age_min = 50,
+        age_max = 95,
+        title_template = "Effet vagues SHARE- {}",
+        legend_title = "Vagues",
+        initial_states = [0],
+#        final_states = [0, 1, 2, 4],
+        )
+
+
+    transitions_by_label = {
+        "Standard": get_transitions_from_file(),
+        "Mémoire": get_transitions_from_file(memory = True),
+        }
+
+    graph_transitions_by_label(
+        transitions_by_label,
+        age_min = 50,
+        age_max = 95,
+        title_template = u"Effet mémoire - {}",
+        legend_title = u"Spécifications",
+#        initial_states = [0],
+#        final_states = [0, 1, 2, 4],
+        )
+

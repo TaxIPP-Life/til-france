@@ -41,7 +41,7 @@ assets_path = os.path.join(
 config = Config()
 data_path = os.path.join(
     config.get('raw_data', 'share'),
-    'base_microsimu2.csv',
+    'share_data_for_microsimulation.csv',
     )
 
 
@@ -75,18 +75,25 @@ def get_clean_share(extra_variables = None):
     """
     Get SHARE relevant data free of missing observations
     """
+    death_state = 4
     if extra_variables is None:
         extra_variables = list()
     df = pd.read_csv(data_path)
 
     log.debug("Share data contains the following variables: {}".format(df.columns))
 
-    df = df.rename(columns = {
+    renaming = {
         'scale': 'initial_state',
         'mergeid': 'id',
         'year_int': 'year',
-        'age_int_new': 'age',
-        })
+        'age_int': 'age',
+        }
+    assert set(renaming.keys()) < set(df.columns)
+    df = (df
+      .rename(columns = renaming)
+      # .query('initial_state != @death_state')
+      .copy()
+      )
     # 'male, sexe == 1'
     # 'female, sexe == 2'
     df['sexe'] = df.male + 2 * (df.male == 0)
@@ -371,15 +378,73 @@ def get_formatted_params_by_initial_state(formula = None, variables = None):
     return formatted_params_by_initial_state
 
 
+def get_transitions_from_file(alzheimer = None, memory = False):
+
+    directory = os.path.join(
+        config.get('raw_data', 'share'),
+        '..',
+        'Sorties',
+        'Final'
+        )
+    if alzheimer is not None:
+        assert alzheimer in [0, 1]
+        filename = 'predict_alzheimer.csv'
+    elif memory:
+        filename = 'predict_specif2.csv'
+    else:
+        filename = 'predict_benchmark.csv'
+
+    df = pd.read_csv(os.path.join(directory, filename), sep = ";", decimal = ',')
+    if alzheimer is not None:
+        assert set(df.alzheimer.unique()) == set([0, 1])
+        df = df.query('alzheimer == @alzheimer').drop('alzheimer', axis = 1)
+
+    age_max = df.age[df.age.str.isnumeric()].unique().max()
+    df.replace(
+        {'age':
+            {age_max + '+': int(age_max) + 1}
+            },
+        inplace = True)
+    df['age'] = df.age.astype(int)
+    df = df.dropna()
+    df['sex'] = 'male'
+    # 'male, sexe == 1'
+    # 'female, sexe == 2'
+    df.loc[df.sexe == 2, 'sex'] = 'female'
+    del df['sexe']
+    df.rename(
+        columns = {
+            'etat_initial': 'initial_state',
+            'etat_final': 'final_state',
+            },
+        inplace = True,
+        )
+    edge_age = int(age_max) + 1
+    large_age_extension = pd.concat([
+        df.query('age == @edge_age').assign(age = i).copy()
+        for i in range(edge_age, 121)
+        ])
+
+    df = pd.concat([df, large_age_extension])
+    df = df[['sex', 'age', 'initial_state', 'final_state', 'probability']].sort_values(
+            ['sex', 'age', 'initial_state', 'final_state']
+            )
+    return df.set_index(['sex', 'age', 'initial_state', 'final_state'])
+
 if __name__ == '__main__':
 
     logging.basicConfig(level = logging.DEBUG, stream = sys.stdout)
 
-    # df = get_clean_share()
-    # sex = None
-    # initial_state = 1
-    # sample = build_estimation_sample(initial_state, sex = sex)
-    # BIM
+    df = get_transitions_from_file(alzheimer = 0)
+
+
+    BIM
+
+    df = get_clean_share()
+    sex = 'male'
+    initial_state = 1
+    sample = build_estimation_sample(initial_state, sex = sex)
+    BIM
 
     sex = None
     formula = 'final_state ~ I((age - 80)) + I(((age - 80))**2) + I(((age - 80))**3)'

@@ -188,7 +188,11 @@ def create_dependance_initialisation_share(filename_prefix = None, smooth = Fals
         level_pivot_table.fillna(0, inplace = True)
 
         if smooth:
-            pivot_table = smooth_pivot_table(pivot_table, window = window, std = std)
+            smoothed_pivot_table = smooth_pivot_table(pivot_table, window = window, std = std)
+            # The windowing NaNifies some values on the edge age = age_min, we reuse the rough data for those ages
+            smoothed_pivot_table.update(pivot_table, overwrite = False)
+            pivot_table = smoothed_pivot_table.copy()
+            del smoothed_pivot_table
 
         level_pivot_table.to_csv(filename, index = False)
         log.info('Saving {}'.format(filename))
@@ -211,7 +215,7 @@ def create_dependance_initialisation_share(filename_prefix = None, smooth = Fals
             pivot_table.fillna(0, inplace = True)
             pivot_table.loc[pivot_table.age < age_min, 0] = 1
             pivot_table.set_index('age', inplace = True)
-            pivot_table.loc[pivot_table.sum(axis = 1) == 0, 4] = 1
+            pivot_table.loc[pivot_table.sum(axis = 1) == 0, scale - 1] = 1
             pivot_table.to_csv(filename, header = False)
             assert ((pivot_table.sum(axis = 1) - 1).abs() < 1e-15).all(), \
                 pivot_table.sum(axis = 1).loc[((pivot_table.sum(axis = 1) - 1).abs() > 1e-15)]
@@ -313,22 +317,34 @@ def get_hsi_hsm_prevalence_pivot_table(sexe = None, scale = None):
         )
 
 
-def get_hsm_dependance_gir_mapping(sexe = None):
+def get_hsm_dependance_gir_mapping(sexe = None, scale = 4):
     config = Config()
-    xls_path = os.path.join(config.get('raw_data', 'hsm_dependance_niveau'), 'desc_dependance_scale5_gir.xls')
+    assert scale in [4, 5]
+    if scale == 5:
+        filename = 'desc_dependance_scale5_gir.xls'
+    else:
+        filename = 'desc_dependance_scale4_HSM_20180525.xls'
+
+    xls_path = os.path.join(config.get('raw_data', 'hsm_dependance_niveau'), filename)
     data = pd.read_excel(xls_path)
-    log.debug('Droping NA values {}'.format(data.loc[data.est1_gir_s.isnull()]))
+    log.debug('Droping NA values {}'.format(data.loc[data.est1gir.isnull()]))
     data = (data
         .dropna()
         .astype({
-            'est1_gir_s': int,
-            'est2_gir_s': int,
+#            'est1_gir_s': int,
+#            'est2_gir_s': int,
+            'est1gir': int,
+            'est2gir': int,
             })
         .rename(columns = {
             'Age': 'age',
             'Sexe': 'sexe',
             'Scale5': 'dependance_niveau',
+            'Scale4': 'dependance_niveau',
             'Poids': 'poids_hsm',
+            'poids': 'poids_hsm',
+            'est1gir': 'gir',
+            'femme': 'sexe',
             #   est1_gir_s	est2_gir_s
         })
         )
@@ -336,28 +352,41 @@ def get_hsm_dependance_gir_mapping(sexe = None):
     assert sexe in ['homme', 'femme']
     sexe = 1 if sexe == 'femme' else 0
     assert sexe in data.sexe.unique(), "sexe should be in {}".format(data.sexe.unique().tolist())
-    pivot_table = (data[['dependance_niveau', 'est1_gir_s', 'poids_hsm', 'age', 'sexe']]
+    pivot_table = (data[['dependance_niveau', 'gir', 'poids_hsm', 'age', 'sexe']]
         .query('sexe == @sexe')
-        .groupby(['age', 'dependance_niveau', 'est1_gir_s'])['poids_hsm'].sum().reset_index()
-        .sort_values(['age', 'dependance_niveau', 'est1_gir_s'])
+        .groupby(['age', 'dependance_niveau', 'gir'])['poids_hsm'].sum().reset_index()
+        .sort_values(['age', 'dependance_niveau', 'gir'])
         )
 
     return pivot_table.copy()
 
 
-def get_hsi_dependance_gir_mapping(sexe = None):
+def get_hsi_dependance_gir_mapping(sexe = None, scale = 4):
+    assert scale in [4, 5]
     config = Config()
-    xls_path = os.path.join(config.get('raw_data', 'hsm_dependance_niveau'), 'hsi_desc_dependance_scale5_gir.xls')
+    if scale == 5:
+        filename = 'hsi_desc_dependance_scale5_gir.xls'
+    else:
+        filename = 'desc_dependance_scale4_HSI_20180525.xls'
+
+    xls_path = os.path.join(config.get('raw_data', 'hsm_dependance_niveau'), filename)
     data = pd.read_excel(xls_path)
     log.debug('Droping NA values {}'.format(data.loc[data.age.isnull()]))
+    print data.columns
     data = (data
         .dropna()
         .astype({
-            'est1_gir_s': int,
-            'est2_gir_s': int,
+#            'est1_gir_s': int,
+#            'est2_gir_s': int,
+            'est1gir': int,
+            'est2gir': int,
+
             })
         .rename(columns = {
             'scale5_c': 'dependance_niveau',
+            'scale4': 'dependance_niveau',
+            'est1gir': 'gir',
+            'femme': 'sexe',
             #   est1_gir_s	est2_gir_s
         })
         )
@@ -365,10 +394,10 @@ def get_hsi_dependance_gir_mapping(sexe = None):
     assert sexe in ['homme', 'femme']
     sexe = 1 if sexe == 'femme' else 0
     assert sexe in data.sexe.unique(), "sexe should be in {}".format(data.sexe.unique().tolist())
-    pivot_table = (data[['dependance_niveau', 'est1_gir_s', 'poids_hsi', 'age', 'sexe']]
+    pivot_table = (data[['dependance_niveau', 'gir', 'poids_hsi', 'age', 'sexe']]
         .query('sexe == @sexe')
-        .groupby(['age', 'dependance_niveau', 'est1_gir_s'])['poids_hsi'].sum().reset_index()
-        .sort_values(['age', 'dependance_niveau', 'est1_gir_s'])
+        .groupby(['age', 'dependance_niveau', 'gir'])['poids_hsi'].sum().reset_index()
+        .sort_values(['age', 'dependance_niveau', 'gir'])
         )
 
     return pivot_table.copy()
@@ -377,11 +406,11 @@ def get_hsi_dependance_gir_mapping(sexe = None):
 def get_hsi_hsm_dependance_gir_mapping(sexe = None):
     return (get_hsi_dependance_gir_mapping(sexe = sexe)
         .rename(columns = {'poids_hsi': 'poids'})
-        .set_index(['age', 'dependance_niveau', 'est1_gir_s'])
+        .set_index(['age', 'dependance_niveau', 'gir'])
         .add(
             (get_hsm_dependance_gir_mapping(sexe = sexe)
                 .rename(columns = {'poids_hsm': 'poids'})
-                .set_index(['age', 'dependance_niveau', 'est1_gir_s'])
+                .set_index(['age', 'dependance_niveau', 'gir'])
                 ),
             fill_value = 0,
             )
@@ -409,15 +438,15 @@ def get_paquid_prevalence_pivot_table(sexe = None, year_max = None, year_min = N
     return pivot_table
 
 
-def plot_prevalence(save_figure = False, smooth = False, window = 7, std = 2, age_min = 65, survey = 'hsm'):
+def plot_prevalence(save_figure = False, smooth = False, window = 7, std = 2, age_min = 50, survey = 'hsm', scale = 4):
     assert survey in ['hsm', 'both']
     for sexe in ['homme', 'femme']:
         if survey == 'hsm':
-            pivot_table = get_hsm_prevalence_pivot_table(sexe = sexe)
+            pivot_table = get_hsm_prevalence_pivot_table(sexe = sexe, scale = scale)
             title = u"HSM: Prévalence par âge des {}s".format(sexe)
             filename = 'dependance_niveau_hsm_{}.png'.format(sexe)
         else:
-            pivot_table = get_hsi_hsm_prevalence_pivot_table(sexe = sexe)
+            pivot_table = get_hsi_hsm_prevalence_pivot_table(sexe = sexe, scale = scale)
             title = u"HSM/HSI: Prévalence par âge des {}s".format(sexe)
             filename = 'dependance_niveau_hsm_hsi_{}.png'.format(sexe)
 
@@ -494,13 +523,13 @@ def diagnostic_prevalence():
 if __name__ == "__main__":
     logging.basicConfig(level = logging.DEBUG, stream = sys.stdout)
 
-    pivot_table = create_dependance_initialisation_share(smooth = False, survey = 'both', age_min = 50)
-    print pivot_table
-    BIM
 
-    smoothed_pivot_table  = smooth_pivot_table(pivot_table, window = 7, std = 2)
-    BIM
-    #
+    df = get_hsi_dependance_gir_mapping(sexe = 'homme', scale = 4)
+
+    STOP
+    pivot_table = create_dependance_initialisation_share(smooth = True, survey = 'both', age_min = 50)
+    print pivot_table
+
     plot_prevalence(smooth = True, survey = 'both')
 
     boum

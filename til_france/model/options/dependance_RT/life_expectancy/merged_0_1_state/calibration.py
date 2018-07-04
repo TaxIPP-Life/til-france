@@ -1135,7 +1135,7 @@ if __name__ == '__main__':
             .merge(initial_population, on = ['sex', 'age'], how = 'left')
             .eval('population = population * part', inplace = False)
             .drop('part', axis = 1))
-        population_65_66[['sex', 'age',  'period', 'initial_state', 'population']]
+        population_65_66[['sex', 'age', 'period', 'initial_state', 'population']]
 
         completed_population = pd.concat([population_65_66, population]).sort_values(
             ['period', 'age', 'sex', 'initial_state'])

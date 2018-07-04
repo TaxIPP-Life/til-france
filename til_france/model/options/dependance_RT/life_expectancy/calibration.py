@@ -969,7 +969,7 @@ def get_insee_projected_population():
 
 def plot_projected_target(age_max = 100, age_min = 60, projected_target = None, sex = None,
         title = None, title_template = None, years = None, probability_name = 'periodized_calibrated_probability',
-        initial_states = None, final_states = None, french = False, save = True):
+        initial_states = None, final_states = None, french = False, save = True, legend_title = None):
 
     assert projected_target is not None
     assert probability_name in projected_target.columns, '{} not found in columns: {}'.format(
@@ -1029,10 +1029,13 @@ def plot_projected_target(age_max = 100, age_min = 60, projected_target = None, 
             # grid.set_titles(template = r"${row_name} \rightarrow {col_name}$")
             grid.set_titles(template = "{row_name} -> {col_name}")
             grid.map(plt.plot, u"Âge", u"Probabilité")
-            grid.add_legend(title = u"Années")
+            if legend_title is None:
+                legend_title = u"Années"
+            grid.add_legend(title = legend_title)
             plt.subplots_adjust(top = 0.75)
             if title_template:
-                title = title_template.format(sex)
+                title = title_template.format("Homme" if sex == 'male' else 'Femme')
+                fig_title = title
             elif title is not None:
                 fig_title = "{} (sexe = {})".format(title, "Homme" if sex == 'male' else 'Femme')
             else:
@@ -1051,9 +1054,11 @@ def plot_projected_target(age_max = 100, age_min = 60, projected_target = None, 
         if save:
             # if filename is None:
             filename = slugify(fig_title, separator = '_')
+            config = Config()
+            figures_directory = config.get('dependance', 'figures_directory')
             log.info("Saving matrix transitions graph to file {}".format(os.path.abspath(filename)))
-            grid.savefig(filename + ".png")
-            grid.savefig(filename + ".pdf")
+            grid.savefig(os.path.join(figures_directory, filename + ".png"))
+            grid.savefig(os.path.join(figures_directory, filename + ".pdf"))
 
     return grids if (len(grids) > 1) else grid
 
