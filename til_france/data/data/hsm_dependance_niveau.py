@@ -159,7 +159,7 @@ def create_dependance_initialisation_merged_0_1(filename_prefix = None, smooth =
 
 
 def create_dependance_initialisation_share(filename_prefix = None, smooth = False, window = 7, std = 2,
-        survey = 'hsm', age_min = None, scale = 4):
+        survey = 'care', age_min = None, scale = 4):
     """
     Create dependance_niveau variable initialisation file for use in til-france model (option dependance_RT)
     """
@@ -167,13 +167,14 @@ def create_dependance_initialisation_share(filename_prefix = None, smooth = Fals
     assert age_min is not None
     config = Config()
     input_dir = config.get('til', 'input_dir')
-    assert survey in ['both', 'hsm']
+    assert survey in ['care', 'hsm', 'hsm_hsi']
     for sexe in ['homme', 'femme']:
         if survey == 'hsm':
             pivot_table = get_hsm_prevalence_pivot_table(sexe = sexe, scale = 4)
-        else:
+        elif survey == 'hsm_hsi':
             pivot_table = get_hsi_hsm_prevalence_pivot_table(sexe = sexe, scale = 4)
-
+        elif: survey == 'care':
+            pivot_table =  get_care_prevalence_pivot_table(sexe = sexe, scale = 4)   
 
         if filename_prefix is None:
             filename = os.path.join(input_dir, 'dependance_initialisation_level_share_{}.csv'.format(sexe))

@@ -1144,7 +1144,7 @@ if __name__ == '__main__':
         return completed_population
 
 
-    def run_calibration(uncalibrated_transitions = None, initial_population = None, initial_period = 2010, mu = None,
+    def run_scenario(uncalibrated_transitions = None, initial_population = None, initial_period = 2010, mu = None,
             variant = None):
 
         initial_population['period'] = initial_period
@@ -1265,7 +1265,7 @@ if __name__ == '__main__':
         initial_period = 2010
         initial_population = get_initial_population()
         initial_population['period'] = initial_period
-        population = run_calibration(
+        population = run_scenario(
             uncalibrated_transitions = uncalibrated_transitions,
             initial_population = initial_population,
             mu = mu,

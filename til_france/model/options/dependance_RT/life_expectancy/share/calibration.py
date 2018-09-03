@@ -75,10 +75,10 @@ def correct_transitions_for_mortality(transitions, dependance_initialisation = N
             .rename(columns = {'final_state': 'initial_state'})
             .copy()
             )
+            
     actual_mortality['part'] = (
         (
-            actual_mortality / actual_mortality.groupby(['age', 'sex'])
-            .transform(sum)
+            actual_mortality / actual_mortality.groupby(['age', 'sex']).transform(sum)
             )['population']
         .fillna(1)  # Kill all non dying
         )
@@ -384,7 +384,8 @@ def correct_transitions_for_mortality(transitions, dependance_initialisation = N
 
 def initial_vs_others(period = None, mortality = None, mu = None, uncalibrated_probabilities = None):
     """
-    Gain in survival probability feeds by a proportion of mu the initial_state and 1 - mu the other states
+    Gain in survival probability feeds by a proportion of mu the transition probability towards the initial_state 
+    and 1 - mu transition probability towards the other states
     """
     assert period is not None
     death_state = 4
@@ -784,14 +785,13 @@ def get_mortality_after_imputation(mortality_table = None, dependance_initialisa
             how = 'inner',
             )
         .groupby(['sex', 'age'])[['total', 'mortality']].apply(lambda x: (
-            (x.total * x.mortality).sum() / (x.total.sum() + (x.total.sum() == 0))
+            (x.total * x.mortality).sum() / (x.total.sum() + (x.total.sum() == 0))  # Use last term to avoid 0 / 0
             ))
         )
 
     mortality_after_imputation.name = 'mortality_after_imputation'
 
-    if (mortality_after_imputation == 0).any():
-
+    if (mortality_after_imputation == 0).any():  # Deal with age > 100 with nobody in the population
         mortality_after_imputation = mortality_after_imputation.reset_index()
         mortality_after_imputation.loc[
             (mortality_after_imputation.age >= 100) & (mortality_after_imputation.mortality_after_imputation == 0),

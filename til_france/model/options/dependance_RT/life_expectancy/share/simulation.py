@@ -559,7 +559,7 @@ def plot_dependance_niveau_by_period(population, period, sexe = None, area = Fal
 #    ax.xaxis.set_major_locator(MaxNLocator(integer=True))
 
 
-def run_calibration(uncalibrated_transitions = None, initial_population = None, initial_period = 2010, mu = None,
+def run_scenario(uncalibrated_transitions = None, initial_population = None, initial_period = 2010, mu = None,
         survival_gain_cast = None, age_min = None):
 
     initial_population['period'] = initial_period
@@ -585,7 +585,7 @@ def run_calibration(uncalibrated_transitions = None, initial_population = None, 
     while period < 2058:
         print 'Running period {}'.format(period)
         period = population['period'].max()
-        plot_dependance_niveau_by_age(population, period)
+        # plot_dependance_niveau_by_age(population, period)
         if period > initial_period:
             dependance_initialisation = population.query('period == @period').copy()
             # Update the transitions matrix if necessary
@@ -641,7 +641,7 @@ def save_data_and_graph(uncalibrated_transitions, mu = None, survival_gain_cast 
     initial_period = 2010
     initial_population = get_initial_population(age_min = age_min, rescale = True, period = initial_period)
     initial_population['period'] = initial_period
-    population, transitions_by_period = run_calibration(
+    population, transitions_by_period = run_scenario(
         uncalibrated_transitions = uncalibrated_transitions,
         initial_population = initial_population,
         mu = mu,
@@ -868,8 +868,7 @@ def plot_share_late(sex = None, age_min = 65):
 def run(survival_gain_casts = None, uncalibrated_transitions = None, vagues = [4, 5, 6], age_min = None):
     assert age_min is not None
     assert uncalibrated_transitions is not None
-    create_dependance_initialisation_share(smooth = True, survey = 'both', age_min = age_min)
-
+    create_dependance_initialisation_share(smooth = True, survey = 'care', age_min = age_min)
     # life_expectancy_diagnostic(uncalibrated_transitions = uncalibrated_transitions, initial_period = 2010)
 
     for survival_gain_cast in survival_gain_casts:

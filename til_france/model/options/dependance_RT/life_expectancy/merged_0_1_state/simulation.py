@@ -507,7 +507,7 @@ def plot_dependance_niveau_by_period(population, period, sexe = None, area = Fal
 #    ax.xaxis.set_major_locator(MaxNLocator(integer=True))
 
 
-def run_calibration(uncalibrated_transitions = None, initial_population = None, initial_period = 2010, mu = None,
+def run_scenario(uncalibrated_transitions = None, initial_population = None, initial_period = 2010, mu = None,
         survival_gain_cast = None):
 
     initial_population['period'] = initial_period
@@ -591,7 +591,7 @@ def save_data_and_graph(uncalibrated_transitions, mu = None, survival_gain_cast 
     initial_period = 2010
     initial_population = get_initial_population()
     initial_population['period'] = initial_period
-    population, transitions_by_period = run_calibration(
+    population, transitions_by_period = run_scenario(
         uncalibrated_transitions = uncalibrated_transitions,
         initial_population = initial_population,
         mu = mu,
