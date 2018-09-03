@@ -173,7 +173,7 @@ def create_dependance_initialisation_share(filename_prefix = None, smooth = Fals
             pivot_table = get_hsm_prevalence_pivot_table(sexe = sexe, scale = 4)
         elif survey == 'hsm_hsi':
             pivot_table = get_hsi_hsm_prevalence_pivot_table(sexe = sexe, scale = 4)
-        elif: survey == 'care':
+        elif survey == 'care':
             pivot_table =  get_care_prevalence_pivot_table(sexe = sexe, scale = 4)   
 
         if filename_prefix is None:
@@ -275,6 +275,32 @@ def get_hsi_prevalence_pivot_table(sexe = None, scale = None):
         )
 
     return pivot_table.copy()
+
+def get_care_prevalence_pivot_table(sexe = None, scale = None):
+    config = Config()
+    assert scale in [4, 5], "scale should be equal to 4 or 5"
+    xls_path = os.path.join(
+            config.get('raw_data', 'hsm_dependance_niveau'), 'CARe_scalev1v2.xls')
+    data = (pd.read_excel(xls_path)
+            .rename(columns = {
+                'scale_v1': 'dependance_niveau',
+                'femme': 'sexe',
+                })
+            )
+
+    assert sexe in ['homme', 'femme']
+    sexe = 1 if sexe == 'femme' else 0
+    assert sexe in data.sexe.unique(), "sexe should be in {}".format(data.sexe.unique().tolist())
+    pivot_table = (data[['dependance_niveau', 'poids_care', 'age', 'sexe']]
+        .query('sexe == @sexe')
+        .groupby(['dependance_niveau', 'age'])['poids_care'].sum().reset_index()
+        .pivot('age', 'dependance_niveau', 'poids_care')
+        .replace(0, np.nan)  # Next three lines to remove all 0 columns
+        .dropna(how = 'all', axis = 1)
+        .replace(np.nan, 0)
+        )
+
+    return pivot_table
 
 
 def get_hsm_prevalence_pivot_table(sexe = None, scale = None):
