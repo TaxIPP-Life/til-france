@@ -123,12 +123,14 @@ def apply_transition_matrix(population = None, transition_matrix = None, age_min
     return final_population
 
 
-def build_suffix(survival_gain_cast = None, mu = None, vagues = None):
+def build_suffix(survival_gain_cast = None, mu = None, vagues = None, survey = None):
     suffix = survival_gain_cast
     if mu is not None:
         suffix += '_mu_{}'.format(mu)
     if vagues is not None:
         suffix += slugify.slugify(str(vagues), separator = "_")
+    if survey is not None:
+        suffix += '_survey_{}'.format(mu)
 
     return suffix
 
