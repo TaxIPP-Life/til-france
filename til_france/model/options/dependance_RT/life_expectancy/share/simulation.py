@@ -130,7 +130,7 @@ def build_suffix(survival_gain_cast = None, mu = None, vagues = None, survey = N
     if vagues is not None:
         suffix += slugify.slugify(str(vagues), separator = "_")
     if survey is not None:
-        suffix += '_survey_{}'.format(mu)
+        suffix += '_{survey}_'.format(survey = survey)
 
     return suffix
 
@@ -650,8 +650,7 @@ def save_data_and_graph(uncalibrated_transitions, mu = None, survival_gain_cast 
         survival_gain_cast = survival_gain_cast,
         age_min = age_min,
         )
-
-    suffix = build_suffix(survival_gain_cast, mu, vagues)
+    suffix = build_suffix(survival_gain_cast, mu, vagues, survey)
     population_path = os.path.join(figures_directory, 'population_{}.csv'.format(suffix))
     log.info("Saving population data to {}".format(population_path))
     population.to_csv(population_path)
@@ -987,6 +986,7 @@ if __name__ == '__main__':
     survival_gain_casts = [
         'homogeneous',
         ]
+    survey = care
     run(survival_gain_casts, uncalibrated_transitions = uncalibrated_transitions, vagues = vagues, age_min = 50)
     BOUM
 
