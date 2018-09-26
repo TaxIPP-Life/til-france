@@ -138,13 +138,19 @@ def build_suffix(survival_gain_cast = None, mu = None, vagues = None, survey = N
 def check_67_and_over(population, age_min):
     period = population.period.max()
     insee_population = get_insee_projected_population()
+    pop_insee = insee_population.query('(age >= @age_min) and (year == @period)')['population'].sum()
+    pop_sim = population.query('(age >= @age_min) and (period == @period)')['population'].sum()
     log.info("period {}: insee = {} vs {} = til".format(
         period,
         insee_population.query('(age >= @age_min) and (year == @period)')['population'].sum(),
         population.query('(age >= @age_min) and (period == @period)')['population'].sum()
         ))
+    log.info("period {}: insee - til = {}".format(
+        period,
+        pop_insee - pop_sim   
+))
 
-
+    
 def correct_transitions(transitions, probability_name = 'calibrated_probability'):
     assert probability_name in transitions.columns, "Column {} not found in transitions columns {}".format(
         probability_name, transitions.columns)
@@ -920,7 +926,7 @@ if __name__ == '__main__':
     logging.basicConfig(level = logging.INFO, stream = sys.stdout)
     sns.set_style("whitegrid")
 
-    STOP
+    #STOP
 #
 #    print("til = {} vs insee = {}".format(
 #        data_bis.groupby(['sex']).population.sum() / 1e6,
@@ -986,8 +992,8 @@ if __name__ == '__main__':
     survival_gain_casts = [
         'homogeneous',
         ]
-    survey = care
-    run(survival_gain_casts, uncalibrated_transitions = uncalibrated_transitions, vagues = vagues, age_min = 50)
+    #survey = care
+    run(survival_gain_casts, uncalibrated_transitions = uncalibrated_transitions, vagues = vagues, age_min = 60)
     BOUM
 
     load_and_plot_gir_projections(survival_gain_cast = 'homogeneous', vagues = [4, 5, 6], age_min = 60)
