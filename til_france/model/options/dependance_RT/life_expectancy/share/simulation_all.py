@@ -322,6 +322,8 @@ def get_care_prevalence_pivot_table(sexe = None, scale = None):
         )
 
     return pivot_table
+
+    
 ## get_initial_population : Fonction dont l'output est la table data (variables : periode  | age      | initial_state | population    | sex)
 
 def get_initial_population(survey = 'care'):
@@ -358,6 +360,40 @@ def get_initial_population(survey = 'care'):
 
 
 #################  Mortalites calibrees
+
+def correct_transitions(transitions, probability_name = 'calibrated_probability'):
+    assert probability_name in transitions.columns, "Column {} not found in transitions columns {}".format(
+        probability_name, transitions.columns)
+    correction = False
+    if correction:
+        central_age = 93
+        width = 2
+
+        transitions = transitions.copy().rename(columns = {probability_name: 'calibrated_probability'})
+
+        corrections = transitions.query('(initial_state == 3) & (final_state == 4)').copy()
+        corrections.eval('factor = (1 + tanh( (age- @central_age) / @width)) / 2', inplace = True)
+        corrections.eval('calibrated_probability = factor * calibrated_probability + 0 * (1 - factor)', inplace = True)
+
+        transitions.update(corrections)
+
+        corrections_3_3 = (1 - (
+            transitions
+                .query('(initial_state == 3) and (final_state != 3)')
+                .groupby(['period', 'sex', 'age', 'initial_state'])['calibrated_probability'].sum()
+                )).reset_index()
+
+        corrections_3_3['final_state'] = 3
+        corrections_3_3 = corrections_3_3.set_index(['period', 'sex', 'age', 'initial_state', 'final_state'])
+        transitions.update(corrections_3_3)
+        #    transitions.query(
+        #        "(period == 2012) and (sex == 'male') and (age <= 100) and (initial_state == 3) and (final_state == 3)"
+        #        ).plot(y = ['calibrated_probability'])
+        return transitions.rename(columns = {'calibrated_probability': probability_name})
+
+    else:
+        return transitions
+
 
 def build_mortality_calibrated_target_from_transitions(transitions = None, period = None, dependance_initialisation = None,
        age_min = None):
