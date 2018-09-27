@@ -6,6 +6,11 @@ Created on Wed Sep 26 14:59:09 2018
 """
 
 
+import logging
+import matplotlib.pyplot as plt
+import numpy as np
+import os
+import pandas as pd
 import seaborn as sns
 import slugify
 import sys
@@ -236,7 +241,7 @@ def create_initial_prevalence(filename_prefix = None, smooth = False, window = 7
             pivot_table =  get_care_prevalence_pivot_table(sexe = sexe, scale = 4)   
 
         if filename_prefix is None:
-            filename = os.path.join(input_dir, 'dependance_prevalence_level_share_{}.csv'.format(sexe)) #'dependance_initialisation_level_share_{}.csv'
+            filename = os.path.join(input_dir, 'dependance_initialisation_level_{}_{}.csv'.format(survey, sexe)) # dependance_initialisation_level_share_{} 
         else:
             filename = os.path.join('{}_level_{}_{}.csv'.format(filename_prefix, survey, sexe))
         level_pivot_table = (pivot_table.copy()
@@ -260,9 +265,9 @@ def create_initial_prevalence(filename_prefix = None, smooth = False, window = 7
         # Go from levels to pct
         pivot_table = pivot_table.divide(pivot_table.sum(axis=1), axis=0)
         if filename_prefix is None:
-            filename = os.path.join(input_dir, 'dependance_initialisation_share_{}.csv'.format(sexe))
+            filename = os.path.join(input_dir, 'dependance_initialisation_{}_{}.csv'.format(survey,sexe)) 
         else:
-            filename = os.path.join('{}_{}_{}.csv'.format(filename_prefix, survey, sexe))
+            filename = os.path.join('{}_{}_{}.csv'.format(filename_prefix, survey, sexe)) #survey insere dans le nom du doc
 
         if filename is not None:
             pivot_table = (pivot_table
@@ -296,22 +301,36 @@ def get_care_prevalence_pivot_table(sexe = None, scale = None):
     config = Config()
     assert scale in [4, 5], "scale should be equal to 4 or 5"
     xls_path = os.path.join(
-            config.get('raw_data', 'hsm_dependance_niveau'), 'CARe_scalev1v2.xls')
+            config.get('raw_data', 'hsm_dependance_niveau'),'CARe_scalev1v2.xls')
     data = (pd.read_excel(xls_path)
             .rename(columns = {
                 'scale_v1': 'dependance_niveau',
                 'femme': 'sexe',
                 })
             )
+    
+    assert sexe in ['homme', 'femme']
+    sexe = 1 if sexe == 'femme' else 0
+    assert sexe in data.sexe.unique(), "sexe should be in {}".format(data.sexe.unique().tolist())
+    pivot_table = (data[['dependance_niveau', 'poids_care', 'age', 'sexe']]
+        .query('sexe == @sexe')
+        .groupby(['dependance_niveau', 'age'])['poids_care'].sum().reset_index()
+        .pivot('age', 'dependance_niveau', 'poids_care')
+        .replace(0, np.nan)  # Next three lines to remove all 0 columns
+        .dropna(how = 'all', axis = 1)
+        .replace(np.nan, 0)
+        )
+
+    return pivot_table
 ## get_initial_population : Fonction dont l'output est la table data (variables : periode  | age      | initial_state | population    | sex)
 
-def get_initial_population():
+def get_initial_population(survey = 'care'):
         data_by_sex = dict()
         for sex in ['male', 'female']:
             sexe = 'homme' if sex == 'male' else 'femme'
             config = Config()
             input_dir = config.get('til', 'input_dir')
-            filename = os.path.join(input_dir, 'dependance_initialisation_level_{}.csv'.format(sexe))
+            filename = os.path.join(input_dir, 'dependance_initialisation_level_{}_{}.csv'.format(survey, sexe))
             log.info('Loading initial population dependance states from {}'.format(filename))
             df = (pd.read_csv(filename, names = ['age', 0, 1, 2, 3, 4], skiprows = 1)
                 .query('(age >= 65)')
