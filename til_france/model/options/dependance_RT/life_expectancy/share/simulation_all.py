@@ -139,10 +139,10 @@ def run_scenario(uncalibrated_transitions = None, initial_population = None, ini
         .set_index(['period', 'sex', 'age', 'initial_state', 'final_state'])
         )
 
-    uncalibrated_transitions = corrrect_transitions(
-        uncalibrated_transitions,
-        probability_name = 'probability'
-        )
+    #uncalibrated_transitions = correct_transitions( ##modification corrrect_transitions en correct_transitions
+    #    uncalibrated_transitions,
+    #    probability_name = 'probability'
+    #    )
 
     transitions = build_mortality_calibrated_target_from_transitions(
         transitions = uncalibrated_transitions,
