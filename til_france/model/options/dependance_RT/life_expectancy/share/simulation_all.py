@@ -80,11 +80,11 @@ from til_france.model.options.dependance_RT.life_expectancy.share.paths_prog imp
     
 # # Fonctions principales
 
-def run(survival_gain_casts = None, uncalibrated_transitions = None, vagues = [4, 5, 6], age_min = None, survey ='care'):
+def run(survival_gain_casts = None, uncalibrated_transitions = None, vagues = [4, 5, 6], age_min = None, prevalence_survey = None):
     assert vagues is not None
     assert age_min is not None
     assert uncalibrated_transitions is not None
-    create_initial_prevalence(smooth = True, survey = 'care', age_min = age_min)
+    create_initial_prevalence(smooth = True, prevalence_survey = prevalence_survey, age_min = age_min)
 
     for survival_gain_cast in survival_gain_casts:
         if survival_gain_cast in ['initial_vs_others', 'autonomy_vs_disability']:
@@ -95,6 +95,7 @@ def run(survival_gain_casts = None, uncalibrated_transitions = None, vagues = [4
                     mu = mu,
                     vagues = vagues,
                     age_min = age_min,
+                    prevalence_survey = prevalence_survey,
                     )
         else:
             save_data_and_graph(
@@ -102,11 +103,13 @@ def run(survival_gain_casts = None, uncalibrated_transitions = None, vagues = [4
                 survival_gain_cast = survival_gain_cast,
                 vagues = vagues,
                 age_min = age_min,
+                prevalence_survey = prevalence_survey,
                 )
 
 
-def save_data_and_graph(uncalibrated_transitions, mu = None, survival_gain_cast = None, vagues = None, age_min = None, survey = None):
+def save_data_and_graph(uncalibrated_transitions, mu = None, survival_gain_cast = None, vagues = None, age_min = None, prevalence_survey = None):
     assert age_min is not None
+    assert prevalence_survey is not None
     log.info("Running with survival_gain_cast = {}".format(survival_gain_cast))
     initial_period = 2010
     initial_population = get_initial_population(age_min = age_min, rescale = True, period = initial_period)
@@ -118,7 +121,7 @@ def save_data_and_graph(uncalibrated_transitions, mu = None, survival_gain_cast 
         survival_gain_cast = survival_gain_cast,
         age_min = age_min,
         )
-    suffix = build_suffix(survival_gain_cast, mu, vagues, survey)
+    suffix = build_suffix(survival_gain_cast, mu, vagues, prevalence_survey)
     population_path = os.path.join(figures_directory, 'population_{}.csv'.format(suffix))
     log.info("Saving population data to {}".format(population_path))
     population.to_csv(population_path)
@@ -239,7 +242,7 @@ def run_scenario(uncalibrated_transitions = None, initial_population = None, ini
 
 
 def create_initial_prevalence(filename_prefix = None, smooth = False, window = 7, std = 2,
-        survey = 'care', age_min = None, scale = 4):
+        prevalence_survey = 'care', age_min = None, scale = 4):
     """
     Create dependance_niveau variable initialisation file for use in til-france model (option dependance_RT)
     """
@@ -247,21 +250,21 @@ def create_initial_prevalence(filename_prefix = None, smooth = False, window = 7
     assert age_min is not None
     config = Config()
     input_dir = config.get('til', 'input_dir')
-    assert survey in ['care', 'hsm', 'hsm_hsi']
+    assert prevalence_survey in ['care', 'hsm', 'hsm_hsi']
     for sexe in ['homme', 'femme']:
-        if survey == 'hsm':
+        if prevalence_survey == 'hsm':
             pivot_table = get_hsm_prevalence_pivot_table(sexe = sexe, scale = 4)
-        elif survey == 'hsm_hsi':
+        elif prevalence_survey == 'hsm_hsi':
             pivot_table = get_hsi_hsm_prevalence_pivot_table(sexe = sexe, scale = 4)
-        elif survey == 'care':
+        elif prevalence_survey == 'care':
             pivot_table =  get_care_prevalence_pivot_table(sexe = sexe, scale = 4)   
-        #assert survey is not None
+        #assert prevalence_survey is not None
         return(pivot_table)
 
         if filename_prefix is None:
-            filename = os.path.join(input_dir, 'dependance_initialisation_level_{}_{}.csv'.format(survey, sexe)) # dependance_initialisation_level_share_{} 
+            filename = os.path.join(input_dir, 'dependance_initialisation_level_{}_{}.csv'.format(prevalence_survey, sexe)) # dependance_initialisation_level_share_{} 
         else:
-            filename = os.path.join('{}_level_{}_{}.csv'.format(filename_prefix, survey, sexe))
+            filename = os.path.join('{}_level_{}_{}.csv'.format(filename_prefix, prevalence_survey, sexe))
         level_pivot_table = (pivot_table.copy()
             .reset_index()
             .merge(pd.DataFrame({'age': range(0, 121)}), how = 'right')
@@ -283,9 +286,9 @@ def create_initial_prevalence(filename_prefix = None, smooth = False, window = 7
         # Go from levels to pct
         pivot_table = pivot_table.divide(pivot_table.sum(axis=1), axis=0)
         if filename_prefix is None:
-            filename = os.path.join(input_dir, 'dependance_initialisation_{}_{}.csv'.format(survey,sexe)) 
+            filename = os.path.join(input_dir, 'dependance_initialisation_{}_{}.csv'.format(prevalence_survey,sexe)) 
         else:
-            filename = os.path.join('{}_{}_{}.csv'.format(filename_prefix, survey, sexe)) #survey insere dans le nom du doc
+            filename = os.path.join('{}_{}_{}.csv'.format(filename_prefix, prevalence_survey, sexe)) #prevalence_survey insere dans le nom du doc
 
         if filename is not None:
             pivot_table = (pivot_table
