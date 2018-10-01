@@ -41,7 +41,7 @@ assets_path = os.path.join(
 config = Config()
 data_path = os.path.join(
     config.get('raw_data', 'share'),
-    'share_data_for_microsimulation.csv',
+    'share_data_for_microsimulation.csv', ##A modifier si on veut modifier la base transition
     )
 
 
@@ -128,16 +128,22 @@ def get_clean_share(extra_variables = None):
     return filtered
 
 
-def build_estimation_sample(initial_state, sex = None, variables = None, readjust = False, vagues = None):
-    """Build estimation sample from paquid data
+def build_estimation_sample(initial_state, sex = None, variables = None, readjust = False, vagues = None, estimation_survey = None):
+    """Build estimation sample from share data
     """
+    assert estimation_survey is not None
     final_states = final_states_by_initial_state[initial_state]
     assert (sex in ['male', 'female']) or (sex is None)
     extra_variables = None
     if variables is not None:
         extra_variables = [variable for variable in variables if variable not in ['final_state']]
-    clean_share = get_clean_share(extra_variables = extra_variables)
+
+    assert estimation_survey == 'share', "Only share is availableas estimation survey (you asked for {})".format(estimate_survey) 
+    if estimation_survey == 'share':
+        clean_share = get_clean_share(extra_variables = extra_variables)
+
     assert clean_share.notnull().all().all()
+
     assert initial_state in final_states
     no_transition = (clean_share
         .groupby('id')['initial_state']
@@ -308,13 +314,14 @@ def direct_compute_predicition(initial_state, formula, formatted_params, sex = N
     return computed_prediction
 
 
-def compute_prediction(initial_state = None, formula = None, variables = ['age'], exog = None, sex = None, vagues = None):
+def compute_prediction(initial_state = None, formula = None, variables = ['age'], exog = None, sex = None, vagues = None, estimation_survey = None):
     """
     Compute prediction on exogneous if given or on sample
     """
+    assert estimation_survey is not None
     assert initial_state is not None
     assert (sex in ['male', 'female']) or (sex is None)
-    sample = build_estimation_sample(initial_state, sex = sex, variables = variables, vagues = vagues)
+    sample = build_estimation_sample(initial_state, sex = sex, variables = variables, vagues = vagues, estimation_survey = estimation_survey)
     if exog is None:
         exog = sample[variables]
 
@@ -332,7 +339,8 @@ def compute_prediction(initial_state = None, formula = None, variables = ['age']
     return prediction.reset_index(drop = True)
 
 
-def get_transitions_from_formula(formula = None, age_min = 50, age_max = 120, vagues = None):
+def get_transitions_from_formula(formula = None, age_min = 50, age_max = 120, vagues = None, estimation_survey = None):
+    assert estimation_survey is not None
     transitions = None
     for sex in ['male', 'female']:
         assert formula is not None
@@ -342,7 +350,7 @@ def get_transitions_from_formula(formula = None, age_min = 50, age_max = 120, va
             proba_by_initial_state[initial_state] = pd.concat(
                 [
                     exog,
-                    compute_prediction(initial_state, formula, sex = sex, exog = exog, vagues = vagues)
+                    compute_prediction(initial_state, formula, sex = sex, exog = exog, vagues = vagues, estimation_survey = estimation_survey)
                     ],
                 axis = 1,
                 )
