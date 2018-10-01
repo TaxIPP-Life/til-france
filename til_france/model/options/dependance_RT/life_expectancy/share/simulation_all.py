@@ -84,6 +84,7 @@ def run(survival_gain_casts = None, uncalibrated_transitions = None, vagues = [4
     assert vagues is not None
     assert age_min is not None
     assert uncalibrated_transitions is not None
+    assert prevalence_survey is not None
     create_initial_prevalence(smooth = True, prevalence_survey = prevalence_survey, age_min = age_min)
 
     for survival_gain_cast in survival_gain_casts:
@@ -112,7 +113,7 @@ def save_data_and_graph(uncalibrated_transitions, mu = None, survival_gain_cast 
     assert prevalence_survey is not None
     log.info("Running with survival_gain_cast = {}".format(survival_gain_cast))
     initial_period = 2010
-    initial_population = get_initial_population(age_min = age_min, rescale = True, period = initial_period)
+    initial_population = get_initial_population(age_min = age_min, rescale = True, period = initial_period, prevalence_survey = prevalence_survey)
     initial_population['period'] = initial_period
     population, transitions_by_period = run_scenario(
         uncalibrated_transitions = uncalibrated_transitions,
@@ -120,6 +121,7 @@ def save_data_and_graph(uncalibrated_transitions, mu = None, survival_gain_cast 
         mu = mu,
         survival_gain_cast = survival_gain_cast,
         age_min = age_min,
+        prevalence_survey = prevalence_survey,
         )
     suffix = build_suffix(survival_gain_cast, mu, vagues, prevalence_survey)
     population_path = os.path.join(figures_directory, 'population_{}.csv'.format(suffix))
@@ -150,8 +152,8 @@ def save_data_and_graph(uncalibrated_transitions, mu = None, survival_gain_cast 
 
 
 def run_scenario(uncalibrated_transitions = None, initial_population = None, initial_period = 2010, mu = None,
-        survival_gain_cast = None, age_min = None):
-
+        survival_gain_cast = None, age_min = None, prevalence_survey = None):
+    assert prevalence_survey is not None
     initial_population['period'] = initial_period
     population = initial_population.copy()
 
@@ -219,7 +221,7 @@ def run_scenario(uncalibrated_transitions = None, initial_population = None, ini
             age_min = age_min,
             )
         check_67_and_over(iterated_population, age_min = age_min + 2)
-        iterated_population = add_lower_age_population(population = iterated_population, age_min = age_min)
+        iterated_population = add_lower_age_population(population = iterated_population, age_min = age_min, prevalence_survey = prevalence_survey)
         population = pd.concat([population, iterated_population])
 
     return population, transitions_by_period
@@ -242,7 +244,7 @@ def run_scenario(uncalibrated_transitions = None, initial_population = None, ini
 
 
 def create_initial_prevalence(filename_prefix = None, smooth = False, window = 7, std = 2,
-        prevalence_survey = 'care', age_min = None, scale = 4):
+        prevalence_survey = None, age_min = None, scale = 4):
     """
     Create dependance_niveau variable initialisation file for use in til-france model (option dependance_RT)
     """
@@ -347,8 +349,9 @@ def get_care_prevalence_pivot_table(sexe = None, scale = None):
     
 ## get_initial_population : Fonction dont l'output est la table data (variables : periode  | age      | initial_state | population    | sex)
 
-def get_initial_population(age_min = None, period = None, rescale = False):
+def get_initial_population(age_min = None, period = None, rescale = False, prevalence_survey = None):
     assert age_min is not None
+    assert prevalence_survey is not None
     if rescale:
         assert period is not None
     data_by_sex = dict()
@@ -357,7 +360,7 @@ def get_initial_population(age_min = None, period = None, rescale = False):
         config = Config()
         filename = os.path.join(
             config.get('til', 'input_dir'),
-            'dependance_initialisation_level_share_{}.csv'.format(sexe)
+            'dependance_initialisation_level_{}_{}.csv'.format(prevalence_survey, sexe)
             )
         log.info('Loading initial population dependance states from {}'.format(filename))
         df = (pd.read_csv(filename, names = ['age', 0, 1, 2, 3], skiprows = 1)
@@ -409,13 +412,13 @@ def get_initial_population(age_min = None, period = None, rescale = False):
 
 # add_lower_age_population : ajoute dans la base des personnes aux âges les plus bas
 
-def add_lower_age_population(population = None, age_min = None):
+def add_lower_age_population(population = None, age_min = None, prevalence_survey = None):
     assert age_min is not None
     assert population is not None
     assert len(population.period.unique().tolist()) == 1, 'More than one period are present: {}'.format(
         population.period.unique().tolist())
     period = population.period.unique().tolist()[0]
-    lower_age_population = (get_initial_population(age_min = age_min, rescale = True, period = period)
+    lower_age_population = (get_initial_population(age_min = age_min, rescale = True, period = period, prevalence_survey = prevalence_survey)
         .query('age in [@age_min, @age_min + 1]')
         )
     lower_age_population['period'] = period
@@ -1112,14 +1115,14 @@ def apply_transition_matrix(population = None, transition_matrix = None, age_min
     return final_population
 
 
-def build_suffix(survival_gain_cast = None, mu = None, vagues = None, survey = None):
+def build_suffix(survival_gain_cast = None, mu = None, vagues = None, prevalence_survey = None):
     suffix = survival_gain_cast
     if mu is not None:
         suffix += '_mu_{}'.format(mu)
     if vagues is not None:
         suffix += slugify.slugify(str(vagues), separator = "_")
-    if survey is not None:
-        suffix += '_{survey}_'.format(survey = survey)
+    if prevalence_survey is not None:
+        suffix += '_{prevalence_survey}_'.format(prevalence_survey = prevalence_survey)
 
     return suffix
 
