@@ -1,15 +1,18 @@
 # Premiers pas en TIL-France
 
 Ce document présente les étapes à suivre pour faire tourner les options de TIL-France
-inclues dans le dépôt (ci-après 'TILF').
+inclues dans le dépôt.
 
 ### Création des données
 
-Pour l'instant, TILF s'appuie sur deux sources de données :
+Pour l'instant, TIL-France s'appuie sur deux sources de données :
 - l'enquête Patrimoine de 2010
 - les données HSI de 2009-2010
 
-Il faut utiliser le script `til_init.py` pour tout initialiser. Ce script suppose que vous avez accès aux données Patrimoine et HSI.
+Il faut utiliser le script `til_init.py` pour tout initialiser. 
+
+Ce script suppose que vous avez accès aux données Patrimoine et HSI.
+
 ### Utilisation
 
 Pour exécuter une simulation, il faut
