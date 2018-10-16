@@ -8,8 +8,10 @@ from webcolors import rgb_to_hex
 
 
 from til_core.config import Config
-from til_core.simulation import TilSimulation
-
+try:
+    from til_core.simulation import TilSimulation
+except:
+    TilSimulation = None
 
 __all__ = [
     'create_or_get_figures_directory',
