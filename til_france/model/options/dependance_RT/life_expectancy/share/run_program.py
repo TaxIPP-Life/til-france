@@ -47,6 +47,14 @@ from til_france.model.options.dependance_RT.life_expectancy.share.simulation_all
     get_predicted_mortality_table,
     get_insee_projected_mortality,
     get_insee_projected_population,
+    smooth_pivot_table,
+    check_67_and_over,
+    regularize,
+    apply_transition_matrix,
+    build_suffix,
+    assert_probabilities,
+    
+    
     )
 
 #from til_france.model.options.dependance_RT.life_expectancy.share.tool_prog import (
@@ -71,6 +79,8 @@ colors = [ipp_colors[cname] for cname in [
 
 log = logging.getLogger(__name__)
 
+logging.basicConfig(level = logging.DEBUG, stream = sys.stdout)
+
 life_table_path = os.path.join(
     assets_path,
     'lifetables_period.xlsx'
@@ -94,11 +104,14 @@ from til_france.model.options.dependance_RT.life_expectancy.share.paths_prog imp
 vagues = [1,2]
 vagues = [4,5,6]
 
+
 formula = 'final_state ~ I((age - 80) * 0.1) + I(((age - 80) * 0.1) ** 2) + I(((age - 80) * 0.1) ** 3)'
-uncalibrated_transitions = get_transitions_from_formula(formula = formula, vagues = vagues)
+uncalibrated_transitions = get_transitions_from_formula(formula = formula, vagues = vagues, estimation_survey = 'share')
 
 survival_gain_casts = [
         'homogeneous',
         ]
 
-run(survival_gain_casts, uncalibrated_transitions = uncalibrated_transitions, vagues = vagues, age_min = 60, survey = 'care')
+run(survival_gain_casts, uncalibrated_transitions = uncalibrated_transitions, vagues = vagues, age_min = 60, prevalence_survey = 'care')
+
+run(survival_gain_casts, uncalibrated_transitions = uncalibrated_transitions, vagues = vagues, age_min = 60, prevalence_survey = 'share')

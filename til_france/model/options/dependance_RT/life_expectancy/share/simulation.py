@@ -987,7 +987,7 @@ if __name__ == '__main__':
     # uncalibrated_transitions = get_transitions_from_file()
     vagues = [1, 2]
     formula = 'final_state ~ I((age - 80) * 0.1) + I(((age - 80) * 0.1) ** 2) + I(((age - 80) * 0.1) ** 3)'
-    uncalibrated_transitions = get_transitions_from_formula(formula = formula, vagues = vagues)
+    uncalibrated_transitions = get_transitions_from_formula(formula = formula, vagues = vagues, estimation_survey = 'share')
 
     survival_gain_casts = [
         'homogeneous',
@@ -999,7 +999,7 @@ if __name__ == '__main__':
     load_and_plot_gir_projections(survival_gain_cast = 'homogeneous', vagues = [4, 5, 6], age_min = 60)
     BAM
 
-    comparison_share_early_late()
+    comparison_share_early_late(age_min = 60)
     BIM
 
 
@@ -1008,7 +1008,7 @@ if __name__ == '__main__':
 #    BIM
     transitions = load_and_plot_projected_target(
         survival_gain_cast = 'homogeneous',
-        age_min = 50,
+        age_min = 60,
         age_max = 120,
         vagues = [4, 5, 6],
         )
