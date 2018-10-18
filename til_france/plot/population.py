@@ -147,27 +147,30 @@ def extract_population_by_age_csv(simulation, backup = None):
     return panel * uniform_weight
 
 
-def get_insee_projection(quantity, gender, function = None):
+def get_insee_projection(quantity, gender, function = None, scenario = central):
 
     assert quantity in ['naissances', 'deces', 'migrations', 'population']
     assert gender in ['total', 'male', 'female']
+    assert scenario not None
 
-    data_path = os.path.join(til_france_path, 'param/demo/projpop0760_FECcentESPcentMIGcent.xls')
-    sheetname_by_gender_by_quantity = dict(
-        naissances = 'nbre_naiss',
-        deces = dict(zip(
-            ['total', 'male', 'female'],
-            ['nbre_deces', 'nbre_decesH', 'nbre_decesF']
-            )),
-        migrations = dict(zip(
-            ['male', 'female'],
-            ['hyp_soldemigH', 'hyp_soldemigF']
-            )),
-        population = dict(zip(
-            ['total', 'male', 'female'],
-            ['populationTot', 'populationH', 'populationF']
-            ))
-        )
+    if scenario == 'central':
+
+        data_path = os.path.join(til_france_path, 'param/demo/projpop0760_FECcentESPcentMIGcent.xls')
+        sheetname_by_gender_by_quantity = dict(
+            naissances = 'nbre_naiss',
+            deces = dict(zip(
+                ['total', 'male', 'female'],
+                ['nbre_deces', 'nbre_decesH', 'nbre_decesF']
+                )),
+            migrations = dict(zip(
+                ['male', 'female'],
+                ['hyp_soldemigH', 'hyp_soldemigF']
+                )),
+            population = dict(zip(
+                ['total', 'male', 'female'],
+                ['populationTot', 'populationH', 'populationF']
+                ))
+            )
     age_label_by_quantity = dict(
         naissances = u"Âge au 1er janvier",
         deces = u"Âge atteint dans l'année",
