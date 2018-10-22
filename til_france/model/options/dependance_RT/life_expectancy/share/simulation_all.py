@@ -633,7 +633,7 @@ def _compute_calibration_coefficient(age_min = 50, period = None, transitions = 
             projected_mortality.reset_index(),
             on = ['sex', 'age'],
             )
-        .eval('cale_mortality_1_year = mortality_insee / avg_mortality', inplace = False)
+        #.eval('cale_mortality_1_year = mortality_insee / avg_mortality', inplace = False) 
         .eval('mortalite_2_year_insee = 1 - (1 - mortality_insee) ** 2', inplace = False)
         .eval('avg_mortality_2_year = 1 - (1 - avg_mortality) ** 2', inplace = False)
         .eval('cale_mortality_2_year = mortalite_2_year_insee / avg_mortality_2_year', inplace = False)
@@ -875,18 +875,33 @@ def correct_transitions_for_mortality(transitions, dependance_initialisation = N
 
 ## get_predicted_mortality_table et get_insee_projected_mortality : mortalités dans les données et INSEE
 
-def get_predicted_mortality_table(transitions = None, save = True, probability_name = 'probability'):
+def get_predicted_mortality_table(transitions = None, save = False, probability_name = 'probability', transformation = False):
     death_state = 4
     assert transitions is not None
     assert probability_name in transitions.columns, "{} not present in transitions colmns: {}".format(
         probability_name,
         transitions.columns
         )
-    mortality_table = (transitions
-        .query('final_state == @death_state')
-        .copy()
-        .assign(mortality = lambda x: (1 - np.sqrt(1 - x[probability_name])))
+
+    if not transformation:
+
+        mortality_table = (transitions
+            .query('final_state == @death_state')
+            .copy()
+            .eval('mortality = probability')
+            #else:
+            #.eval('mortality = probability')
+            #.assign(mortality = lambda x: x[probability_name])))
         )
+
+    else: #transformation is true
+
+        mortality_table = (transitions
+            .query('final_state == @death_state')
+            .copy()
+            .assign(mortality = lambda x: (1 - np.sqrt(1 - x[probability_name])))
+        )
+
     if save:
         mortality_table.to_csv('predicted_mortality_table.csv')
 
