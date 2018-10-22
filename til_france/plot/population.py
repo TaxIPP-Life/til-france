@@ -147,11 +147,11 @@ def extract_population_by_age_csv(simulation, backup = None):
     return panel * uniform_weight
 
 
-def get_insee_projection(quantity, gender, function = None, scenario = central):
+def get_insee_projection(quantity, gender, function = None, scenario = 'central'):
 
     assert quantity in ['naissances', 'deces', 'migrations', 'population']
     assert gender in ['total', 'male', 'female']
-    assert scenario not None
+    assert scenario is not None
 
     if scenario == 'central':
 
