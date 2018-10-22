@@ -633,10 +633,10 @@ def _compute_calibration_coefficient(age_min = 50, period = None, transitions = 
             projected_mortality.reset_index(),
             on = ['sex', 'age'],
             )
-        .eval('cale_mortality_1_year = mortality / avg_mortality', inplace = False)
-        .eval('mortalite_2_year = 1 - (1 - mortality) ** 2', inplace = False)
+        .eval('cale_mortality_1_year = mortality_insee / avg_mortality', inplace = False)
+        .eval('mortalite_2_year_insee = 1 - (1 - mortality_insee) ** 2', inplace = False)
         .eval('avg_mortality_2_year = 1 - (1 - avg_mortality) ** 2', inplace = False)
-        .eval('cale_mortality_2_year = mortalite_2_year / avg_mortality_2_year', inplace = False)
+        .eval('cale_mortality_2_year = mortalite_2_year_insee / avg_mortality_2_year', inplace = False)
         )
     return model_to_target
 
@@ -701,7 +701,7 @@ def correct_transitions_for_mortality(transitions, dependance_initialisation = N
 
     target_mortality = (projected_mortality
         .query('year == @period')
-        .rename(columns = {'mortality': 'target_mortality'})
+        .rename(columns = {'mortality_insee': 'target_mortality'})
         .reset_index()
         .drop('year', axis = 1)
         )
@@ -926,7 +926,7 @@ def get_insee_projected_mortality():
         del df[u"Âge atteint dans l'année"]
         df.index.name = 'age'
 
-    mortality = None
+    mortality_insee = None
     for sex in ['male', 'female']:
         mortality_sex = ((mortality_by_sex[sex] / 1e4)
             .reset_index()
@@ -935,13 +935,13 @@ def get_insee_projected_mortality():
             mortality_sex,
             id_vars = 'age',
             var_name = 'annee',
-            value_name = 'mortality'
+            value_name = 'mortality_insee'
             )
         mortality_sex['sex'] = sex
         mortality_sex.rename(columns = dict(annee = 'year'), inplace = True)
-        mortality = pd.concat([mortality, mortality_sex])
+        mortality_insee = pd.concat([mortality_insee, mortality_sex])
 
-    return mortality.set_index(['sex', 'age', 'year'])
+    return mortality_insee.set_index(['sex', 'age', 'year'])
 
 
 def get_insee_projected_population():
@@ -1098,7 +1098,7 @@ def apply_transition_matrix(population = None, transition_matrix = None, age_min
 
     period = population.period.unique()[0]
     mortality = get_insee_projected_mortality().query('(year == @period) and (age >= @age_min)').reset_index().eval(
-        'two_year_mortality = 1 - (1 - mortality) ** 2', inplace = False)
+        'two_year_mortality = 1 - (1 - mortality_insee) ** 2', inplace = False)
 
     log.debug(simulated_mortality.merge(mortality).query("sex == 'male'").head(50))
     log.debug(simulated_mortality.merge(mortality).query("sex == 'female'").head(50))
