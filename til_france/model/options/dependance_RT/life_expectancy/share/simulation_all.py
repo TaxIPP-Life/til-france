@@ -14,6 +14,7 @@ import pandas as pd
 import seaborn as sns
 import slugify
 import sys
+import math
 
 
 from til_core.config import Config
@@ -628,13 +629,48 @@ def _compute_calibration_coefficient(age_min = 50, period = None, transitions = 
         .query('year == @period')
         .rename(columns = {'year': 'period'})
         )
+    
+    #assert projected_mortality.mortality_insee is not None
+
+    projected_mortality_next_period = (get_insee_projected_mortality_next_period()  # brings in variable _next_period
+        .query('year == @period')
+        .rename(columns = {'year': 'period'})
+        )  
+     
+
+    projected_mortality_and_next = (projected_mortality
+        .merge(
+            projected_mortality_next_period.reset_index(),
+            on = ['sex', 'age'],
+            )
+        )
+    #return projected_mortality_and_next
+
+    assert projected_mortality_and_next.mortality_insee_next_period is not None
+
+    
     model_to_target = (mortality_after_imputation
         .merge(
-            projected_mortality.reset_index(),
+            projected_mortality_and_next.reset_index(),
             on = ['sex', 'age'],
             )
         #.eval('cale_mortality_1_year = mortality_insee / avg_mortality', inplace = False) 
-        .eval('mortalite_2_year_insee = 1 - (1 - mortality_insee) ** 2', inplace = False)
+        #.eval('mortalite_2_year_insee = 1 - (1 - mortality_insee) ** 2', inplace = False)
+        )
+
+    model_to_target['mortalite_2_year_insee'] = 0
+    model_to_target.loc[
+        model_to_target.mortality_insee_next_period.notnull(),
+        'mortalite_2_year_insee'
+        ] = 1 - (1 - model_to_target.mortality_insee) * (1 - model_to_target.mortality_insee_next_period)
+   
+    model_to_target.loc[
+        model_to_target.mortality_insee_next_period.isnull(),
+        'mortalite_2_year_insee'
+        ] = 1 - (1 - model_to_target.mortality_insee) ** 2
+        
+      
+    model_to_target = (model_to_target 
         .eval('avg_mortality_2_year = 1 - (1 - avg_mortality) ** 2', inplace = False)
         .eval('cale_mortality_2_year = mortalite_2_year_insee / avg_mortality_2_year', inplace = False)
         )
@@ -967,6 +1003,7 @@ def get_insee_projected_mortality_next_period():
     mortality_insee_next_period.sort_values(by=['sex','age','year'])
     mortality_insee_next_period = mortality_insee_next_period.groupby(['sex','age']).shift(-1)
     mortality_insee_next_period = mortality_insee_next_period.reset_index()
+    mortality_insee_next_period = mortality_insee_next_period.rename(columns = {'mortality_insee': 'mortality_insee_next_period'})
 
     return mortality_insee_next_period.set_index(['sex', 'age', 'year'])
 
