@@ -955,8 +955,21 @@ def get_insee_projected_mortality():
         mortality_sex['sex'] = sex
         mortality_sex.rename(columns = dict(annee = 'year'), inplace = True)
         mortality_insee = pd.concat([mortality_insee, mortality_sex])
-
+            
     return mortality_insee.set_index(['sex', 'age', 'year'])
+
+
+def get_insee_projected_mortality_next_period():
+    mortality_insee= get_insee_projected_mortality()
+    mortality_insee_next_period = mortality_insee
+    mortality_insee_next_period.sort_values(by=['sex','year','age'])
+    mortality_insee_next_period = mortality_insee_next_period.groupby(['sex','year']).shift(-1)
+    mortality_insee_next_period.sort_values(by=['sex','age','year'])
+    mortality_insee_next_period = mortality_insee_next_period.groupby(['sex','age']).shift(-1)
+    mortality_insee_next_period = mortality_insee_next_period.reset_index()
+
+    return mortality_insee_next_period.set_index(['sex', 'age', 'year'])
+
 
 
 def get_insee_projected_population():
