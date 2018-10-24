@@ -676,12 +676,15 @@ def _compute_calibration_coefficient(age_min = 50, period = None, transitions = 
         model_to_target.mortality_insee_next_period.isnull(),
         'mortalite_2_year_insee'
         ] = 1 - (1 - model_to_target.mortality_insee) ** 2
-        
-      
-    model_to_target = (model_to_target 
-        .eval('avg_mortality_2_year = 1 - (1 - avg_mortality) ** 2', inplace = False)
-        .eval('cale_mortality_2_year = mortalite_2_year_insee / avg_mortality_2_year', inplace = False)
-        )
+
+
+    if not transformation_1an: #transformations a 2 ans pour l'instant
+        model_to_target = (model_to_target 
+            #.eval('avg_mortality_2_year = 1 - (1 - avg_mortality) ** 2', inplace = False) #a modifier si transitions sur 1 an 
+            .eval('avg_mortality_2_year = avg_mortality', inplace = False)
+            .eval('cale_mortality_2_year = mortalite_2_year_insee / avg_mortality_2_year', inplace = False)
+            )
+
     return model_to_target
 
 
