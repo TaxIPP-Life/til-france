@@ -116,6 +116,11 @@ def save_data_and_graph(uncalibrated_transitions, mu = None, survival_gain_cast 
     log.info("Running with survival_gain_cast = {}".format(survival_gain_cast))
     initial_period = 2010
     initial_population = get_initial_population(age_min = age_min, rescale = True, period = initial_period, prevalence_survey = prevalence_survey)
+
+#    log.info("period {}: population 60 ans =  {}".format(
+#        initial_population.query('(age == @age_min)')['population'].sum()
+#        ))
+
     initial_population['period'] = initial_period
     population, transitions_by_period = run_scenario(
         uncalibrated_transitions = uncalibrated_transitions,
@@ -353,7 +358,7 @@ def get_care_prevalence_pivot_table(sexe = None, scale = None):
     
 ## get_initial_population : Fonction dont l'output est la table data (variables : periode  | age      | initial_state | population    | sex)
 
-def get_initial_population(age_min = None, period = None, rescale = False, prevalence_survey = None):
+def get_initial_population(age_min = None, period = None, rescale = True, prevalence_survey = None):
     assert age_min is not None
     assert prevalence_survey is not None
     if rescale:
@@ -618,7 +623,7 @@ def _compute_calibration_coefficient(age_min = 50, period = None, transitions = 
     assert period is not None, "Mortality profile period is not set"
     assert transitions is not None
     # From 2yr mortality to 1yr mortality by age, sex and intial_state if transformation = True
-    # 
+    # 2yr mortality by age, sex and intial_state if transformation = False
     predicted_mortality_table = get_predicted_mortality_table(transitions = transitions, transformation_1an = transformation_1an)
     # From 1yr mrotality by age sex (use dependance_initialisation to sum over initial_state)
     mortality_after_imputation = (
@@ -680,7 +685,8 @@ def _compute_calibration_coefficient(age_min = 50, period = None, transitions = 
 
     if not transformation_1an: #transformations a 2 ans pour l'instant
         model_to_target = (model_to_target 
-            #.eval('avg_mortality_2_year = 1 - (1 - avg_mortality) ** 2', inplace = False) #a modifier si transitions sur 1 an 
+            #.eval('avg_mortality_2_year = 1 - (1 - avg_mortality) ** 2', inplace = False) #ligne qui servait repasser des probabilites deja transformees
+            # a modifier si transitions sur 1 an 
             .eval('avg_mortality_2_year = avg_mortality', inplace = False)
             .eval('cale_mortality_2_year = mortalite_2_year_insee / avg_mortality_2_year', inplace = False)
             )
@@ -920,7 +926,7 @@ def correct_transitions_for_mortality(transitions, dependance_initialisation = N
         )
 
 
-## get_predicted_mortality_table et get_insee_projected_mortality : mortalités dans les données et INSEE
+## get_predicted_mortality_table et get_insee_projected_mortality : mortalites dans les donnees et INSEE
 
 def get_predicted_mortality_table(transitions = None, save = False, probability_name = 'probability', transformation_1an = None):
     death_state = 4
@@ -1078,6 +1084,15 @@ def check_67_and_over(population, age_min):
     insee_population = get_insee_projected_population()
     pop_insee = insee_population.query('(age >= @age_min) and (year == @period)')['population'].sum()
     pop_sim = population.query('(age >= @age_min) and (period == @period)')['population'].sum()
+    pop_insee_62 = insee_population.query('(age == @age_min) and (year == @period)')['population'].sum()
+    pop_sim_62 = population.query('(age == @age_min) and (period == @period)')['population'].sum()
+    pop_insee_80 = insee_population.query('(age == @age_min + 18) and (year == @period)')['population'].sum()
+    pop_sim_80 = population.query('(age == @age_min + 18) and (period == @period)')['population'].sum()
+    pop_insee_100 = insee_population.query('(age == @age_min + 38) and (year == @period)')['population'].sum()
+    pop_sim_100 = population.query('(age == @age_min + 38) and (period == @period)')['population'].sum()
+    pop_insee_60 = insee_population.query('(age == @age_min - 2) and (year == @period)')['population'].sum()
+    pop_sim_60 = population.query('(age == @age_min - 2) and (period == @period)')['population'].sum()
+
     log.info("period {}: insee = {} vs {} = til".format(
         period,
         insee_population.query('(age >= @age_min) and (year == @period)')['population'].sum(),
@@ -1086,7 +1101,23 @@ def check_67_and_over(population, age_min):
     log.info("period {}: insee - til = {}".format(
         period,
         pop_insee - pop_sim   
-))
+        ))
+    log.info("period {}: insee_60:{} til_60:{} insee_60 - til_60 = {}".format(
+       period, pop_insee_60, pop_sim_60, 
+       pop_insee_60 - pop_sim_60   
+       ))
+    log.info("period {}: insee_62:{} til_62:{} insee_62 - til_62 = {}".format(
+       period, pop_insee_62, pop_sim_62, 
+       pop_insee_62 - pop_sim_62   
+       ))
+    log.info("period {}: insee_80:{} til_80:{} insee_80 - til_80 = {}".format(
+       period, pop_insee_80, pop_sim_80, 
+       pop_insee_80 - pop_sim_80    
+       ))
+    log.info("period {}: insee_100:{} til_100:{} insee_100 - til_100 = {}".format(
+       period, pop_insee_100, pop_sim_100, 
+       pop_insee_100 - pop_sim_100    
+    ))
 
 def regularize(transition_matrix_dataframe = None, by = None, probability = None, delta = None):
     assert transition_matrix_dataframe is not None
