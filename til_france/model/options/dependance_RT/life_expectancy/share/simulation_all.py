@@ -4,6 +4,7 @@ Created on Wed Sep 26 14:59:09 2018
 
 @author: a.rain
 """
+from __future__ import division
 
 
 import logging
@@ -26,6 +27,8 @@ from til_france.model.options.dependance_RT.life_expectancy.share.transition_mat
     )
 
 from til_france.plot.population import get_insee_projection
+
+from decimal import *
 
 #from til_france.model.options.dependance_RT.life_expectancy.share.tool_prog import (
 #    smooth_pivot_table,
@@ -191,25 +194,31 @@ def run_scenario(uncalibrated_transitions = None, initial_population = None, ini
             dependance_initialisation = population.query('period == @period').copy()
             # Update the transitions matrix if necessary
             if survival_gain_cast is None:
+                print("Passe par: no survival_gain_cast")
                 log.info("Calibrate transitions for period = {}".format(period))
                 delta = 1e-7
-                transitions = regularize(
+                transitions = regularize2(
                     transition_matrix_dataframe = transitions.rename(
                         columns = {'calibrated_probability': 'probability'}),
                     by = ['period', 'sex', 'age', 'initial_state'],
                     probability = 'probability',
                     delta = delta,
                     )
+
                 transitions = build_mortality_calibrated_target_from_transitions(
                     transitions = transitions,
                     period = period,
                     dependance_initialisation = dependance_initialisation,
                     )
                 transitions_by_period[period] = transitions
+                
 
             else:
                 log.info('Updating period = {} transitions for mu = {} and survival_gain_cast = {}'.format(
                     period, mu, survival_gain_cast))
+                print("Passe par un des survival_gain_cast")
+   #             print("premier check boucle 2")
+
                 transitions = correct_transitions_for_mortality(
                     transitions,
                     dependance_initialisation = dependance_initialisation,
@@ -217,6 +226,11 @@ def run_scenario(uncalibrated_transitions = None, initial_population = None, ini
                     survival_gain_cast = survival_gain_cast,
                     period = period,
                     )
+    #            print("deuxieme check boucle 2")
+
+    #            pop_sim_62 = transitions.query('(age == 62)')['transitions'].sum()
+     #           log.info("til_62 = {}".format(pop_sim_60))
+
                 transitions_by_period[period] = transitions
 #                plot_dependance_niveau_by_period(population, period)
 #                plot_dependance_niveau_by_age(population, period)
@@ -580,7 +594,7 @@ def _get_calibrated_transitions(period = None, transitions = None, dependance_in
             )
         )
     mortality['calibrated_probability'] = np.minimum(
-        mortality.probability * mortality.cale_mortality_2_year, 1)  # Avoid over corrections !
+       mortality.probability * mortality.cale_mortality_2_year, 1)  # Avoid over corrections !
     mortality.eval(
         'cale_other_transitions = (1 - calibrated_probability) / (1 - probability)',
         inplace = True,
@@ -635,28 +649,15 @@ def _compute_calibration_coefficient(age_min = 50, period = None, transitions = 
         .rename(columns = {'mortality_after_imputation': 'avg_mortality'})
         )
 
+    #print(mortality_after_imputation.head)
+
     assert (mortality_after_imputation.avg_mortality > 0).all(), \
         mortality_after_imputation.loc[~(mortality_after_imputation.avg_mortality > 0)]
 
-    projected_mortality = (get_insee_projected_mortality()  # brings in variable mortality
-        .query('year == @period')
-        .rename(columns = {'year': 'period'})
-        )
-    
-    #assert projected_mortality.mortality_insee is not None
-
-    projected_mortality_next_period = (get_insee_projected_mortality_next_period()  # brings in variable _next_period
+    projected_mortality_and_next =(get_insee_projected_mortality()  
         .query('year == @period')
         .rename(columns = {'year': 'period'})
         )  
-     
-
-    projected_mortality_and_next = (projected_mortality
-        .merge(
-            projected_mortality_next_period.reset_index(),
-            on = ['sex', 'age'],
-            )
-        )
     #return projected_mortality_and_next
 
     assert projected_mortality_and_next.mortality_insee_next_period is not None
@@ -690,7 +691,7 @@ def _compute_calibration_coefficient(age_min = 50, period = None, transitions = 
             .eval('avg_mortality_2_year = avg_mortality', inplace = False)
             .eval('cale_mortality_2_year = mortalite_2_year_insee / avg_mortality_2_year', inplace = False)
             )
-
+    print("Passe par les cales")
     return model_to_target
 
 
@@ -718,7 +719,9 @@ def get_mortality_after_imputation(mortality_table = None, dependance_initialisa
 
     mortality_after_imputation.name = 'mortality_after_imputation'
 
+
     if (mortality_after_imputation == 0).any():  # Deal with age > 100 with nobody in the population
+        #print("missing dans mortality_after_imputation")
         mortality_after_imputation = mortality_after_imputation.reset_index()
         mortality_after_imputation.loc[
             (mortality_after_imputation.age >= 100) & (mortality_after_imputation.mortality_after_imputation == 0),
@@ -743,7 +746,7 @@ def correct_transitions_for_mortality(transitions, dependance_initialisation = N
         "suvival_gain_cast should one of the following values {}".format(admissible_survival_gain_cast)
     assert period is not None
     delta = 1e-7
-    regularize(
+    regularize2(
         transition_matrix_dataframe = transitions,
         by = ['period', 'sex', 'age', 'initial_state'],
         probability = 'calibrated_probability',
@@ -822,7 +825,7 @@ def correct_transitions_for_mortality(transitions, dependance_initialisation = N
         ).copy()
 
     mortality['periodized_calibrated_probability'] = np.minimum(  # use minimum to avoid over corrections !
-        mortality.calibrated_probability * mortality.correction_coefficient, 1 - delta)
+        mortality.calibrated_probability * mortality.correction_coefficient, 1 - delta) 
 
     assert (
         (mortality['periodized_calibrated_probability'] < 1)
@@ -866,6 +869,7 @@ def correct_transitions_for_mortality(transitions, dependance_initialisation = N
             ).all(), "Erroneous periodized_calibrated_probability"
 
     elif survival_gain_cast == "initial_vs_others":
+        print("Je passe dans initial_vs_others")
         assert mu is not None
         # Gain in survival probability feeds by a proportion of mu the initial_state and 1 - mu the other states
         other_transitions = initial_vs_others(
@@ -876,6 +880,7 @@ def correct_transitions_for_mortality(transitions, dependance_initialisation = N
             uncalibrated_probabilities = uncalibrated_probabilities
             )
     elif survival_gain_cast == 'autonomy_vs_disability':
+        print("Je passe dans autonomy_vs_disability")
         assert mu is not None
         other_transitions = autonomy_vs_disability(
             mortality = mortality,
@@ -968,7 +973,7 @@ def get_predicted_mortality_table(transitions = None, save = False, probability_
     return mortality_table
 
 
-def get_insee_projected_mortality():
+def get_insee_projected_mortality_interm():
     '''
     Get mortality data from INSEE projections
     '''
@@ -1009,23 +1014,41 @@ def get_insee_projected_mortality():
         mortality_sex['sex'] = sex
         mortality_sex.rename(columns = dict(annee = 'year'), inplace = True)
         mortality_insee = pd.concat([mortality_insee, mortality_sex])
-            
+        
     return mortality_insee.set_index(['sex', 'age', 'year'])
 
 
-def get_insee_projected_mortality_next_period():
-    mortality_insee= get_insee_projected_mortality()
-    mortality_insee_next_period = mortality_insee
+#def get_insee_projected_mortality_next_period():
+ #   mortality_insee= get_insee_projected_mortality()
+  #  mortality_insee_next_period = mortality_insee
+   # mortality_insee_next_period.sort_values(by=['sex','year','age'])
+    #mortality_insee_next_period = mortality_insee_next_period.groupby(['sex','year']).shift(-1)
+   # mortality_insee_next_period.sort_values(by=['sex','age','year'])
+   # mortality_insee_next_period = mortality_insee_next_period.groupby(['sex','age']).shift(-1)
+   # mortality_insee_next_period = mortality_insee_next_period.reset_index()
+   # mortality_insee_next_period = mortality_insee_next_period.rename(columns = {'mortality_insee': 'mortality_insee_next_period'})
+
+#return mortality_insee_next_period.set_index(['sex', 'age', 'year'])
+
+def get_insee_projected_mortality():
+    mortality_insee2= get_insee_projected_mortality_interm()
+    mortality_insee_next_period = mortality_insee2
     mortality_insee_next_period.sort_values(by=['sex','year','age'])
     mortality_insee_next_period = mortality_insee_next_period.groupby(['sex','year']).shift(-1)
     mortality_insee_next_period.sort_values(by=['sex','age','year'])
     mortality_insee_next_period = mortality_insee_next_period.groupby(['sex','age']).shift(-1)
-    mortality_insee_next_period = mortality_insee_next_period.reset_index()
-    mortality_insee_next_period = mortality_insee_next_period.rename(columns = {'mortality_insee': 'mortality_insee_next_period'})
+    mortality_insee2['mortality_insee_next_period'] =mortality_insee_next_period.mortality_insee
+    mortality_insee = mortality_insee2
 
-    return mortality_insee_next_period.set_index(['sex', 'age', 'year'])
+    return mortality_insee
 
 
+#def get_insee_projected_mortality():
+#    mortality_insee_first_period= get_insee_projected_mortality_first_period()
+#    mortality_insee_next_period = get_insee_projected_mortality_next_period()
+#    mortality_insee = mortality_insee.reset_index()
+
+ #   return mortality_insee2.set_index(['sex', 'age', 'year'])
 
 def get_insee_projected_population():
     '''
@@ -1177,6 +1200,65 @@ def regularize(transition_matrix_dataframe = None, by = None, probability = None
     assert_probabilities(dataframe = transition_matrix_dataframe, by = by, probability = probability)
     return transition_matrix_dataframe
 
+def regularize2(transition_matrix_dataframe = None, by = None, probability = None, delta = None):
+    assert transition_matrix_dataframe is not None
+    assert by is not None
+    assert probability is not None
+    assert delta is not None
+    final_state = 4
+    assert_probabilities(dataframe = transition_matrix_dataframe, by = by, probability = probability)
+    mortality_transitions = transition_matrix_dataframe.query('final_state == @final_state').copy()
+
+    # by_without_initial_state = [by_value for by_value in by if by_value != 'initial_state']
+    problematic_indices = (mortality_transitions[probability]
+        .loc[mortality_transitions[probability] >= (1 - delta)]
+        .reset_index()
+        .drop(['final_state', probability], axis = 1)
+        )
+    count = (problematic_indices
+        .merge(
+            transition_matrix_dataframe.reset_index()[by + ['final_state']])
+        .query('final_state != @final_state')
+        .groupby(by)
+        .count()
+        )
+    correction = delta / count.final_state.astype('float')
+    correction.name = 'correction'
+
+    corrected_transition_matrix = (transition_matrix_dataframe.reset_index()
+        .merge(correction.reset_index())  # inner merge
+        .fillna(0)
+        )
+    corrected_transition_matrix.loc[
+        (corrected_transition_matrix.final_state == final_state),
+        probability
+        ] = (1 - delta)
+    corrected_transition_matrix.loc[
+        corrected_transition_matrix.final_state != final_state,
+        probability
+        ] = corrected_transition_matrix.correction
+
+    corrected_transition_matrix.set_index(by + ['final_state'], inplace = True)
+    assert (
+        (corrected_transition_matrix[probability] > 0) &
+        (corrected_transition_matrix[probability] < 1)
+        ).all(), "There are {} 0's and {} 1's in corrected_transition_matrix[{}]".format(
+            (corrected_transition_matrix[probability] > 0).sum(),
+            (corrected_transition_matrix[probability] < 1).sum(),
+            probability
+            )
+    transition_matrix_dataframe.update(corrected_transition_matrix)
+
+    assert (
+        transition_matrix_dataframe.query('final_state == @final_state')[probability] < 1
+        ).all(), "There are {} 1's in transition_matrix_dataframe.{}".format(
+            (transition_matrix_dataframe.query('final_state == @final_state')[probability] < 1).sum(),
+            probability,
+            )
+
+    assert_probabilities(dataframe = transition_matrix_dataframe, by = by, probability = probability)
+    return transition_matrix_dataframe
+
 
 def apply_transition_matrix(population = None, transition_matrix = None, age_min = None):
     assert age_min is not None
@@ -1206,7 +1288,8 @@ def apply_transition_matrix(population = None, transition_matrix = None, age_min
 
     period = population.period.unique()[0]
     mortality = get_insee_projected_mortality().query('(year == @period) and (age >= @age_min)').reset_index().eval(
-        'two_year_mortality = 1 - (1 - mortality_insee) ** 2', inplace = False)
+        'two_year_mortality = 1 - (1 - mortality_insee) ** 2', inplace = False)        
+#a quoi servent ces deux lignes ? Modifier l'objet mortality comme on l'a fait precedemment
 
     log.debug(simulated_mortality.merge(mortality).query("sex == 'male'").head(50))
     log.debug(simulated_mortality.merge(mortality).query("sex == 'female'").head(50))
