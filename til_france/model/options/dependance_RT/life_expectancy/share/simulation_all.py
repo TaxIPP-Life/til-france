@@ -654,35 +654,23 @@ def _compute_calibration_coefficient(age_min = 50, period = None, transitions = 
     assert (mortality_after_imputation.avg_mortality > 0).all(), \
         mortality_after_imputation.loc[~(mortality_after_imputation.avg_mortality > 0)]
 
-    projected_mortality_and_next =(get_insee_projected_mortality()  
+    mortality_insee =(get_insee_projected_mortality()  
         .query('year == @period')
         .rename(columns = {'year': 'period'})
         )  
-    #return projected_mortality_and_next
+    #return mortality_insee
 
-    assert projected_mortality_and_next.mortality_insee_next_period is not None
+    assert mortality_insee.mortality_insee_next_period is not None
 
     
     model_to_target = (mortality_after_imputation
         .merge(
-            projected_mortality_and_next.reset_index(),
+            mortality_insee.reset_index(),
             on = ['sex', 'age'],
             )
         #.eval('cale_mortality_1_year = mortality_insee / avg_mortality', inplace = False) 
         #.eval('mortalite_2_year_insee = 1 - (1 - mortality_insee) ** 2', inplace = False)
         )
-
-    model_to_target['mortalite_2_year_insee'] = 0
-    model_to_target.loc[
-        model_to_target.mortality_insee_next_period.notnull(),
-        'mortalite_2_year_insee'
-        ] = 1 - (1 - model_to_target.mortality_insee) * (1 - model_to_target.mortality_insee_next_period)
-   
-    model_to_target.loc[
-        model_to_target.mortality_insee_next_period.isnull(),
-        'mortalite_2_year_insee'
-        ] = 1 - (1 - model_to_target.mortality_insee) ** 2
-
 
     if not transformation_1an: #transformations a 2 ans pour l'instant
         model_to_target = (model_to_target 
@@ -1039,6 +1027,17 @@ def get_insee_projected_mortality():
     mortality_insee_next_period = mortality_insee_next_period.groupby(['sex','age']).shift(-1)
     mortality_insee2['mortality_insee_next_period'] =mortality_insee_next_period.mortality_insee
     mortality_insee = mortality_insee2
+
+    mortality_insee['mortalite_2_year_insee'] = 0
+    mortality_insee.loc[
+        mortality_insee.mortality_insee_next_period.notnull(),
+        'mortalite_2_year_insee'
+        ] = 1 - (1 - mortality_insee.mortality_insee) * (1 - mortality_insee.mortality_insee_next_period)
+   
+    mortality_insee.loc[
+        mortality_insee.mortality_insee_next_period.isnull(),
+        'mortalite_2_year_insee'
+        ] = 1 - (1 - mortality_insee.mortality_insee) ** 2
 
     return mortality_insee
 
