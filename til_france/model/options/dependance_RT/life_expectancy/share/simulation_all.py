@@ -209,6 +209,8 @@ def run_scenario(uncalibrated_transitions = None, initial_population = None, ini
                     transitions = transitions,
                     period = period,
                     dependance_initialisation = dependance_initialisation,
+                    age_min = age_min,
+                    transformation_1an = transformation_1an
                     )
                 transitions_by_period[period] = transitions
                 
