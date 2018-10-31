@@ -612,6 +612,7 @@ def _get_calibrated_transitions(period = None, transitions = None, dependance_in
             )
         .eval('calibrated_probability = probability * cale_other_transitions', inplace = False)
         )
+    print("Utilise les cales pour calibrated_probability")
     assert other_transitions.calibrated_probability.notnull().all(), \
         other_transitions.loc[other_transitions.calibrated_probability.isnull()]
 
@@ -721,6 +722,7 @@ def get_mortality_after_imputation(mortality_table = None, dependance_initialisa
 
 def correct_transitions_for_mortality(transitions, dependance_initialisation = None, mu = None, period = None,
         survival_gain_cast = None, previous_mortality = None):
+    print("Utilise correct_transitions_for_mortality")
     """
     Take a transition matrix = mortality_calibrated_target and correct transitions to match period's mortality target
     according to a scenario defined by survival_gain_cast and mu
@@ -746,6 +748,7 @@ def correct_transitions_for_mortality(transitions, dependance_initialisation = N
     target_mortality = (projected_mortality
         .query('year == @period')
         .rename(columns = {'mortality_insee': 'target_mortality'})
+        .rename(columns = {'mortalite_2_year_insee': 'target_mortality_2_year'})
         .reset_index()
         .drop('year', axis = 1)
         )
@@ -775,11 +778,12 @@ def correct_transitions_for_mortality(transitions, dependance_initialisation = N
         )
     correction_coefficient = (target_mortality.reset_index()
         .merge(actual_mortality)
-        .eval('correction_coefficient = (1 - (1 - target_mortality) ** 2 ) / mortality', inplace = False)
+      # .eval('correction_coefficient = (1 - (1 - target_mortality) ** 2 ) / mortality', inplace = False)
+        .eval('correction_coefficient = target_mortality_2_year / mortality', inplace = False)
         .rename(columns = dict(year = 'period'))
         .drop(['mortality', 'target_mortality'], axis = 1)
         )
-
+        
     assert not (correction_coefficient['correction_coefficient'].isnull().any())
 
     uncalibrated_probabilities = (transitions.reset_index()[
@@ -825,7 +829,7 @@ def correct_transitions_for_mortality(transitions, dependance_initialisation = N
         "There are calibrated_probability NaNs in mortality"
 
     if survival_gain_cast == "homogeneous":
-        print("Je passe ici")
+        print("Passe par homogeneous")
         # Gain in survival probability are dispatched to the other states respecting the orginal odds ratio
         assert (mortality.calibrated_probability < 1).all()
         mortality.eval(
@@ -1286,9 +1290,8 @@ def apply_transition_matrix(population = None, transition_matrix = None, age_min
         ).reset_index()
 
     period = population.period.unique()[0]
-    mortality = get_insee_projected_mortality().query('(year == @period) and (age >= @age_min)').reset_index().eval(
-        'two_year_mortality = 1 - (1 - mortality_insee) ** 2', inplace = False)        
-#a quoi servent ces deux lignes ? Modifier l'objet mortality comme on l'a fait precedemment
+
+    mortality=get_insee_projected_mortality().query('(year == @period) and (age >= @age_min)').reset_index().eval('two_year_mortality=mortalite_2_year_insee')
 
     log.debug(simulated_mortality.merge(mortality).query("sex == 'male'").head(50))
     log.debug(simulated_mortality.merge(mortality).query("sex == 'female'").head(50))
