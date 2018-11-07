@@ -10,6 +10,11 @@ docs/node_modules
 til_france/tests/models/demographic_model/output/replication_*/
 til_france/tests/models/demographic_model/output/*.csv
 til_france/tests/models/demographic_model/output/*.h5
+*.h5
+.spyproject
+til_france/model/options/dependance_RT/life_expectancy/share/predicted_mortality_table.csv
+
+
 
 ##########################
 # Local configuration file
@@ -237,5 +242,3 @@ pip-log.txt
 .mr.developer.cfg
 
 
-*.h5
-.spyproject
