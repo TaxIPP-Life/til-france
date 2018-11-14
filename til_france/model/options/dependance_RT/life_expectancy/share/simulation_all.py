@@ -84,11 +84,13 @@ from til_france.model.options.dependance_RT.life_expectancy.share.paths_prog imp
     
 # # Fonctions principales
 
-def run(survival_gain_casts = None, mu = None, uncalibrated_transitions = None, vagues = [4, 5, 6], age_min = None, prevalence_survey = None, transformation_1an = None):
+def run(survival_gain_casts = None, mu = None, uncalibrated_transitions = None, vagues = [4, 5, 6], age_min = None, prevalence_survey = None, transformation_1an = None, age_max_cale = None):
     assert vagues is not None
     assert age_min is not None
     assert uncalibrated_transitions is not None
     assert prevalence_survey is not None
+    assert age_max_cale is not None
+
     create_initial_prevalence(smooth = True, prevalence_survey = prevalence_survey, age_min = age_min)
     for survival_gain_casts in survival_gain_casts:
         if survival_gain_casts in ['initial_vs_others', 'autonomy_vs_disability']:
@@ -100,7 +102,8 @@ def run(survival_gain_casts = None, mu = None, uncalibrated_transitions = None, 
                     age_min = age_min,
                     prevalence_survey = prevalence_survey,
                     transformation_1an = transformation_1an,
-                    mu = mu
+                    mu = mu,
+                    age_max_cale = age_max_cale
                     )
         else:
             save_data_and_graph(
@@ -110,12 +113,15 @@ def run(survival_gain_casts = None, mu = None, uncalibrated_transitions = None, 
                 age_min = age_min,
                 prevalence_survey = prevalence_survey,
                 transformation_1an = transformation_1an,
+                age_max_cale = age_max_cale
                 )
 
 
-def save_data_and_graph(uncalibrated_transitions, mu = None, survival_gain_casts = None, vagues = None, age_min = None, prevalence_survey = None, transformation_1an = None):
+def save_data_and_graph(uncalibrated_transitions, mu = None, survival_gain_casts = None, vagues = None, age_min = None, prevalence_survey = None, transformation_1an = None, age_max_cale = None):
     assert age_min is not None
     assert prevalence_survey is not None
+    assert age_max_cale is not None
+
     log.info("Running with survival_gain_casts = {}".format(survival_gain_casts))
     initial_period = 2010
     initial_population = get_initial_population(age_min = age_min, rescale = True, period = initial_period, prevalence_survey = prevalence_survey)
@@ -133,6 +139,7 @@ def save_data_and_graph(uncalibrated_transitions, mu = None, survival_gain_casts
         age_min = age_min,
         prevalence_survey = prevalence_survey,
         transformation_1an = transformation_1an,
+        age_max_cale = age_max_cale
         )
     suffix = build_suffix(survival_gain_casts, mu, vagues, prevalence_survey)
     population_path = os.path.join(figures_directory, 'population_{}.csv'.format(suffix))
@@ -253,8 +260,10 @@ def run_scenario(uncalibrated_transitions = None, initial_population = None, ini
 
 
 def run_scenario2(uncalibrated_transitions = None, initial_population = None, initial_period = 2010, mu = None,
-        survival_gain_casts = None, age_min = None, prevalence_survey = None, transformation_1an = None):
+        survival_gain_casts = None, age_min = None, prevalence_survey = None, transformation_1an = None, age_max_cale = None):
     assert prevalence_survey is not None
+    assert age_max_cale is not None
+
     initial_population['period'] = initial_period
     population = initial_population.copy()
 
@@ -271,7 +280,8 @@ def run_scenario2(uncalibrated_transitions = None, initial_population = None, in
         age_min = age_min,
         transformation_1an = transformation_1an,
         survival_gain_casts = survival_gain_casts,
-        mu = mu
+        mu = mu,
+        age_max_cale = age_max_cale
         )
 
     period = initial_period
@@ -304,7 +314,8 @@ def run_scenario2(uncalibrated_transitions = None, initial_population = None, in
                     age_min = age_min,
                     transformation_1an = transformation_1an,
                     survival_gain_casts = survival_gain_casts,
-                    mu = mu
+                    mu = mu,
+                    age_max_cale = age_max_cale
                     )
                 transitions_by_period[period] = transitions
                 
@@ -317,6 +328,7 @@ def run_scenario2(uncalibrated_transitions = None, initial_population = None, in
             population = population.query('period == @period').copy(),
             transition_matrix = transitions,
             age_min = age_min,
+            age_max_cale = age_max_cale 
             )
         check_67_and_over(iterated_population, age_min = age_min + 2)
         iterated_population = add_lower_age_population(population = iterated_population, age_min = age_min, prevalence_survey = prevalence_survey)
@@ -533,10 +545,11 @@ def add_lower_age_population(population = None, age_min = None, prevalence_surve
 
 
 def build_mortality_calibrated_target_from_transitions(transitions = None, period = None, dependance_initialisation = None,
-       age_min = None, transformation_1an = None, survival_gain_casts = None, mu = None):
+       age_min = None, transformation_1an = None, survival_gain_casts = None, mu = None, age_max_cale = None):
     assert age_min is not None
     assert period is not None
     assert transitions is not None
+    assert age_max_cale is not None
     mortality_calibrated_target = build_mortality_calibrated_target(
         transitions = transitions,
         period = period,
@@ -544,7 +557,8 @@ def build_mortality_calibrated_target_from_transitions(transitions = None, perio
         age_min = age_min,
         transformation_1an = transformation_1an,
         survival_gain_casts = survival_gain_casts,
-        mu = mu
+        mu = mu,
+        age_max_cale = age_max_cale
         )
     assert_probabilities(
         dataframe = mortality_calibrated_target,
@@ -556,7 +570,7 @@ def build_mortality_calibrated_target_from_transitions(transitions = None, perio
 
 
 def build_mortality_calibrated_target(transitions = None, period = None, dependance_initialisation = None, scale = 4,
-        age_min = None, transformation_1an = None, survival_gain_casts = None, mu = None):
+        age_min = None, transformation_1an = None, survival_gain_casts = None, mu = None, age_max_cale = None):
     """
     Compute the calibrated mortality by sex, age and disability state (initial_state) for a given period
     using data on the disability states distribution in the population at that period
@@ -564,6 +578,7 @@ def build_mortality_calibrated_target(transitions = None, period = None, dependa
     TODO should be merged with build_mortality_calibrated_target_from_transitions
     """
     assert age_min is not None
+    assert age_max_cale is not None
     assert scale in [4, 5]
     if scale == 5:
         death_state = 5
@@ -577,7 +592,8 @@ def build_mortality_calibrated_target(transitions = None, period = None, dependa
         dependance_initialisation = dependance_initialisation,
         transformation_1an = transformation_1an,
         survival_gain_casts = survival_gain_casts,
-        mu = mu
+        mu = mu,
+        age_max_cale = age_max_cale
         )
 
     null_fill_by_year = calibrated_transitions.reset_index().query('age == @age_min').copy()
@@ -642,12 +658,13 @@ def build_mortality_calibrated_target(transitions = None, period = None, dependa
     return mortality_calibrated_target
 
 
-def _get_calibrated_transitions(period = None, transitions = None, dependance_initialisation = None, transformation_1an = None, survival_gain_casts = None, mu = None):
+def _get_calibrated_transitions(period = None, transitions = None, dependance_initialisation = None, transformation_1an = None, survival_gain_casts = None, mu = None, age_max_cale = None):
     """
     Calibrate transitions to match mortality from a specified period
     """
     death_state = 4
     assert (period is not None) and (transitions is not None)
+    assert age_max_cale is not None
     # Add calibration_coeffcients for mortality
     calibration = _compute_calibration_coefficient(
         period = period,
@@ -655,6 +672,9 @@ def _get_calibrated_transitions(period = None, transitions = None, dependance_in
         dependance_initialisation = dependance_initialisation,
         transformation_1an = transformation_1an,
         )
+
+    #Selectionne calibration jusque age_max
+    calibration=calibration.loc[calibration['age']<age_max_cale]
     
     assert not calibration.reset_index()[['sex', 'age']].duplicated().any(), \
         calibration.reset_index().loc[calibration.reset_index()[['sex', 'age']].duplicated()]
@@ -667,6 +687,7 @@ def _get_calibrated_transitions(period = None, transitions = None, dependance_in
     mortality = (transitions
         .reset_index()
         .query('final_state == @death_state')
+        .query('age < 101') #a remplacer par age_max_cale
         .merge(
             calibration[['sex', 'age', 'cale_mortality_2_year']].copy(),
             on = ['sex', 'age'],
@@ -675,8 +696,6 @@ def _get_calibrated_transitions(period = None, transitions = None, dependance_in
     mortality['calibrated_probability'] = np.minimum(
        mortality.probability * mortality.cale_mortality_2_year, 1)  # Avoid over corrections !
     print("passe par le 1er mortality<1")
-
-    
 
     #Dans df transitions on a encore les transitions vers le meme etat
 
@@ -706,7 +725,7 @@ def _get_calibrated_transitions(period = None, transitions = None, dependance_in
                 )
             .eval('calibrated_probability = probability * cale_other_transitions', inplace = False)
             )
-        BIM
+        
         print("Utilise les cales pour calibrated_probability")
         assert other_transitions.calibrated_probability.notnull().all(), \
             other_transitions.loc[other_transitions.calibrated_probability.isnull()]
@@ -796,9 +815,11 @@ def _get_calibrated_transitions(period = None, transitions = None, dependance_in
             other_transitions.reset_index().set_index(['sex', 'age', 'initial_state', 'final_state']).sort_index()
             ]
         ).sort_index()
+    
 
     #Remplace les missings de calibrated proba par periodized calibrated proba si final_state=4 pour avoir une variable unique
-    calibrated_transitions['calibrated_probability'] = calibrated_transitions['calibrated_probability'].fillna(value=calibrated_transitions['periodized_calibrated_probability'])
+    if (calibrated_transitions['calibrated_probability']).isnull().any():
+        calibrated_transitions['calibrated_probability'] = calibrated_transitions['calibrated_probability'].fillna(value=calibrated_transitions['periodized_calibrated_probability'])
 
     
     #Correction
@@ -1460,12 +1481,13 @@ def regularize2(transition_matrix_dataframe = None, by = None, probability = Non
     return transition_matrix_dataframe
 
 
-def apply_transition_matrix(population = None, transition_matrix = None, age_min = None):
+def apply_transition_matrix(population = None, transition_matrix = None, age_min = None, age_max_cale = None):
     assert age_min is not None
     death_state = 4
     assert population is not None and transition_matrix is not None
     assert len(population.period.unique()) == 1
     final_population = (population
+        .loc[population['age']<age_max_cale]
         .merge(
             transition_matrix.reset_index().drop('period', axis = 1),
             on = ['age', 'sex', 'initial_state'])
