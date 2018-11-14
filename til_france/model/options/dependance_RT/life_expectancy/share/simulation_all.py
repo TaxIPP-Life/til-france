@@ -655,7 +655,7 @@ def _get_calibrated_transitions(period = None, transitions = None, dependance_in
         dependance_initialisation = dependance_initialisation,
         transformation_1an = transformation_1an,
         )
-
+    
     assert not calibration.reset_index()[['sex', 'age']].duplicated().any(), \
         calibration.reset_index().loc[calibration.reset_index()[['sex', 'age']].duplicated()]
 
@@ -676,6 +676,8 @@ def _get_calibrated_transitions(period = None, transitions = None, dependance_in
        mortality.probability * mortality.cale_mortality_2_year, 1)  # Avoid over corrections !
     print("passe par le 1er mortality<1")
 
+    
+
     #Dans df transitions on a encore les transitions vers le meme etat
 
 #Cree beta qui varie selon les SCENARIOS et applique beta
@@ -687,7 +689,7 @@ def _get_calibrated_transitions(period = None, transitions = None, dependance_in
             inplace = True,
             )
         assert not mortality[['sex', 'age', 'initial_state', 'final_state']].duplicated().any(), mortality.loc[mortality[['sex', 'age', 'initial_state', 'final_state']].duplicated()]
-
+        
         # Calibrate other transitions
         cale_other_transitions = (mortality[['sex', 'age', 'initial_state', 'cale_other_transitions']]
             .copy()
@@ -704,7 +706,7 @@ def _get_calibrated_transitions(period = None, transitions = None, dependance_in
                 )
             .eval('calibrated_probability = probability * cale_other_transitions', inplace = False)
             )
-        
+        BIM
         print("Utilise les cales pour calibrated_probability")
         assert other_transitions.calibrated_probability.notnull().all(), \
             other_transitions.loc[other_transitions.calibrated_probability.isnull()]
@@ -727,7 +729,6 @@ def _get_calibrated_transitions(period = None, transitions = None, dependance_in
             uncalibrated_probabilities = transitions.rename(columns = {'probability': 'calibrated_probability'})
             )
         print("Je passe dans initial_vs_others 2")
-
         
 
         other_transitions = (other_transitions
@@ -761,14 +762,15 @@ def _get_calibrated_transitions(period = None, transitions = None, dependance_in
                 on = ['sex', 'age', 'initial_state', 'final_state'],
                 )
             #.eval('calibrated_probability = probability * cale_other_transitions', inplace = False)
-            .eval('calibrated_probability = probability * periodized_calibrated_probability', inplace = False)
+            #.eval('calibrated_probability = probability * periodized_calibrated_probability', inplace = False)
+            .rename(columns = {'periodized_calibrated_probability': 'calibrated_probability'})
             .reset_index()
             .set_index(['sex', 'age'])
             .sort_index()
             .fillna(method = 'ffill') #Remplit avec la valeur de l'age precedent pour eviter des missings aux ages eleves
             .reset_index()
             .set_index(['sex', 'age', 'initial_state', 'final_state'])
-            .rename(columns = {'periodized_calibrated_probability': 'cale_other_transition2'}) #Pour ne pas melanger ensuite
+            #.rename(columns = {'periodized_calibrated_probability': 'cale_other_transition2'}) #Pour ne pas melanger ensuite
             )
 
         
@@ -870,6 +872,7 @@ def _compute_calibration_coefficient(age_min = 50, period = None, transitions = 
             .eval('cale_mortality_2_year = mortalite_2_year_insee / avg_mortality_2_year', inplace = False)
             )
     print("Passe par les cales")
+    
     return model_to_target
 
 
@@ -898,14 +901,16 @@ def get_mortality_after_imputation(mortality_table = None, dependance_initialisa
 
     mortality_after_imputation.name = 'mortality_after_imputation'
 
+    
+
 
     if (mortality_after_imputation == 0).any():  # Deal with age > 100 with nobody in the population
         print("missing dans mortality_after_imputation")
         mortality_after_imputation = mortality_after_imputation.reset_index()
         mortality_after_imputation.loc[
             (mortality_after_imputation.age >= 100) & (mortality_after_imputation.mortality_after_imputation == 0),
-            'mortality_after_imputation'] = .6
-        print("passe par l'imputation mortality 0.6")
+            'mortality_after_imputation'] = .84 #Mortalite à deux ans pour une mortalite à 1an de 0.6
+        print("passe par l'imputation mortality 0.84")
         mortality_after_imputation.set_index(['sex', 'age'])
 
     return mortality_after_imputation
@@ -1062,6 +1067,7 @@ def correct_transitions_for_mortality(transitions, dependance_initialisation = N
             mu = mu,
             uncalibrated_probabilities = uncalibrated_probabilities
             )
+    
     elif survival_gain_casts == 'autonomy_vs_disability':
         print("Je passe dans autonomy_vs_disability")
         assert mu is not None
@@ -1543,6 +1549,7 @@ def initial_vs_others(mortality = None, mu = None, uncalibrated_probabilities = 
         3: [2, 3, 4],
         }
 
+
     mortality.eval(
         'delta_initial = - @mu * (periodized_calibrated_probability - calibrated_probability)',
         inplace = True,
@@ -1618,6 +1625,7 @@ def initial_vs_others(mortality = None, mu = None, uncalibrated_probabilities = 
                     inplace = False,
                     )
                 )
+            
             other_transitions = pd.concat([
                 other_transitions,
                 to_initial_transitions[
@@ -1627,6 +1635,8 @@ def initial_vs_others(mortality = None, mu = None, uncalibrated_probabilities = 
                     ['period', 'sex', 'age', 'initial_state', 'final_state', 'periodized_calibrated_probability']
                     ],
                 ])
+
+                       
             assert not other_transitions[['period', 'sex', 'age', 'initial_state', 'final_state']].duplicated().any(), \
                 'Duplicated transitions for initial_state = {}: {}'.format(
                     initial_state,
@@ -1634,7 +1644,7 @@ def initial_vs_others(mortality = None, mu = None, uncalibrated_probabilities = 
                         other_transitions[['period', 'sex', 'age', 'initial_state', 'final_state']].duplicated()
                         ]
                     )
-            BIM
+            
 
     return other_transitions
 
