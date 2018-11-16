@@ -462,7 +462,7 @@ if __name__ == '__main__':
     result, formatted_params = estimate_model(initial_state, formula, sex = sex, variables = variables)
 
     prediction = compute_prediction(initial_state = initial_state, formula = formula, sex = sex, variables = variables)
-    print prediction
+    #print prediction
 
     for initial_state in range(1):
         test(initial_state = initial_state, formula = formula, sex = sex)

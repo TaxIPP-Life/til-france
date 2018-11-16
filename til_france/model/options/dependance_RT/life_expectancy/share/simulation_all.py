@@ -255,7 +255,7 @@ def run_scenario(uncalibrated_transitions = None, initial_population = None, ini
         check_67_and_over(iterated_population, age_min = age_min + 2)
         iterated_population = add_lower_age_population(population = iterated_population, age_min = age_min, prevalence_survey = prevalence_survey)
         population = pd.concat([population, iterated_population])
-
+    
     return population, transitions_by_period
 
 
@@ -297,8 +297,8 @@ def run_scenario2(uncalibrated_transitions = None, initial_population = None, in
         if period > initial_period:
             dependance_initialisation = population.query('period == @period').copy()
             # Update the transitions matrix if necessary
-            if survival_gain_casts is  'homogeneous':
-                print("Passe par: survival_gain_casts = homogeneous")
+            if survival_gain_casts is in ['homogeneous', 'initial_vs_others', 'autonomy_vs_disability']:
+                print("Passe par: survival_gain_casts = initial others")
                 log.info("Calibrate transitions for period = {}".format(period))
                 delta = 1e-7
                 transitions = regularize2(
@@ -337,7 +337,7 @@ def run_scenario2(uncalibrated_transitions = None, initial_population = None, in
         iterated_population = add_lower_age_population(population = iterated_population, age_min = age_min, prevalence_survey = prevalence_survey)
         population = pd.concat([population, iterated_population])
         
-
+    
     return population, transitions_by_period
     
 # # Doc transition_matrices : fonctions get_transitions_from_formula, compute_prediction, build_estimation_sample, get_clean_share
@@ -1580,7 +1580,7 @@ def apply_transition_matrix(population = None, transition_matrix = None, age_min
 def build_suffix(survival_gain_casts = None, mu = None, vagues = None, prevalence_survey = None):
     suffix = survival_gain_casts
     if mu is not None:
-        suffix += '_mu_{}'.format(mu)
+        suffix += '_mu_{}_'.format(mu)
     if vagues is not None:
         suffix += slugify.slugify(str(vagues), separator = "_")
     if prevalence_survey is not None:
