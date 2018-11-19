@@ -17,9 +17,12 @@ import seaborn as sns
 import slugify
 import sys
 import pkg_resources
+import ipdb
+import numpy
 
 
 from til_core.config import Config
+
 
 from til_france.model.options.dependance_RT.life_expectancy.share.transition_matrices import (
     assets_path,
@@ -34,6 +37,7 @@ from til_france.model.options.dependance_RT.life_expectancy.share.simulation_all
     run,
     save_data_and_graph,
     run_scenario,
+    run_scenario2,
     create_initial_prevalence,
     get_care_prevalence_pivot_table,
     get_initial_population,
@@ -46,16 +50,19 @@ from til_france.model.options.dependance_RT.life_expectancy.share.simulation_all
     get_mortality_after_imputation,
     get_predicted_mortality_table,
     get_insee_projected_mortality,
+    get_insee_projected_mortality_interm,
+    #get_insee_projected_mortality_next_period,
     get_insee_projected_population,
     smooth_pivot_table,
     check_67_and_over,
     regularize,
+    regularize2,
     apply_transition_matrix,
     build_suffix,
-    assert_probabilities,
-    
-    
+    assert_probabilities,    
+    impute_high_ages,
     )
+
 
 #from til_france.model.options.dependance_RT.life_expectancy.share.tool_prog import (
 #    smooth_pivot_table,
@@ -109,9 +116,16 @@ formula = 'final_state ~ I((age - 80) * 0.1) + I(((age - 80) * 0.1) ** 2) + I(((
 uncalibrated_transitions = get_transitions_from_formula(formula = formula, vagues = vagues, estimation_survey = 'share')
 
 survival_gain_casts = [
-        'homogeneous',
+        #'homogeneous',
+        #'initial_vs_others',
+        'autonomy_vs_disability'
         ]
 
-run(survival_gain_casts, uncalibrated_transitions = uncalibrated_transitions, vagues = vagues, age_min = 60, prevalence_survey = 'care')
 
-run(survival_gain_casts, uncalibrated_transitions = uncalibrated_transitions, vagues = vagues, age_min = 60, prevalence_survey = 'share')
+mu = 1
+
+run(survival_gain_casts,mu,uncalibrated_transitions = uncalibrated_transitions, vagues = vagues, age_min = 60, prevalence_survey = 'care', transformation_1an = False, age_max_cale=99)
+
+
+run(survival_gain_casts,uncalibrated_transitions = uncalibrated_transitions, vagues = vagues, age_min = 60, prevalence_survey = 'care', transformation_1an = False, age_max_cale=101)
+
