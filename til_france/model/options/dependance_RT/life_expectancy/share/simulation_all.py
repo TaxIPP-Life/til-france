@@ -1384,6 +1384,13 @@ def check_67_and_over(population, age_min):
     pop_sim_100 = population.query('(age == @age_min + 38) and (period == @period)')['population'].sum()
     pop_insee_60 = insee_population.query('(age == @age_min - 2) and (year == @period)')['population'].sum()
     pop_sim_60 = population.query('(age == @age_min - 2) and (period == @period)')['population'].sum()
+    pop_insee_80_women = insee_population.query('(age == @age_min + 18) and (year == @period) and (sex == "female")')['population'].sum()
+    pop_insee_82 = insee_population.query('(age == @age_min + 19) and (year == @period)')['population'].sum()
+    pop_insee_82_women = insee_population.query('(age == @age_min + 19) and (year == @period) and (sex == "female")')['population'].sum()
+    pop_sim_82 = population.query('(age == @age_min + 19) and (period == @period)')['population'].sum()
+    pop_sim_82_women = population.query('(age == @age_min + 19) and (period == @period) and (sex == "female")')['population'].sum()
+    pop_sim_80 = population.query('(age == @age_min + 18) and (period == @period)')['population'].sum()
+    pop_sim_80_women = population.query('(age == @age_min + 18) and (period == @period) and (sex == "female")')['population'].sum()
 
     log.info("period {}: insee = {} vs {} = til".format(
         period,
@@ -1409,6 +1416,19 @@ def check_67_and_over(population, age_min):
     log.info("period {}: insee_100:{} til_100:{} insee_100 - til_100 = {}".format(
        period, pop_insee_100, pop_sim_100, 
        pop_insee_100 - pop_sim_100    
+    ))
+    
+    log.info("period {}: pop_insee_82:{} pop_sim_82:{}".format(
+       period,pop_insee_82,
+       pop_sim_82,
+    ))
+    log.info("period {}: pop_insee_80_women:{} pop_sim_80_women:{}".format(
+       period,pop_insee_80_women,
+       pop_sim_80_women,
+    ))
+    log.info("period {}: pop_insee_82_women:{} pop_sim_82_women:{}".format(
+       period,pop_insee_82_women,
+       pop_sim_82_women,
     ))
 
 def regularize(transition_matrix_dataframe = None, by = None, probability = None, delta = None):
