@@ -75,11 +75,14 @@ setup(
             'webcolors',
             'xlrd',
             ],
-        ),
+		liam2 = [
+           'liam2',
+           ]
+       ),
     install_requires = [
-        'liam2',
         'numpy',
         'openfisca-survey-manager >= 0.9.8',
+        'python-slugify',
         'PyYAML >= 3.10',
         'til-core',
         ],
