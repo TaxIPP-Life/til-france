@@ -157,6 +157,7 @@ def save_data_and_graph(uncalibrated_transitions, mu = None, survival_gain_casts
     pivot_table.to_csv(os.path.join(figures_directory, 'share_proj_{}.csv'.format(
         suffix)))
     ax = pivot_table.plot.line()
+    plt.ylim(0,14000000)
     figure = ax.get_figure()
     figure.savefig(os.path.join(figures_directory, 'share_proj_{}.pdf'.format(
         suffix)), bbox_inches = 'tight')
@@ -193,7 +194,7 @@ def run_scenario(uncalibrated_transitions = None, initial_population = None, ini
 
     transitions_by_period = dict()
 
-    while period < 2018:
+    while period < 2058:
         print ('Running period {}'.format(period))
         period = population['period'].max()
         # plot_dependance_niveau_by_age(population, period)
@@ -290,7 +291,7 @@ def run_scenario2(uncalibrated_transitions = None, initial_population = None, in
 
     transitions_by_period = dict()
 
-    while period < 2018:
+    while period < 2058:
         print('Running period {}'.format(period))
         period = population['period'].max()
         # plot_dependance_niveau_by_age(population, period)
