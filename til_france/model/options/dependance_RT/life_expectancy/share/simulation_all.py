@@ -154,19 +154,19 @@ def save_data_and_graph(uncalibrated_transitions, mu = None, survival_gain_casts
         )
 
     pivot_table = population.groupby(['period', 'initial_state'])['population'].sum().unstack()
-    pivot_table.to_csv(os.path.join(figures_directory, 'share_proj_{}_mu{}.csv'.format(
-        suffix,mu)))
+    pivot_table.to_csv(os.path.join(figures_directory, 'share_proj_{}.csv'.format(
+        suffix)))
     ax = pivot_table.plot.line()
     figure = ax.get_figure()
-    figure.savefig(os.path.join(figures_directory, 'share_proj_{}_mu{}.pdf'.format(
-        suffix, mu)), bbox_inches = 'tight')
+    figure.savefig(os.path.join(figures_directory, 'share_proj_{}.pdf'.format(
+        suffix)), bbox_inches = 'tight')
 
     pct_pivot_table = pivot_table.divide(pivot_table.sum(axis = 1), axis = 0)
     ax = pct_pivot_table.plot.line()
     figure = ax.get_figure()
-    pct_pivot_table.to_csv(os.path.join(figures_directory, 'share_proj_pct_{}_mu{}.csv'.format(
-        suffix,mu)))
-    figure.savefig(os.path.join(figures_directory, 'share_proj_pct_{}_mu{}.pdf'.format(suffix,mu)), bbox_inches = 'tight')
+    pct_pivot_table.to_csv(os.path.join(figures_directory, 'share_proj_pct_{}.csv'.format(
+        suffix)))
+    figure.savefig(os.path.join(figures_directory, 'share_proj_pct_{}.pdf'.format(suffix)), bbox_inches = 'tight')
 
 
 def run_scenario(uncalibrated_transitions = None, initial_population = None, initial_period = 2010,
@@ -193,7 +193,7 @@ def run_scenario(uncalibrated_transitions = None, initial_population = None, ini
 
     transitions_by_period = dict()
 
-    while period < 2058:
+    while period < 2018:
         print ('Running period {}'.format(period))
         period = population['period'].max()
         # plot_dependance_niveau_by_age(population, period)
@@ -290,7 +290,7 @@ def run_scenario2(uncalibrated_transitions = None, initial_population = None, in
 
     transitions_by_period = dict()
 
-    while period < 2058:
+    while period < 2018:
         print('Running period {}'.format(period))
         period = population['period'].max()
         # plot_dependance_niveau_by_age(population, period)
