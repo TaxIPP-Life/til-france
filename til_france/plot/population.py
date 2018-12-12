@@ -8,8 +8,8 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
 import os
 import pandas as pd
-from StringIO import StringIO
-
+#from StringIO import StringIO
+from io import StringIO
 
 from til_france.tests.base import til_france_path, create_or_get_figures_directory, ipp_colors, get_data_directory
 from til_france.targets.population import get_data_frame_insee

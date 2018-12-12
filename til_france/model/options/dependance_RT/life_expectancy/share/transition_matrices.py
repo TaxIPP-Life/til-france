@@ -247,7 +247,7 @@ def build_estimation_sample(initial_state, sex = None, variables = None, readjus
 def build_tansition_matrix_from_proba_by_initial_state(proba_by_initial_state, sex = None):
     assert sex in ['male', 'female', 'all']
     transition_matrices = list()
-    for initial_state, proba_dataframe in proba_by_initial_state.iteritems():
+    for initial_state, proba_dataframe in proba_by_initial_state.items():
         transition_matrices.append(
             pd.melt(
                 proba_dataframe,
@@ -297,7 +297,7 @@ def estimate_model(initial_state, formula, sex = None, variables = ['age', 'fina
 def direct_compute_predicition(initial_state, formula, formatted_params, sex = None):
     assert (sex in ['male', 'female']) or (sex is None)
     computed_prediction = build_estimation_sample(initial_state, sex = sex)
-    for final_state, column in formatted_params.iteritems():
+    for final_state, column in formatted_params.items():
         proba_str = "exp({})".format(
             " + ".join([index + " * " + str(value) for index, value in zip(column.index, column.values)])
             )
@@ -346,7 +346,7 @@ def get_transitions_from_formula(formula = None, age_min = 50, age_max = 120, va
         assert formula is not None
         proba_by_initial_state = dict()
         exog = pd.DataFrame(dict(age = range(age_min, age_max + 1)))
-        for initial_state, final_states in final_states_by_initial_state.iteritems():
+        for initial_state, final_states in final_states_by_initial_state.items():
             proba_by_initial_state[initial_state] = pd.concat(
                 [
                     exog,

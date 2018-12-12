@@ -193,8 +193,8 @@ def run_scenario(uncalibrated_transitions = None, initial_population = None, ini
 
     transitions_by_period = dict()
 
-    while period < 2058:
-        print 'Running period {}'.format(period)
+    while period < 2018:
+        print ('Running period {}'.format(period))
         period = population['period'].max()
         # plot_dependance_niveau_by_age(population, period)
         if period > initial_period:
@@ -290,8 +290,8 @@ def run_scenario2(uncalibrated_transitions = None, initial_population = None, in
 
     transitions_by_period = dict()
 
-    while period < 2058:
-        print 'Running period {}'.format(period)
+    while period < 2018:
+        print('Running period {}'.format(period))
         period = population['period'].max()
         # plot_dependance_niveau_by_age(population, period)
         if period > initial_period:
@@ -1251,7 +1251,7 @@ def get_insee_projected_mortality_interm():
                     u"Âge atteint dans l'année", drop = True
                     ).reset_index()
             )
-        for sex, sheetname in sheetname_by_sex.iteritems()
+        for sex, sheetname in sheetname_by_sex.items()
         )
 
     for df in mortality_by_sex.values():
@@ -1631,7 +1631,7 @@ def initial_vs_others(mortality = None, mu = None, uncalibrated_probabilities = 
         )
     print("Je passe dans initial others 4")
     other_transitions = pd.DataFrame()
-    for initial_state, final_states in final_states_by_initial_state.iteritems():
+    for initial_state, final_states in final_states_by_initial_state.items():
         if 4 not in final_states:
             continue
         #

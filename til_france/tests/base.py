@@ -35,7 +35,7 @@ ipp_colors_not_normalized = dict(
     ipp_blue = (75, 172, 197)
     )
 
-ipp_colors = dict((name, rgb_to_hex(rgb)) for name, rgb in ipp_colors_not_normalized.iteritems())
+ipp_colors = dict((name, rgb_to_hex(rgb)) for name, rgb in ipp_colors_not_normalized.items())
 
 
 def to_percent_round(y, position):
@@ -63,7 +63,7 @@ def create_til_simulation(input_name = None, option = None, output_name_suffix =
     assert input_name is not None
     config = Config()
     name = input_name.lower()
-    print config.__dict__
+    print(config.__dict__)
     input_dir = config.get('til', 'input_dir')
     input_file = '{}_{}.h5'.format(input_name, uniform_weight)
 
