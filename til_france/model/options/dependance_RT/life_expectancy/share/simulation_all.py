@@ -157,7 +157,6 @@ def save_data_and_graph(uncalibrated_transitions, mu = None, survival_gain_casts
     pivot_table.to_csv(os.path.join(figures_directory, 'share_proj_{}.csv'.format(
         suffix)))
     ax = pivot_table.plot.line()
-    plt.ylim(0,14000000)
     figure = ax.get_figure()
     figure.savefig(os.path.join(figures_directory, 'share_proj_{}.pdf'.format(
         suffix)), bbox_inches = 'tight')
