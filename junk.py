@@ -1,11 +1,7 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Wed Aug 22 16:23:07 2018
 
-@author: a.rain
-"""
 
-from til_france.data.data.hsm_dependance_niveau import create_dependance_initialisation_share 
+from til_france.data.data.hsm_dependance_niveau import create_dependance_initialisation_share
 
 from til_france.model.options.dependance_RT.life_expectancy.calibration import (
     get_insee_projected_mortality,
@@ -29,12 +25,6 @@ print(df2.loc[90:120,:])
 def get_care_prevalence_pivot_table(sexe = None, scale = None):
     config = Config()
     assert scale in [4, 5], "scale should be equal to 4 or 5"
-#    if scale == 5:
-#        xls_path = os.path.join(config.get('raw_data', 'hsm_dependance_niveau'), 'desc_dependance_scale5.xls')
- #       data = (pd.read_excel(xls_path)
- #           .rename(columns = {'disability_scale5': 'dependance_niveau', 'woman': 'sexe'})
- #           )
-#    elif scale == 4:
     xls_path = os.path.join(
             config.get('raw_data', 'hsm_dependance_niveau'), 'CARe_scalev1v2.xls')
     data = (pd.read_excel(xls_path)
