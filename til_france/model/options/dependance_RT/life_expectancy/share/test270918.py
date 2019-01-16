@@ -109,7 +109,7 @@ def get_insee_projected_mortality():
     '''
     data_path = os.path.join(til_france_path, 'param', 'demo')
 
-    sheetname_by_sex = dict(zip(
+    sheet_name_by_sex = dict(zip(
         ['male', 'female'],
         ['hyp_mortaliteH', 'hyp_mortaliteF']
         ))
@@ -118,12 +118,12 @@ def get_insee_projected_mortality():
             sex,
             pd.read_excel(
                 os.path.join(data_path, 'projpop0760_FECcentESPcentMIGcent.xls'),
-                sheetname = sheetname, skiprows = 2, header = 2
+                sheet_name = sheet_name, skiprows = 2, header = 2
                 )[:121].set_index(
                     u"Âge atteint dans l'année", drop = True
                     ).reset_index()
             )
-        for sex, sheetname in sheetname_by_sex.iteritems()
+        for sex, sheet_name in sheet_name_by_sex.iteritems()
         )
 
     for df in mortality_by_sex.values():
@@ -148,7 +148,7 @@ def get_insee_projected_mortality():
     return mortality.set_index(['sex', 'age', 'year'])
 
 ####
-    
+
 vagues = [1, 2]
     formula = 'final_state ~ I((age - 80) * 0.1) + I(((age - 80) * 0.1) ** 2) + I(((age - 80) * 0.1) ** 3)'
     uncalibrated_transitions = get_transitions_from_formula(formula = formula, vagues = vagues)
@@ -160,7 +160,7 @@ vagues = [1, 2]
     run(survival_gain_casts, uncalibrated_transitions = uncalibrated_transitions, vagues = vagues, age_min = 60)
 
 
-    
+
 def run(survival_gain_casts = None, uncalibrated_transitions = None, vagues = [4, 5, 6], age_min = None):
     assert age_min is not None
     assert uncalibrated_transitions is not None

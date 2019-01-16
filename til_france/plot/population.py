@@ -156,7 +156,7 @@ def get_insee_projection(quantity, gender, function = None, scenario = 'central'
     if scenario == 'central':
 
         data_path = os.path.join(til_france_path, 'param/demo/projpop0760_FECcentESPcentMIGcent.xls')
-        sheetname_by_gender_by_quantity = dict(
+        sheet_name_by_gender_by_quantity = dict(
             naissances = 'nbre_naiss',
             deces = dict(zip(
                 ['total', 'male', 'female'],
@@ -187,12 +187,12 @@ def get_insee_projection(quantity, gender, function = None, scenario = 'central'
         row_end = 109
 
     if quantity in ['deces', 'population']:
-        sheetname = sheetname_by_gender_by_quantity[quantity][gender]
+        sheet_name = sheet_name_by_gender_by_quantity[quantity][gender]
     elif quantity == 'naissances':
-        sheetname = sheetname_by_gender_by_quantity[quantity]
+        sheet_name = sheet_name_by_gender_by_quantity[quantity]
         age_label = u'Âge au 1er janvier'
     elif quantity == 'migrations' and gender in ['male', 'female']:
-        sheetname = sheetname_by_gender_by_quantity[quantity][gender]
+        sheet_name = sheet_name_by_gender_by_quantity[quantity][gender]
     elif quantity == 'migrations' and gender not in ['male', 'female']:
         return (
             get_insee_projection(quantity, 'male', function = function) +
@@ -200,7 +200,7 @@ def get_insee_projection(quantity, gender, function = None, scenario = 'central'
             )
 
     data_frame = pd.read_excel(
-        data_path, sheetname = sheetname, skiprows = 2, header = 2)[:row_end].set_index(
+        data_path, sheet_name = sheet_name, skiprows = 2, header = 2)[:row_end].set_index(
             age_label)
 
     if function == 'sum':

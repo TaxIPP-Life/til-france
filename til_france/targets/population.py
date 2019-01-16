@@ -30,12 +30,12 @@ def get_data_frame_insee(gender, by = 'age_group'):
         'demo',
         'projpop0760_FECcentESPcentMIGcent.xls'
         )
-    sheetname_by_gender = dict(zip(
+    sheet_name_by_gender = dict(zip(
         ['total', 'male', 'female'],
         ['populationTot', 'populationH', 'populationF']
         ))
     population_insee = pandas.read_excel(
-        data_path, sheetname = sheetname_by_gender[gender], skiprows = 2, header = 2)[:109].set_index(
+        data_path, sheet_name = sheet_name_by_gender[gender], skiprows = 2, header = 2)[:109].set_index(
             u'Âge au 1er janvier')
 
     population_insee.reset_index(inplace = True)
@@ -55,7 +55,7 @@ def build_deaths(to_csv = False, input_dir = None, uniform_weight = 200):
     # Data from INSEE projections
     data_path = os.path.join(til_france_path, 'param', 'demo')
 
-    sheetname_by_gender = dict(zip(
+    sheet_name_by_gender = dict(zip(
         ['male', 'female'],
         ['nbre_decesH', 'nbre_decesF']
         ))
@@ -64,12 +64,12 @@ def build_deaths(to_csv = False, input_dir = None, uniform_weight = 200):
             gender,
             pandas.read_excel(
                 os.path.join(data_path, 'projpop0760_FECcentESPcentMIGcent.xls'),
-                sheetname = sheetname, skiprows = 2, header = 2
+                sheet_name = sheet_name, skiprows = 2, header = 2
                 )[:121].set_index(
                     u"Âge atteint dans l'année", drop = True
                     ).reset_index()
             )
-        for gender, sheetname in sheetname_by_gender.iteritems()
+        for gender, sheet_name in sheet_name_by_gender.iteritems()
         )
     for df in deaths_by_gender.values():
         del df[u"Âge atteint dans l'année"]
@@ -106,7 +106,7 @@ def build_mortality_rates(to_csv = False, input_dir = None):
     # Data from INSEE projections
     data_path = os.path.join(til_france_path, 'param', 'demo')
 
-    sheetname_by_gender = dict(zip(
+    sheet_name_by_gender = dict(zip(
         ['male', 'female'],
         ['hyp_mortaliteH', 'hyp_mortaliteF']
         ))
@@ -115,12 +115,12 @@ def build_mortality_rates(to_csv = False, input_dir = None):
             gender,
             pandas.read_excel(
                 os.path.join(data_path, 'projpop0760_FECcentESPcentMIGcent.xls'),
-                sheetname = sheetname, skiprows = 2, header = 2
+                sheet_name = sheet_name, skiprows = 2, header = 2
                 )[:121].set_index(
                     u"Âge atteint dans l'année", drop = True
                     ).reset_index()
             )
-        for gender, sheetname in sheetname_by_gender.iteritems()
+        for gender, sheet_name in sheet_name_by_gender.iteritems()
         )
 
     for df in mortality_by_gender.values():
@@ -161,7 +161,7 @@ def rescale_migration(input_dir = None):
     # Data from INSEE projections
     data_path = os.path.join(til_france_path, 'param', 'demo')
 
-    sheetname_by_gender = dict(zip(
+    sheet_name_by_gender = dict(zip(
         ['total', 'male', 'female'],
         ['populationTot', 'populationH', 'populationF']
         ))
@@ -171,12 +171,12 @@ def rescale_migration(input_dir = None):
             gender,
             pandas.read_excel(
                 os.path.join(data_path, 'projpop0760_FECcentESPcentMIGcent.xls'),
-                sheetname = sheetname,
+                sheet_name = sheet_name,
                 skiprows = 2,
                 header = 2
                 )[:109].set_index(u'Âge au 1er janvier')
             )
-        for gender, sheetname in sheetname_by_gender.iteritems()
+        for gender, sheet_name in sheet_name_by_gender.iteritems()
         )
 
     migration_insee_by_gender = dict(

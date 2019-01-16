@@ -853,7 +853,7 @@ def get_historical_mortality(rebuild = False):
         log.info('Rebuilding historical_mortality.h5')
         for sex in ['male', 'female']:
             sex_historical_mortality = (
-                pd.read_excel(life_table_path, sheetname = 'france-{}'.format(sex))[['Year', 'Age', 'qx']]
+                pd.read_excel(life_table_path, sheet_name = 'france-{}'.format(sex))[['Year', 'Age', 'qx']]
                 .rename(columns = dict(Year = 'annee', Age = 'age', qx = 'mortalite'))
                 .replace(dict(age = {'110+': '110'}))
                 )
@@ -890,7 +890,7 @@ def get_insee_projected_mortality():
     '''
     data_path = os.path.join(til_france_path, 'param', 'demo')
 
-    sheetname_by_sex = dict(zip(
+    sheet_name_by_sex = dict(zip(
         ['male', 'female'],
         ['hyp_mortaliteH', 'hyp_mortaliteF']
         ))
@@ -899,12 +899,12 @@ def get_insee_projected_mortality():
             sex,
             pd.read_excel(
                 os.path.join(data_path, 'projpop0760_FECcentESPcentMIGcent.xls'),
-                sheetname = sheetname, skiprows = 2, header = 2
+                sheet_name = sheet_name, skiprows = 2, header = 2
                 )[:121].set_index(
                     u"Âge atteint dans l'année", drop = True
                     ).reset_index()
             )
-        for sex, sheetname in sheetname_by_sex.iteritems()
+        for sex, sheet_name in sheet_name_by_sex.iteritems()
         )
 
     for df in mortality_by_sex.values():

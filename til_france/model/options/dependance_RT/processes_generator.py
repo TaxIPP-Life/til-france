@@ -34,7 +34,7 @@ prevalence_coef_path = os.path.join(
     'TIL_prevalence coef_RT.xls'
     )
 
-sheetnames_by_function = {
+sheet_names_by_function = {
     'compute_dependance_niveau_homme_sup_75': 'Men_Above75',
     'compute_dependance_niveau_homme_inf_75': 'Men_Under75',
     'compute_dependance_niveau_femme_sup_80': 'Women_Above80',
@@ -125,8 +125,8 @@ def create_initialisation_from_RT_excel():
         "return (1.0 + 0.5 * erf(x_adjusted))",
         ]
     main = dict(entities = individus)
-    for function_name, sheetname in sheetnames_by_function.iteritems():
-        parameters_value_by_name = pd.read_excel(prevalence_coef_path, sheetname = sheetname).transpose().to_dict()[0]
+    for function_name, sheet_name in sheet_names_by_function.iteritems():
+        parameters_value_by_name = pd.read_excel(prevalence_coef_path, sheet_name = sheet_name).transpose().to_dict()[0]
         cuts, variables = separate_cuts_from_variables(parameters_value_by_name)
         # vars += variables.keys()
         variables = rename_variables(variables)
