@@ -46,18 +46,35 @@ life_table_path = os.path.join(
     )
 
 config = Config()
-
 figures_directory = config.get('dependance', 'figures_directory')
+
+
+eligible_survival_gain_casts = ['homogeneous', 'initial_vs_others', 'autonomy_vs_disability']
 
 
 # Fonctions principales
 
 def run(survival_gain_casts = None, mu = None, uncalibrated_transitions = None, vagues = [4, 5, 6], age_min = None, prevalence_survey = None, one_year_approximation = None, age_max_cale = None):
+    """
+        Run
+
+        :param list vagues: share data waves used for transition estimation
+        :param int age_min:
+        :param DataFrame uncalibrated_transitions:
+        :param str prevalence_survey: survey used to compute initial prevalence, should be 'care', 'hsm' or 'hsm_hsi'
+        :param int age_max_cale:
+        :param str survival_gain_casts: an eligible survival_gain_casts, should be 'autonomy_vs_disability', 'homogeneous' or 'initial_vs_others',
+    """
+
     assert vagues is not None
     assert age_min is not None
     assert uncalibrated_transitions is not None
-    assert prevalence_survey is not None
+    assert prevalence_survey in ['care', 'hsm', 'hsm_hsi']
     assert age_max_cale is not None
+    assert survival_gain_casts in eligible_survival_gain_casts
+
+    if survival_gain_casts in ['initial_vs_others', 'autonomy_vs_disability']:
+        assert mu is not None
 
     create_initial_prevalence(smooth = True, prevalence_survey = prevalence_survey, age_min = age_min)
     for survival_gain_casts in survival_gain_casts:
@@ -93,7 +110,7 @@ def save_data_and_graph(uncalibrated_transitions, mu = None, survival_gain_casts
     initial_period = 2010
     initial_population = get_initial_population(age_min = age_min, rescale = True, period = initial_period, prevalence_survey = prevalence_survey)
     initial_population['period'] = initial_period
-    population, transitions_by_period = run_scenario2(
+    population, transitions_by_period = project_disability(
         uncalibrated_transitions = uncalibrated_transitions,
         initial_population = initial_population,
         mu = mu,
@@ -103,26 +120,27 @@ def save_data_and_graph(uncalibrated_transitions, mu = None, survival_gain_casts
         one_year_approximation = one_year_approximation,
         age_max_cale = age_max_cale
         )
+
+    # Save data
     suffix = build_suffix(survival_gain_casts, mu, vagues, prevalence_survey)
     population_path = os.path.join(figures_directory, 'population_{}.csv'.format(suffix))
     log.info("Saving population data to {}".format(population_path))
     population.to_csv(population_path)
-
     transitions = pd.concat(transitions_by_period.values())
     (transitions
         .reset_index()
         .sort_values(['period', 'sex', 'age', 'initial_state', 'final_state'])
         .to_csv(os.path.join(figures_directory, 'transitions_{}.csv'.format(suffix)))
         )
-
     pivot_table = population.groupby(['period', 'initial_state'])['population'].sum().unstack()
     pivot_table.to_csv(os.path.join(figures_directory, 'share_proj_{}.csv'.format(
         suffix)))
+
+    # Plot data
     ax = pivot_table.plot.line()
     figure = ax.get_figure()
     figure.savefig(os.path.join(figures_directory, 'share_proj_{}.pdf'.format(
         suffix)), bbox_inches = 'tight')
-
     pct_pivot_table = pivot_table.divide(pivot_table.sum(axis = 1), axis = 0)
     ax = pct_pivot_table.plot.line()
     figure = ax.get_figure()
@@ -206,10 +224,10 @@ def run_scenario(uncalibrated_transitions = None, initial_population = None, ini
     return population, transitions_by_period
 
 
-def run_scenario2(uncalibrated_transitions = None, initial_population = None, initial_period = 2010, mu = None,
+def project_disability(uncalibrated_transitions = None, initial_population = None, initial_period = 2010, mu = None,
         survival_gain_casts = None, age_min = None, prevalence_survey = None, one_year_approximation = None, age_max_cale = None):
     """
-        Run simulation according to a specified scenario for survival gain casting
+        Project disabilyt levels by simulation according to a scenario specifying the survival gain casts
 
         :param DataFrame uncalibrated_transitions: transition matrix between different disability levels
         :param DataFrame initial_population: population at the initial period
@@ -252,8 +270,7 @@ def run_scenario2(uncalibrated_transitions = None, initial_population = None, in
         if period > initial_period:
             dependance_initialisation = population.query('period == @period').copy()
             # Update the transitions matrix if necessary
-            admissible_scenarios = ['homogeneous', 'initial_vs_others', 'autonomy_vs_disability']
-            assert survival_gain_casts in , "survival_gain_casts should be int the following list:\n  {}".format(
+            assert survival_gain_casts in admissible_scenarios, "survival_gain_casts should be int the following list:\n  {}".format(
                 admissible_scenarios)
             log.info("Calibrate transitions for period = {} usning survival_gain_cast = {}".format(
                 period, survival_gain_casts))
@@ -839,14 +856,17 @@ def _compute_calibration_coefficient(age_min = 50, period = None, transitions = 
     """
         Calibrate mortality using the distribution of the disability states within population at a specific year
         for the given transition matrix and distribution of intiial_states
+
         Assuming the transition occur on a two-year period.
+
+        From 2 years mortality to 1 year mortality by age, sex and intial_state if one_year_approximation is True
+        2 years mortality by age, sex and intial_state if one_year_approximation is False
+
     """
     assert period is not None, "Mortality profile period is not set"
     assert transitions is not None
-    # From 2yr mortality to 1yr mortality by age, sex and intial_state if one_year_approximation = True
-    # 2yr mortality by age, sex and intial_state if transformation = False
     predicted_mortality_table = get_predicted_mortality_table(transitions = transitions, one_year_approximation = one_year_approximation)
-    # From 1yr mrotality by age sex (use dependance_initialisation to sum over initial_state)
+    # From 1 year mortality by age sex (use dependance_initialisation to sum over initial_state)
     mortality_after_imputation = (
         get_mortality_after_imputation(
             mortality_table = predicted_mortality_table,
@@ -863,7 +883,6 @@ def _compute_calibration_coefficient(age_min = 50, period = None, transitions = 
         .query('year == @period')
         .rename(columns = {'year': 'period'})
         )
-    #return mortality_insee
 
     assert mortality_insee.mortality_insee_next_period is not None
 
@@ -872,8 +891,6 @@ def _compute_calibration_coefficient(age_min = 50, period = None, transitions = 
             mortality_insee.reset_index(),
             on = ['sex', 'age'],
             )
-        #.eval('cale_mortality_1_year = mortality_insee / avg_mortality', inplace = False)
-        #.eval('mortalite_2_year_insee = 1 - (1 - mortality_insee) ** 2', inplace = False)
         )
 
     if not one_year_approximation: #transformations a 2 ans pour l'instant
@@ -912,7 +929,7 @@ def get_mortality_after_imputation(mortality_table = None, dependance_initialisa
         )
     mortality_after_imputation.name = 'mortality_after_imputation'
     if (mortality_after_imputation == 0).any():  # Deal with age > 100 with nobody in the population
-        print("missing dans mortality_after_imputation")
+        log.info("missing dans mortality_after_imputation")
         mortality_after_imputation = mortality_after_imputation.reset_index()
         mortality_after_imputation.loc[
             (mortality_after_imputation.age >= 100) & (mortality_after_imputation.mortality_after_imputation == 0),
@@ -931,9 +948,7 @@ def correct_transitions_for_mortality(transitions, dependance_initialisation = N
     log.debug("Entering correct_transitions_for_mortality")
     death_state = 4
     assert dependance_initialisation is not None
-    admissible_survival_gain_cast = [
-        "homogeneous", "initial_vs_others", 'autonomy_vs_disability','None',
-        ]
+    admissible_survival_gain_cast = ["homogeneous", "initial_vs_others", 'autonomy_vs_disability']
     assert survival_gain_casts in admissible_survival_gain_cast, \
         "suvival_gain_cast should one of the following values {}".format(admissible_survival_gain_cast)
     assert period is not None
