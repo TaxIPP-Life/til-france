@@ -17,9 +17,7 @@ from til_france.model.options.dependance_RT.life_expectancy.share.transition_mat
     get_transitions_from_formula,
     )
 
-from til_france.model.options.dependance_RT.life_expectancy.share.simulation_all import (
-    run,
-    )
+from til_france.model.options.dependance_RT.life_expectancy.share.simulation_all import run
 
 
 from til_france.model.options.dependance_RT.life_expectancy.share.paths_prog import (

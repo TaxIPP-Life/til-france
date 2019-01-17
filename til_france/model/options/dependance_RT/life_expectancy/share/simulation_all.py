@@ -270,6 +270,7 @@ def project_disability(uncalibrated_transitions = None, initial_population = Non
         if period > initial_period:
             dependance_initialisation = population.query('period == @period').copy()
             # Update the transitions matrix if necessary
+            admissible_scenarios = ['homogeneous', 'initial_vs_others', 'autonomy_vs_disability']
             assert survival_gain_casts in admissible_scenarios, "survival_gain_casts should be int the following list:\n  {}".format(
                 admissible_scenarios)
             log.info("Calibrate transitions for period = {} usning survival_gain_cast = {}".format(
@@ -1088,7 +1089,7 @@ def correct_transitions_for_mortality(transitions, dependance_initialisation = N
             )
 
     elif survival_gain_casts == 'autonomy_vs_disability':
-        log.debug(("Using autonomy_vs_disability scenario")
+        log.debug("Using autonomy_vs_disability")
         assert mu is not None
         other_transitions = autonomy_vs_disability(
             mortality = mortality,

@@ -196,12 +196,9 @@ def create_hsi_data():
     exogeneous_variables = ['age', 'sexe']
     imputed_dataframe = initial_dataframe.copy()
     for endogeneous_variable in ['cdatco', 'cdatse', 'agfinetu', 'rgir']:
-        # print '_____ {} ____'.format(endogeneous_variable)
         compute_nans_and_missing_values(imputed_dataframe, endogeneous_variable)
-        # print '==='
         imputed_dataframe = impute_value(imputed_dataframe, endogeneous_variable, exogeneous_variables)
         nans, missing_values, missing = compute_nans_and_missing_values(imputed_dataframe, endogeneous_variable)
-        # print missing_values
 
     dataframe = rename_variables(imputed_dataframe)
     dataframe = dataframe.dropna(subset = ['age']).query('age >= 60').copy()
