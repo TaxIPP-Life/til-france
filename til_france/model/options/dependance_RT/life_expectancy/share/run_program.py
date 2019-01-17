@@ -53,8 +53,8 @@ vagues = [4,5,6]
 
 formula = 'final_state ~ I((age - 80) * 0.1) + I(((age - 80) * 0.1) ** 2) + I(((age - 80) * 0.1) ** 3)'
 uncalibrated_transitions = get_transitions_from_formula(
-    formula = formula, 
-    vagues = vagues, 
+    formula = formula,
+    vagues = vagues,
     estimation_survey = 'share'
     )
 
@@ -67,13 +67,12 @@ survival_gain_casts = [
         ]
 
 run(
-    survival_gain_casts, 
-    mu = mu, 
-    uncalibrated_transitions = uncalibrated_transitions, 
-    vagues = vagues, 
-    age_min = 60, 
-    prevalence_survey = 'care', 
-    transformation_1an = False, 
+    survival_gain_casts,
+    mu = mu,
+    uncalibrated_transitions = uncalibrated_transitions,
+    vagues = vagues,
+    age_min = 60,
+    prevalence_survey = 'care',
+    one_year_approximation = False,
     age_max_cale = 99,
     )
-

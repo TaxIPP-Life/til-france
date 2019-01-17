@@ -52,7 +52,7 @@ figures_directory = config.get('dependance', 'figures_directory')
 
 # Fonctions principales
 
-def run(survival_gain_casts = None, mu = None, uncalibrated_transitions = None, vagues = [4, 5, 6], age_min = None, prevalence_survey = None, transformation_1an = None, age_max_cale = None):
+def run(survival_gain_casts = None, mu = None, uncalibrated_transitions = None, vagues = [4, 5, 6], age_min = None, prevalence_survey = None, one_year_approximation = None, age_max_cale = None):
     assert vagues is not None
     assert age_min is not None
     assert uncalibrated_transitions is not None
@@ -68,7 +68,7 @@ def run(survival_gain_casts = None, mu = None, uncalibrated_transitions = None, 
                 vagues = vagues,
                 age_min = age_min,
                 prevalence_survey = prevalence_survey,
-                transformation_1an = transformation_1an,
+                one_year_approximation = one_year_approximation,
                 mu = mu,
                 age_max_cale = age_max_cale
                 )
@@ -79,12 +79,12 @@ def run(survival_gain_casts = None, mu = None, uncalibrated_transitions = None, 
                 vagues = vagues,
                 age_min = age_min,
                 prevalence_survey = prevalence_survey,
-                transformation_1an = transformation_1an,
+                one_year_approximation = one_year_approximation,
                 age_max_cale = age_max_cale
                 )
 
 
-def save_data_and_graph(uncalibrated_transitions, mu = None, survival_gain_casts = None, vagues = None, age_min = None, prevalence_survey = None, transformation_1an = None, age_max_cale = None):
+def save_data_and_graph(uncalibrated_transitions, mu = None, survival_gain_casts = None, vagues = None, age_min = None, prevalence_survey = None, one_year_approximation = None, age_max_cale = None):
     assert age_min is not None
     assert prevalence_survey is not None
     assert age_max_cale is not None
@@ -100,7 +100,7 @@ def save_data_and_graph(uncalibrated_transitions, mu = None, survival_gain_casts
         survival_gain_casts = survival_gain_casts,
         age_min = age_min,
         prevalence_survey = prevalence_survey,
-        transformation_1an = transformation_1an,
+        one_year_approximation = one_year_approximation,
         age_max_cale = age_max_cale
         )
     suffix = build_suffix(survival_gain_casts, mu, vagues, prevalence_survey)
@@ -132,7 +132,7 @@ def save_data_and_graph(uncalibrated_transitions, mu = None, survival_gain_casts
 
 
 def run_scenario(uncalibrated_transitions = None, initial_population = None, initial_period = 2010,
-        survival_gain_casts = None, mu = None, age_min = None, prevalence_survey = None, transformation_1an = None):
+        survival_gain_casts = None, mu = None, age_min = None, prevalence_survey = None, one_year_approximation = None):
     assert prevalence_survey is not None
     initial_population['period'] = initial_period
     population = initial_population.copy()
@@ -148,7 +148,7 @@ def run_scenario(uncalibrated_transitions = None, initial_population = None, ini
         period = initial_period,
         dependance_initialisation = population,
         age_min = age_min,
-        transformation_1an = transformation_1an,
+        one_year_approximation = one_year_approximation,
         )
 
     period = initial_period
@@ -178,7 +178,7 @@ def run_scenario(uncalibrated_transitions = None, initial_population = None, ini
                     period = period,
                     dependance_initialisation = dependance_initialisation,
                     age_min = age_min,
-                    transformation_1an = transformation_1an
+                    one_year_approximation = one_year_approximation
                     )
                 transitions_by_period[period] = transitions
 
@@ -207,7 +207,7 @@ def run_scenario(uncalibrated_transitions = None, initial_population = None, ini
 
 
 def run_scenario2(uncalibrated_transitions = None, initial_population = None, initial_period = 2010, mu = None,
-        survival_gain_casts = None, age_min = None, prevalence_survey = None, transformation_1an = None, age_max_cale = None):
+        survival_gain_casts = None, age_min = None, prevalence_survey = None, one_year_approximation = None, age_max_cale = None):
     """
         Run simulation according to a specified scenario for survival gain casting
 
@@ -218,7 +218,7 @@ def run_scenario2(uncalibrated_transitions = None, initial_population = None, in
         :param str survival_gain_casts: scenario for survival gain casting in the following list ['homogeneous', '']
         :param int age_min: minimal age for people to be disabled
         :param str prevalence_survey: prevalence survey used to set initial disability levels to choose from 'autonomy_vs_disability', 'homogeneous' or 'initial_vs_others',
-        :param transformation_1an:
+        :param one_year_approximation:
         :param int age_max_cale: minimal age at which the disability level proportions are freezed equal to
     """
     assert prevalence_survey is not None
@@ -237,7 +237,7 @@ def run_scenario2(uncalibrated_transitions = None, initial_population = None, in
         period = initial_period,
         dependance_initialisation = population,
         age_min = age_min,
-        transformation_1an = transformation_1an,
+        one_year_approximation = one_year_approximation,
         survival_gain_casts = survival_gain_casts,
         mu = mu,
         age_max_cale = age_max_cale,
@@ -270,7 +270,7 @@ def run_scenario2(uncalibrated_transitions = None, initial_population = None, in
                 period = period,
                 dependance_initialisation = dependance_initialisation,
                 age_min = age_min,
-                transformation_1an = transformation_1an,
+                one_year_approximation = one_year_approximation,
                 survival_gain_casts = survival_gain_casts,
                 mu = mu,
                 age_max_cale = age_max_cale,
@@ -504,7 +504,7 @@ def add_lower_age_population(population = None, age_min = None, prevalence_surve
 
 #  Mortalites calibrees
 def build_mortality_calibrated_target_from_transitions(transitions = None, period = None, dependance_initialisation = None,
-       age_min = None, transformation_1an = None, survival_gain_casts = None, mu = None, age_max_cale = None, uncalibrated_transitions = None):
+       age_min = None, one_year_approximation = None, survival_gain_casts = None, mu = None, age_max_cale = None, uncalibrated_transitions = None):
     assert age_min is not None
     assert period is not None
     assert transitions is not None
@@ -516,7 +516,7 @@ def build_mortality_calibrated_target_from_transitions(transitions = None, perio
         period = period,
         dependance_initialisation = dependance_initialisation,
         age_min = age_min,
-        transformation_1an = transformation_1an,
+        one_year_approximation = one_year_approximation,
         survival_gain_casts = survival_gain_casts,
         mu = mu,
         age_max_cale = age_max_cale,
@@ -532,7 +532,7 @@ def build_mortality_calibrated_target_from_transitions(transitions = None, perio
 
 
 def build_mortality_calibrated_target(transitions = None, period = None, dependance_initialisation = None, scale = 4,
-        age_min = None, transformation_1an = None, survival_gain_casts = None, mu = None, age_max_cale = None, uncalibrated_transitions = None):
+        age_min = None, one_year_approximation = None, survival_gain_casts = None, mu = None, age_max_cale = None, uncalibrated_transitions = None):
     """
     Compute the calibrated mortality by sex, age and disability state (initial_state) for a given period
     using data on the disability states distribution in the population at that period
@@ -554,7 +554,7 @@ def build_mortality_calibrated_target(transitions = None, period = None, dependa
         period = period,
         transitions = transitions,
         dependance_initialisation = dependance_initialisation,
-        transformation_1an = transformation_1an,
+        one_year_approximation = one_year_approximation,
         survival_gain_casts = survival_gain_casts,
         mu = mu,
         age_max_cale = age_max_cale,
@@ -623,7 +623,7 @@ def build_mortality_calibrated_target(transitions = None, period = None, dependa
     return mortality_calibrated_target
 
 
-def _get_calibrated_transitions(period = None, transitions = None, dependance_initialisation = None, transformation_1an = None, survival_gain_casts = None, mu = None, age_max_cale = None, uncalibrated_transitions = None):
+def _get_calibrated_transitions(period = None, transitions = None, dependance_initialisation = None, one_year_approximation = None, survival_gain_casts = None, mu = None, age_max_cale = None, uncalibrated_transitions = None):
     """
     Calibrate transitions to match mortality from a specified period
     """
@@ -637,7 +637,7 @@ def _get_calibrated_transitions(period = None, transitions = None, dependance_in
         period = period,
         transitions = transitions,
         dependance_initialisation = dependance_initialisation,
-        transformation_1an = transformation_1an,
+        one_year_approximation = one_year_approximation,
         )
 
     # Selectionne calibration jusque age_max
@@ -834,9 +834,8 @@ def impute_high_ages(data_to_complete = None, uncalibrated_transitions = None, p
     return complete_data
 
 
-
 def _compute_calibration_coefficient(age_min = 50, period = None, transitions = None, dependance_initialisation = None,
-        transformation_1an = None):
+        one_year_approximation = None):
     """
         Calibrate mortality using the distribution of the disability states within population at a specific year
         for the given transition matrix and distribution of intiial_states
@@ -844,9 +843,9 @@ def _compute_calibration_coefficient(age_min = 50, period = None, transitions = 
     """
     assert period is not None, "Mortality profile period is not set"
     assert transitions is not None
-    # From 2yr mortality to 1yr mortality by age, sex and intial_state if transformation = True
+    # From 2yr mortality to 1yr mortality by age, sex and intial_state if one_year_approximation = True
     # 2yr mortality by age, sex and intial_state if transformation = False
-    predicted_mortality_table = get_predicted_mortality_table(transitions = transitions, transformation_1an = transformation_1an)
+    predicted_mortality_table = get_predicted_mortality_table(transitions = transitions, one_year_approximation = one_year_approximation)
     # From 1yr mrotality by age sex (use dependance_initialisation to sum over initial_state)
     mortality_after_imputation = (
         get_mortality_after_imputation(
@@ -877,7 +876,7 @@ def _compute_calibration_coefficient(age_min = 50, period = None, transitions = 
         #.eval('mortalite_2_year_insee = 1 - (1 - mortality_insee) ** 2', inplace = False)
         )
 
-    if not transformation_1an: #transformations a 2 ans pour l'instant
+    if not one_year_approximation: #transformations a 2 ans pour l'instant
         model_to_target = (model_to_target
             #.eval('avg_mortality_2_year = 1 - (1 - avg_mortality) ** 2', inplace = False) #ligne qui servait repasser des probabilites deja transformees
             # a modifier si transitions sur 1 an
@@ -1123,19 +1122,20 @@ def correct_transitions_for_mortality(transitions, dependance_initialisation = N
         )
 
 
-def get_predicted_mortality_table(transitions = None, save = False, probability_name = 'probability', transformation_1an = None):
+def get_predicted_mortality_table(transitions = None, save = False, probability_name = 'probability', one_year_approximation = None):
     """
-        Get mortality from data
+        Get mortality from simulation data
     """
     death_state = 4
     assert transitions is not None
-    assert transformation_1an is not None
-    assert probability_name in transitions.columns, "{} not present in transitions colmns: {}".format(
+    assert one_year_approximation is not None
+    assert probability_name in transitions.columns, "{} not present in transitions columns: {}".format(
         probability_name,
         transitions.columns
         )
 
-    if not transformation_1an: # Transitions vers deces avec un pas de 2 ans
+    if not one_year_approximation:
+        # Transitions vers deces avec un pas de 2 ans
         mortality_table = (transitions
             .query('final_state == @death_state')
             .copy()
@@ -1144,12 +1144,13 @@ def get_predicted_mortality_table(transitions = None, save = False, probability_
             #.eval('mortality = probability')
             #.assign(mortality = lambda x: x[probability_name])))
         )
-    else: # transformation_1an is true : transitions vers deces avec un pas de 1 an
+    else:
+        # one_year_approximation is true : transitions vers deces avec un pas de 1 an
         mortality_table = (transitions
             .query('final_state == @death_state')
             .copy()
             .assign(mortality = lambda x: (1 - np.sqrt(1 - x[probability_name])))
-        )
+            )
 
     if save:
         mortality_table.to_csv('predicted_mortality_table.csv')
