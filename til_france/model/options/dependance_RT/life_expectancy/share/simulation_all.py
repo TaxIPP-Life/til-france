@@ -62,17 +62,16 @@ def run(survival_gain_casts = None, mu = None, uncalibrated_transitions = None, 
     create_initial_prevalence(smooth = True, prevalence_survey = prevalence_survey, age_min = age_min)
     for survival_gain_casts in survival_gain_casts:
         if survival_gain_casts in ['initial_vs_others', 'autonomy_vs_disability']:
-          #  for mu in [0, 1]:
-                save_data_and_graph(
-                    uncalibrated_transitions = uncalibrated_transitions,
-                    survival_gain_casts = survival_gain_casts,
-                    vagues = vagues,
-                    age_min = age_min,
-                    prevalence_survey = prevalence_survey,
-                    transformation_1an = transformation_1an,
-                    mu = mu,
-                    age_max_cale = age_max_cale
-                    )
+            save_data_and_graph(
+                uncalibrated_transitions = uncalibrated_transitions,
+                survival_gain_casts = survival_gain_casts,
+                vagues = vagues,
+                age_min = age_min,
+                prevalence_survey = prevalence_survey,
+                transformation_1an = transformation_1an,
+                mu = mu,
+                age_max_cale = age_max_cale
+                )
         else:
             save_data_and_graph(
                 uncalibrated_transitions = uncalibrated_transitions,
@@ -209,6 +208,19 @@ def run_scenario(uncalibrated_transitions = None, initial_population = None, ini
 
 def run_scenario2(uncalibrated_transitions = None, initial_population = None, initial_period = 2010, mu = None,
         survival_gain_casts = None, age_min = None, prevalence_survey = None, transformation_1an = None, age_max_cale = None):
+    """
+        Run simulation according to a specified scenario for survival gain casting
+
+        :param DataFrame uncalibrated_transitions: transition matrix between different disability levels
+        :param DataFrame initial_population: population at the initial period
+        :param int initial_period: initial period of the simulation
+        :param float mu: optional parameter for scenarios, should be in the [0, 1] interval.
+        :param str survival_gain_casts: scenario for survival gain casting in the following list ['homogeneous', '']
+        :param int age_min: minimal age for people to be disabled
+        :param str prevalence_survey: prevalence survey used to set initial disability levels to choose from 'autonomy_vs_disability', 'homogeneous' or 'initial_vs_others',
+        :param transformation_1an:
+        :param int age_max_cale: minimal age at which the disability level proportions are freezed equal to
+    """
     assert prevalence_survey is not None
     assert age_max_cale is not None
     assert uncalibrated_transitions is not None
@@ -235,37 +247,36 @@ def run_scenario2(uncalibrated_transitions = None, initial_population = None, in
     transitions_by_period = dict()
 
     while period < 2058:
-        print('Running period {}'.format(period))
+        log.info('Running period {}'.format(period))
         period = population['period'].max()
         if period > initial_period:
             dependance_initialisation = population.query('period == @period').copy()
             # Update the transitions matrix if necessary
-            if survival_gain_casts in ['homogeneous', 'initial_vs_others', 'autonomy_vs_disability']:
-                log.info("Calibrate transitions for period = {} usning survival_gain_cast = {}".format(
-                    period, survival_gain_casts))
-                delta = 1e-7
-                transitions = regularize2(
-                    transition_matrix_dataframe = transitions.rename(
-                        columns = {'calibrated_probability': 'probability'}),
-                    by = ['period', 'sex', 'age', 'initial_state'],
-                    probability = 'probability',
-                    delta = delta,
-                    )
-                transitions = build_mortality_calibrated_target_from_transitions(
-                    transitions = transitions,
-                    period = period,
-                    dependance_initialisation = dependance_initialisation,
-                    age_min = age_min,
-                    transformation_1an = transformation_1an,
-                    survival_gain_casts = survival_gain_casts,
-                    mu = mu,
-                    age_max_cale = age_max_cale,
-                    uncalibrated_transitions = uncalibrated_transitions
-                    )
-                transitions_by_period[period] = transitions
-
-            else:
-                raise Exception("Probleme")
+            admissible_scenarios = ['homogeneous', 'initial_vs_others', 'autonomy_vs_disability']
+            assert survival_gain_casts in , "survival_gain_casts should be int the following list:\n  {}".format(
+                admissible_scenarios)
+            log.info("Calibrate transitions for period = {} usning survival_gain_cast = {}".format(
+                period, survival_gain_casts))
+            delta = 1e-7
+            transitions = regularize2(
+                transition_matrix_dataframe = transitions.rename(
+                    columns = {'calibrated_probability': 'probability'}),
+                by = ['period', 'sex', 'age', 'initial_state'],
+                probability = 'probability',
+                delta = delta,
+                )
+            transitions = build_mortality_calibrated_target_from_transitions(
+                transitions = transitions,
+                period = period,
+                dependance_initialisation = dependance_initialisation,
+                age_min = age_min,
+                transformation_1an = transformation_1an,
+                survival_gain_casts = survival_gain_casts,
+                mu = mu,
+                age_max_cale = age_max_cale,
+                uncalibrated_transitions = uncalibrated_transitions
+                )
+            transitions_by_period[period] = transitions
 
         # Iterate
         iterated_population = apply_transition_matrix(
@@ -796,7 +807,7 @@ def _get_calibrated_transitions(period = None, transitions = None, dependance_in
     print("Fonction _get_calibrated_transitions a tourné")
     return calibrated_transitions['calibrated_probability']
 
-#Aux ages eleves on n'utilise plus les cales mais on prend les proba de transition du dernier age
+# Aux ages eleves on n'utilise plus les cales mais on prend les proba de transition du dernier age
 def impute_high_ages(data_to_complete = None, uncalibrated_transitions = None, period = None, age_max_cale = None):
     assert age_max_cale is not None
     assert uncalibrated_transitions is not None
