@@ -8,8 +8,8 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
 import os
 import pandas as pd
-from StringIO import StringIO
-
+#from StringIO import StringIO
+from io import StringIO
 
 from til_france.tests.base import til_france_path, create_or_get_figures_directory, ipp_colors, get_data_directory
 from til_france.targets.population import get_data_frame_insee
@@ -147,27 +147,30 @@ def extract_population_by_age_csv(simulation, backup = None):
     return panel * uniform_weight
 
 
-def get_insee_projection(quantity, gender, function = None):
+def get_insee_projection(quantity, gender, function = None, scenario = 'central'):
 
     assert quantity in ['naissances', 'deces', 'migrations', 'population']
     assert gender in ['total', 'male', 'female']
+    assert scenario is not None
 
-    data_path = os.path.join(til_france_path, 'param/demo/projpop0760_FECcentESPcentMIGcent.xls')
-    sheetname_by_gender_by_quantity = dict(
-        naissances = 'nbre_naiss',
-        deces = dict(zip(
-            ['total', 'male', 'female'],
-            ['nbre_deces', 'nbre_decesH', 'nbre_decesF']
-            )),
-        migrations = dict(zip(
-            ['male', 'female'],
-            ['hyp_soldemigH', 'hyp_soldemigF']
-            )),
-        population = dict(zip(
-            ['total', 'male', 'female'],
-            ['populationTot', 'populationH', 'populationF']
-            ))
-        )
+    if scenario == 'central':
+
+        data_path = os.path.join(til_france_path, 'param/demo/projpop0760_FECcentESPcentMIGcent.xls')
+        sheet_name_by_gender_by_quantity = dict(
+            naissances = 'nbre_naiss',
+            deces = dict(zip(
+                ['total', 'male', 'female'],
+                ['nbre_deces', 'nbre_decesH', 'nbre_decesF']
+                )),
+            migrations = dict(zip(
+                ['male', 'female'],
+                ['hyp_soldemigH', 'hyp_soldemigF']
+                )),
+            population = dict(zip(
+                ['total', 'male', 'female'],
+                ['populationTot', 'populationH', 'populationF']
+                ))
+            )
     age_label_by_quantity = dict(
         naissances = u"Âge au 1er janvier",
         deces = u"Âge atteint dans l'année",
@@ -184,12 +187,12 @@ def get_insee_projection(quantity, gender, function = None):
         row_end = 109
 
     if quantity in ['deces', 'population']:
-        sheetname = sheetname_by_gender_by_quantity[quantity][gender]
+        sheet_name = sheet_name_by_gender_by_quantity[quantity][gender]
     elif quantity == 'naissances':
-        sheetname = sheetname_by_gender_by_quantity[quantity]
+        sheet_name = sheet_name_by_gender_by_quantity[quantity]
         age_label = u'Âge au 1er janvier'
     elif quantity == 'migrations' and gender in ['male', 'female']:
-        sheetname = sheetname_by_gender_by_quantity[quantity][gender]
+        sheet_name = sheet_name_by_gender_by_quantity[quantity][gender]
     elif quantity == 'migrations' and gender not in ['male', 'female']:
         return (
             get_insee_projection(quantity, 'male', function = function) +
@@ -197,7 +200,7 @@ def get_insee_projection(quantity, gender, function = None):
             )
 
     data_frame = pd.read_excel(
-        data_path, sheetname = sheetname, skiprows = 2, header = 2)[:row_end].set_index(
+        data_path, sheet_name = sheet_name, skiprows = 2, header = 2)[:row_end].set_index(
             age_label)
 
     if function == 'sum':

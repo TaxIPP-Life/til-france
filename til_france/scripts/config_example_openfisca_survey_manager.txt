@@ -1,0 +1,7 @@
+[collections]
+collections_directory = where/to/put/osm/collections
+hsi = where/hsi/data/is//hsi.json
+
+[data]
+output_directory = where/to/put/osm/output
+tmp_directory = where/to/store/temp/files

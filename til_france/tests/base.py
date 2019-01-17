@@ -8,8 +8,10 @@ from webcolors import rgb_to_hex
 
 
 from til_core.config import Config
-from til_core.simulation import TilSimulation
-
+try:
+    from til_core.simulation import TilSimulation
+except:
+    TilSimulation = None
 
 __all__ = [
     'create_or_get_figures_directory',
@@ -33,7 +35,7 @@ ipp_colors_not_normalized = dict(
     ipp_blue = (75, 172, 197)
     )
 
-ipp_colors = dict((name, rgb_to_hex(rgb)) for name, rgb in ipp_colors_not_normalized.iteritems())
+ipp_colors = dict((name, rgb_to_hex(rgb)) for name, rgb in ipp_colors_not_normalized.items())
 
 
 def to_percent_round(y, position):
@@ -57,11 +59,11 @@ til_france_path = os.path.join(
     )
 
 
-def create_til_simulation(input_name = None, option = None, output_name_suffix = 'output', uniform_weight = None):
+def create_til_simulation(input_name = None, option = None, output_name_suffix = 'output', uniform_weight = None, no_output = False):
     assert input_name is not None
     config = Config()
     name = input_name.lower()
-    print config.__dict__
+    print(config.__dict__)
     input_dir = config.get('til', 'input_dir')
     input_file = '{}_{}.h5'.format(input_name, uniform_weight)
 
@@ -89,7 +91,7 @@ You should also check that the input path is correctly set in your config_local.
         input_dir = input_dir,
         input_file = input_file,
         output_dir = output_dir,
-        output_file = '{}_{}.h5'.format(name, output_name_suffix),
+        output_file = '' if no_output else '{}_{}.h5'.format(name, output_name_suffix),
         uniform_weight = uniform_weight,
         # tax_benefit_system = 'tax_benefit_system',  # Add the OpenFisca TaxBenfitSystem to use
         )

@@ -17,7 +17,7 @@ def rescale_migration():
     # Data from INSEE projections
     data_path = os.path.join(til_france_path, 'param/demo')
 
-    sheetname_by_gender = dict(zip(
+    sheet_name_by_gender = dict(zip(
         ['total', 'male', 'female'],
         ['populationTot', 'populationH', 'populationF']
         ))
@@ -27,12 +27,12 @@ def rescale_migration():
             gender,
             pandas.read_excel(
                 os.path.join(data_path, 'projpop0760_FECcentESPcentMIGcent.xls'),
-                sheetname = sheetname,
+                sheet_name = sheet_name,
                 skiprows = 2,
                 header = 2
                 )[:109].set_index(u'Âge au 1er janvier')
             )
-        for gender, sheetname in sheetname_by_gender.iteritems()
+        for gender, sheet_name in sheet_name_by_gender.iteritems()
         )
 
     migration_insee_by_gender = dict(
