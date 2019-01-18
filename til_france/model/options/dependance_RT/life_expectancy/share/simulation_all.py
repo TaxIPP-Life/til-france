@@ -54,7 +54,8 @@ eligible_survival_gain_casts = ['homogeneous', 'initial_vs_others', 'autonomy_vs
 
 # Fonctions principales
 
-def run(survival_gain_casts = None, mu = None, uncalibrated_transitions = None, vagues = [4, 5, 6], age_min = None, prevalence_survey = None, one_year_approximation = None, age_max_cale = None):
+def run(survival_gain_casts = None, mu = None, uncalibrated_transitions = None, vagues = [4, 5, 6], age_min = None,
+        prevalence_survey = None, one_year_approximation = None, age_max_cale = None):
     """
         Run
 
@@ -85,12 +86,9 @@ def run(survival_gain_casts = None, mu = None, uncalibrated_transitions = None, 
             mu = mu,
             age_max_cale = age_max_cale
             )
-    
+
 
 def save_data_and_graph(uncalibrated_transitions, mu = None, survival_gain_cast = None, vagues = None, age_min = None, prevalence_survey = None, one_year_approximation = None, age_max_cale = None):
-    assert age_min is not None
-    assert prevalence_survey is not None
-    assert age_max_cale is not None
     if survival_gain_cast in ['initial_vs_others', 'autonomy_vs_disability']:
         assert mu is not None
 
@@ -266,7 +264,8 @@ def project_disability(uncalibrated_transitions = None, initial_population = Non
             delta = 1e-7
             transitions = regularize2(
                 transition_matrix_dataframe = transitions.rename(
-                    columns = {'calibrated_probability': 'probability'}),
+                    columns = {'calibrated_probability': 'probability'}
+                    ),
                 by = ['period', 'sex', 'age', 'initial_state'],
                 probability = 'probability',
                 delta = delta,
@@ -629,7 +628,7 @@ def build_mortality_calibrated_target(transitions = None, period = None, dependa
     return mortality_calibrated_target
 
 
-def _get_calibrated_transitions(period = None, transitions = None, dependance_initialisation = None, one_year_approximation = None, 
+def _get_calibrated_transitions(period = None, transitions = None, dependance_initialisation = None, one_year_approximation = None,
         survival_gain_cast = None, mu = None, age_max_cale = None, uncalibrated_transitions = None):
     """
     Calibrate transitions to match mortality from a specified period
@@ -811,16 +810,21 @@ def _get_calibrated_transitions(period = None, transitions = None, dependance_in
             period = period,
             age_max_cale = age_max_cale
         )
-    print("Fonction _get_calibrated_transitions a tourné")
     return calibrated_transitions['calibrated_probability']
 
-# Aux ages eleves on n'utilise plus les cales mais on prend les proba de transition du dernier age
+
 def impute_high_ages(data_to_complete = None, uncalibrated_transitions = None, period = None, age_max_cale = None):
+    """
+        Impute probability transition for high ages by forward filling values using a threshold age
+
+        :param DataFrame data_to_complete:
+        :param DataFrame uncalibratd_transitions:
+        :param int period:
+        :param int age_max_cale: threshold age for imputation
+    """
+
     assert age_max_cale is not None
     assert uncalibrated_transitions is not None
-
-    #transitions_data = uncalibrated_transitions.reset_index().[['sex', 'age', 'initial_state', 'final_state']]
-
     transitions_data = (uncalibrated_transitions
         .reset_index()
         .query('age >= @age_max_cale')
@@ -833,7 +837,7 @@ def impute_high_ages(data_to_complete = None, uncalibrated_transitions = None, p
         .reset_index()
         .set_index(['sex', 'initial_state', 'final_state', 'age'])
         .sort_index()
-        .fillna(method = 'ffill')  #Remplit avec la valeur de l'age precedent pour eviter des missings aux ages eleves
+        .fillna(method = 'ffill')  # forward fill to avoid missings valeus at high ages
         .reset_index()
         .set_index(['sex', 'age', 'initial_state', 'final_state'])
         )

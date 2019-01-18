@@ -5,42 +5,19 @@ from __future__ import division
 
 
 import logging
-import os
 import sys
 
 
-from til_core.config import Config
-
-
 from til_france.model.options.dependance_RT.life_expectancy.share.transition_matrices import (
-    assets_path,
     get_transitions_from_formula,
     )
 
 from til_france.model.options.dependance_RT.life_expectancy.share.simulation_all import run
 
 
-from til_france.model.options.dependance_RT.life_expectancy.share.paths_prog import (
-    til_france_path,
-    assets_path
-    )
-
-
-from til_france.tests.base import ipp_colors
-colors = [ipp_colors[cname] for cname in [
-    'ipp_very_dark_blue', 'ipp_dark_blue', 'ipp_medium_blue', 'ipp_light_blue']]
-
-
 log = logging.getLogger(__name__)
 
 logging.basicConfig(level = logging.WARNING, stream = sys.stdout)
-
-life_table_path = os.path.join(
-    assets_path,
-    'lifetables_period.xlsx'
-    )
-config = Config()
-figures_directory = config.get('dependance', 'figures_directory')
 
 
 ### TEST 1 données CARE en prevalence
@@ -59,10 +36,10 @@ uncalibrated_transitions = get_transitions_from_formula(
 mu = 1
 
 survival_gain_casts = [
-        #'homogeneous',
-        #'initial_vs_others',
-        'autonomy_vs_disability'
-        ]
+    #'homogeneous',
+    #'initial_vs_others',
+    'autonomy_vs_disability'
+    ]
 
 run(
     survival_gain_casts,

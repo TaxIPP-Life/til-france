@@ -44,36 +44,38 @@ data_path = os.path.join(
     'share_data_for_microsimulation.csv', ##A modifier si on veut modifier la base transition
     )
 
+assert os.path.exists(data_path)
+
 
 # Transition matrix structure
 final_states_by_initial_state = {
-  0: [0, 1, 4],
-  1: [0, 1, 2, 4],
-  2: [1, 2, 3, 4],
-  3: [2, 3, 4],
-  }
+    0: [0, 1, 4],
+    1: [0, 1, 2, 4],
+    2: [1, 2, 3, 4],
+    3: [2, 3, 4],
+    }
 
 replace_by_initial_state = {
-  0: {
-      2: 1,
-      3: 1,
-      },
-  1: {
-      3: 2
-      },
-  2: {
-      0: 1,
-      },
-  3: {
-      0: 2,
-      1: 2,
-      },
-  }
+    0: {
+        2: 1,
+        3: 1,
+        },
+    1: {
+        3: 2
+        },
+    2: {
+        0: 1,
+        },
+    3: {
+        0: 2,
+        1: 2,
+        },
+    }
 
 
 def get_clean_share(extra_variables = None):
     """
-    Get SHARE relevant data free of missing observations
+        Get SHARE relevant data free of missing observations
     """
     death_state = 4
     if extra_variables is None:
@@ -91,11 +93,8 @@ def get_clean_share(extra_variables = None):
     assert set(renaming.keys()) < set(df.columns)
     df = (df
       .rename(columns = renaming)
-      # .query('initial_state != @death_state')
       .copy()
       )
-    # 'male, sexe == 1'
-    # 'female, sexe == 2'
     df['sexe'] = df.male + 2 * (df.male == 0)
     del df['male']
     variables = ['id', 'initial_state', 'sexe', 'year', 'age', 'vague']
@@ -128,8 +127,9 @@ def get_clean_share(extra_variables = None):
     return filtered
 
 
-def build_estimation_sample(initial_state, sex = None, variables = None, readjust = False, vagues = None, estimation_survey = None):
-    """Build estimation sample from share data
+def build_estimation_sample(initial_state, sex = None, variables = None, vagues = None):
+    """
+        Build estimation sample from share data
     """
     assert estimation_survey is not None
     final_states = final_states_by_initial_state[initial_state]
@@ -138,9 +138,8 @@ def build_estimation_sample(initial_state, sex = None, variables = None, readjus
     if variables is not None:
         extra_variables = [variable for variable in variables if variable not in ['final_state']]
 
-    assert estimation_survey == 'share', "Only share is availableas estimation survey (you asked for {})".format(estimate_survey) 
-    if estimation_survey == 'share':
-        clean_share = get_clean_share(extra_variables = extra_variables)
+
+    clean_share = get_clean_share(extra_variables = extra_variables)
 
     assert clean_share.notnull().all().all()
 
