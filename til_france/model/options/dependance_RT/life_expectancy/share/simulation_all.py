@@ -176,7 +176,7 @@ def project_disability(uncalibrated_transitions = None, initial_population = Non
             log.info("Calibrate transitions for period = {} usning survival_gain_cast = {}".format(
                 period, survival_gain_cast))
             delta = 1e-7
-            transitions = regularize2(
+            transitions = regularize(
                 transition_matrix_dataframe = transitions.rename(
                     columns = {'calibrated_probability': 'probability'}
                     ),
@@ -854,7 +854,7 @@ def correct_transitions_for_mortality(transitions, dependance_initialisation = N
         "suvival_gain_cast should one of the following values {}".format(admissible_survival_gain_cast)
     assert period is not None
     delta = 1e-7
-    regularize2(
+    regularize(
         transition_matrix_dataframe = transitions,
         by = ['period', 'sex', 'age', 'initial_state'],
         probability = 'calibrated_probability',
@@ -1055,7 +1055,7 @@ def get_predicted_mortality_table(transitions = None, save = False, probability_
         mortality_table = (transitions
             .query('final_state == @death_state')
             .copy()
-            .assign(mortality = lambda x: x[probability_name])))
+            .assign(mortality = lambda x: x[probability_name])
         )
     else:
         # one_year_approximation is true : transitions vers deces avec un pas de 1 an
@@ -1235,65 +1235,8 @@ def check_67_and_over(population, age_min):
        pop_insee_100 - pop_sim_100
     ))
 
+
 def regularize(transition_matrix_dataframe = None, by = None, probability = None, delta = None):
-    assert transition_matrix_dataframe is not None
-    assert by is not None
-    assert probability is not None
-    assert delta is not None
-    assert_probabilities(dataframe = transition_matrix_dataframe, by = by, probability = probability)
-    mortality_transitions = transition_matrix_dataframe.query('final_state == 5').copy()
-
-    # by_without_initial_state = [by_value for by_value in by if by_value != 'initial_state']
-    problematic_indices = (mortality_transitions[probability]
-        .loc[mortality_transitions[probability] >= (1 - delta)]
-        .reset_index()
-        .drop(['final_state', probability], axis = 1)
-        )
-    count = (problematic_indices
-        .merge(
-            transition_matrix_dataframe.reset_index()[by + ['final_state']])
-        .query('final_state != 5')
-        .groupby(by)
-        .count()
-        )
-    correction = delta / count.final_state.astype('float')
-    correction.name = 'correction'
-
-    corrected_transition_matrix = (transition_matrix_dataframe.reset_index()
-        .merge(correction.reset_index())  # inner merge
-        .fillna(0)
-        )
-    corrected_transition_matrix.loc[
-        (corrected_transition_matrix.final_state == 5),
-        probability
-        ] = (1 - delta)
-    corrected_transition_matrix.loc[
-        corrected_transition_matrix.final_state != 5,
-        probability
-        ] = corrected_transition_matrix.correction
-
-    corrected_transition_matrix.set_index(by + ['final_state'], inplace = True)
-    assert (
-        (corrected_transition_matrix[probability] > 0) &
-        (corrected_transition_matrix[probability] < 1)
-        ).all(), "There are {} 0's and {} 1's in corrected_transition_matrix[{}]".format(
-            (corrected_transition_matrix[probability] > 0).sum(),
-            (corrected_transition_matrix[probability] < 1).sum(),
-            probability
-            )
-    transition_matrix_dataframe.update(corrected_transition_matrix)
-
-    assert (
-        transition_matrix_dataframe.query('final_state == 5')[probability] < 1
-        ).all(), "There are {} 1's in transition_matrix_dataframe.{}".format(
-            (transition_matrix_dataframe.query('final_state == 5')[probability] < 1).sum(),
-            probability,
-            )
-
-    assert_probabilities(dataframe = transition_matrix_dataframe, by = by, probability = probability)
-    return transition_matrix_dataframe
-
-def regularize2(transition_matrix_dataframe = None, by = None, probability = None, delta = None):
     assert transition_matrix_dataframe is not None
     assert by is not None
     assert probability is not None

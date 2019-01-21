@@ -30,7 +30,6 @@ formula = 'final_state ~ I((age - 80) * 0.1) + I(((age - 80) * 0.1) ** 2) + I(((
 uncalibrated_transitions = get_transitions_from_formula(
     formula = formula,
     vagues = vagues,
-    estimation_survey = 'share'
     )
 
 mu = 1
