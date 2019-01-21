@@ -1,5 +1,5 @@
 // Place your settings in this file to overwrite default and user settings.
 {
     "python.unitTest.nosetestsEnabled": false,
-    "python.pythonPath": "/usr/bin/python3"
+    "python.pythonPath": "C:\\Users\\a.rain\\AppData\\Local\\Continuum\\anaconda3\\envs\\deptil3\\python.exe"
 }

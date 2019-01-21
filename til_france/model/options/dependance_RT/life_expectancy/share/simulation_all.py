@@ -51,7 +51,6 @@ def run(survival_gain_casts = None, mu = None, uncalibrated_transitions = None, 
         :param int age_max_cale:
         :param list survival_gain_casts: list of eligible survival_gain_casts, should be 'autonomy_vs_disability', 'homogeneous' or 'initial_vs_others',
     """
-
     assert vagues is not None
     assert age_min is not None
     assert uncalibrated_transitions is not None
@@ -399,6 +398,7 @@ def correct_transitions_for_mortality(transitions, dependance_initialisation = N
 
     mortality['periodized_calibrated_probability'] = np.minimum(  # use minimum to avoid over corrections !
         mortality.calibrated_probability * mortality.correction_coefficient, 1 - delta)
+
     assert (
         (mortality['periodized_calibrated_probability'] < 1)
         ).all(), "There are {} 1's in periodized_calibrated_probability".format(
@@ -450,7 +450,6 @@ def correct_transitions_for_mortality(transitions, dependance_initialisation = N
             mu = mu,
             uncalibrated_probabilities = uncalibrated_probabilities
             )
-
     elif survival_gain_cast == 'autonomy_vs_disability':
         log.debug("Using autonomy_vs_disability")
         assert mu is not None

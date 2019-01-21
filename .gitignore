@@ -19,7 +19,7 @@ til_france/model/options/dependance_RT/life_expectancy/share/predicted_mortality
 ##########################
 # Local configuration file
 ##########################
-.vscode
+.vscode/*
 config_local.ini
 
 tags
