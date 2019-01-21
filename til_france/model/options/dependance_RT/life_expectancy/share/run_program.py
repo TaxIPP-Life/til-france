@@ -20,8 +20,6 @@ log = logging.getLogger(__name__)
 logging.basicConfig(level = logging.WARNING, stream = sys.stdout)
 
 
-### TEST 1 données CARE en prevalence
-
 vagues = [1,2]
 vagues = [4,5,6]
 

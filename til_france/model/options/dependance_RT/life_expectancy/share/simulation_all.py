@@ -18,6 +18,10 @@ import sys
 
 from til_core.config import Config
 
+
+from til_france.model.options.dependance_RT.life_expectancy.share.prevalence import create_initial_prevalence
+
+
 from til_france.model.options.dependance_RT.life_expectancy.share.transition_matrices import (
     assets_path,
     get_transitions_from_formula,
@@ -208,110 +212,6 @@ def project_disability(uncalibrated_transitions = None, initial_population = Non
     return population, transitions_by_period
 
 
-def create_initial_prevalence(filename_prefix = None, smooth = False, window = 7, std = 2,
-        prevalence_survey = None, age_min = None, scale = 4):
-    """
-        Create dependance_niveau variable initialisation file for use in til-france model (option dependance_RT)
-    """
-    assert scale in [4, 5], "scale should be equal to 4 or 5"
-    assert age_min is not None
-    config = Config()
-    input_dir = config.get('til', 'input_dir')
-    assert prevalence_survey in ['care', 'hsm', 'hsm_hsi']
-    for sexe in ['homme', 'femme']:
-        if prevalence_survey == 'hsm':
-            pivot_table = get_hsm_prevalence_pivot_table(sexe = sexe, scale = 4)
-        elif prevalence_survey == 'hsm_hsi':
-            pivot_table = get_hsi_hsm_prevalence_pivot_table(sexe = sexe, scale = 4)
-        elif prevalence_survey == 'care':
-            pivot_table =  get_care_prevalence_pivot_table(sexe = sexe, scale = 4)
-        #assert prevalence_survey is not None
-
-        if filename_prefix is None:
-            filename = os.path.join(input_dir, 'dependance_initialisation_level_{}_{}.csv'.format(prevalence_survey, sexe)) # dependance_initialisation_level_share_{}
-        else:
-            filename = os.path.join('{}_level_{}_{}.csv'.format(filename_prefix, prevalence_survey, sexe))
-        level_pivot_table = (pivot_table.copy()
-            .reset_index()
-            .merge(pd.DataFrame({'age': range(0, 121)}), how = 'right')
-            .sort_values('age')
-            )
-        level_pivot_table['age'] = level_pivot_table['age'].astype(int)
-        level_pivot_table.fillna(0, inplace = True)
-
-        if smooth:
-            smoothed_pivot_table = smooth_pivot_table(pivot_table, window = window, std = std)
-            # The windowing NaNifies some values on the edge age = age_min, we reuse the rough data for those ages
-            smoothed_pivot_table.update(pivot_table, overwrite = False)
-            pivot_table = smoothed_pivot_table.copy()
-            del smoothed_pivot_table
-
-        level_pivot_table.to_csv(filename, index = False)
-        log.info('Saving {}'.format(filename))
-
-        # Go from levels to pct
-        pivot_table = pivot_table.divide(pivot_table.sum(axis=1), axis=0)
-        if filename_prefix is None:
-            filename = os.path.join(input_dir, 'dependance_initialisation_{}_{}.csv'.format(prevalence_survey,sexe))
-        else:
-            filename = os.path.join('{}_{}_{}.csv'.format(filename_prefix, prevalence_survey, sexe)) #prevalence_survey insere dans le nom du doc
-
-        if filename is not None:
-            pivot_table = (pivot_table
-                .reset_index()
-                .merge(pd.DataFrame({'age': range(0, 121)}), how = 'right')
-                .sort_values('age')
-                )
-            pivot_table['age'] = pivot_table['age'].astype(int)
-
-            pivot_table.fillna(0, inplace = True)
-            pivot_table.loc[pivot_table.age < age_min, 0] = 1
-            pivot_table.set_index('age', inplace = True)
-            pivot_table.loc[pivot_table.sum(axis = 1) == 0, scale - 1] = 1
-            pivot_table.to_csv(filename, header = False)
-            assert ((pivot_table.sum(axis = 1) - 1).abs() < 1e-15).all(), \
-                pivot_table.sum(axis = 1).loc[((pivot_table.sum(axis = 1) - 1).abs() > 1e-15)]
-
-            # Add liam2 compatible header
-            verbatim_header = '''age,initial_state,,,
-,0,1,2,3,4
-'''
-            with open(filename, 'r') as original:
-                data = original.read()
-            with open(filename, 'w') as modified:
-                modified.write(verbatim_header + data)
-            log.info('Saving {}'.format(filename))
-
-
-def get_care_prevalence_pivot_table(sexe = None, scale = None):
-    config = Config()
-    assert scale in [4, 5], "scale should be equal to 4 or 5"
-    xls_path = os.path.join(
-        config.get('raw_data', 'hsm_dependance_niveau'), 'care_extract.xlsx')
-    data = (pd.read_excel(xls_path)
-        .rename(columns = {
-            'scale_v1': 'dependance_niveau',
-            'femme': 'sexe',
-            })
-        )
-
-    assert sexe in ['homme', 'femme']
-    sexe = 1 if sexe == 'femme' else 0
-    assert sexe in data.sexe.unique(), "sexe should be in {}".format(data.sexe.unique().tolist())
-    pivot_table = (data[['dependance_niveau', 'poids_care', 'age', 'sexe']]
-        .query('sexe == @sexe')
-        .groupby(['dependance_niveau', 'age'])['poids_care'].sum().reset_index()
-        .pivot('age', 'dependance_niveau', 'poids_care')
-        .replace(0, np.nan)  # Next three lines to remove all 0 columns
-        .dropna(how = 'all', axis = 1)
-        .replace(np.nan, 0)
-        )
-
-    return pivot_table
-
-
-## get_initial_population : Fonction dont l'output est la table data (variables : periode  | age      | initial_state | population    | sex)
-
 def get_initial_population(age_min = None, period = None, rescale = True, prevalence_survey = None):
     """
         Produce intiial population with disabiliyt state
@@ -319,8 +219,6 @@ def get_initial_population(age_min = None, period = None, rescale = True, preval
         :param int age_min: minimal age to retain
         :param bool rescale: rescale using INSEE population
         :param str prevalence_survey: survey used to compute initial prevalence, should be 'care', 'hsm' or 'hsm_hsi'
-
-
     """
     assert age_min is not None
     assert prevalence_survey is not None
@@ -411,9 +309,11 @@ def add_lower_age_population(population = None, age_min = None, prevalence_surve
     return completed_population
 
 
-#  Mortalites calibrees
 def build_mortality_calibrated_target_from_transitions(transitions = None, period = None, dependance_initialisation = None,
        age_min = None, one_year_approximation = None, survival_gain_cast = None, mu = None, age_max_cale = None, uncalibrated_transitions = None):
+    """
+        Mortalites calibrees
+    """
     assert age_min is not None
     assert period is not None
     assert transitions is not None
@@ -656,7 +556,7 @@ def _get_calibrated_transitions(period = None, transitions = None, dependance_in
             #.rename(columns = {'periodized_calibrated_probability': 'cale_other_transition2'}) #Pour ne pas melanger ensuite
             )
 
-     ##CREATION DES BETA pour le scenario AUTONOMY VS DISABILITY
+    ##CREATION DES BETA pour le scenario AUTONOMY VS DISABILITY
     elif survival_gain_cast == 'autonomy_vs_disability':
             log.debug("Using autonomy_vs_disability scenario")
             assert mu is not None
@@ -689,19 +589,6 @@ def _get_calibrated_transitions(period = None, transitions = None, dependance_in
     # Remplace les missings de calibrated proba par periodized calibrated proba si final_state=4 pour avoir une variable unique
     if (calibrated_transitions['calibrated_probability']).isnull().any():
         calibrated_transitions['calibrated_probability'] = calibrated_transitions['calibrated_probability'].fillna(value=calibrated_transitions['periodized_calibrated_probability'])
-
-
-    #Correction
-
-    # if (calibrated_transitions['calibrated_probability']).isnull().any():  # Deal with age > 100 with nobody in the population
-    #     print("missing dans calibrated_probability")
-    #     calibrated_transitions = (calibrated_transitions
-    #         .reset_index()
-    #         .loc[(calibrated_transitions.age >= 100) & (isnull(calibrated_transitions.calibrated_probability))], eval('calibrated_probability = 1 - periodized_calibrated_probability', inplace = False)
-    #         .set_index(['sex', 'age', 'initial_state', 'final_state'])
-    #         )
-
-    #print("passe par l'imputation periodized_calibrated_probability recalibree")
 
     # Verification
     assert_probabilities(
@@ -980,7 +867,6 @@ def correct_transitions_for_mortality(transitions, dependance_initialisation = N
         other_transitions = initial_vs_others(
             period = period,
             target_mortality = mortality,
-            # previous_mortality = previous_mortality,
             mu = mu,
             uncalibrated_probabilities = uncalibrated_probabilities
             )
@@ -1182,15 +1068,7 @@ def get_insee_projected_population():
     #TOOLS
 ###########
 
-def smooth_pivot_table(pivot_table, window = 7, std = 2):
-    smoothed_pivot_table = pivot_table.copy()
-    for dependance_niveau in smoothed_pivot_table.columns:
-        smoothed_pivot_table[dependance_niveau] = (pivot_table[dependance_niveau]
-            .rolling(win_type = 'gaussian', center = True, window = window, axis = 0)
-            .mean(std = std)
-            )
 
-    return smoothed_pivot_table
 
 def check_67_and_over(population, age_min):
     period = population.period.max()
@@ -1369,7 +1247,7 @@ def assert_probabilities(dataframe = None, by = ['period', 'sex', 'age', 'initia
             )
         )
 
-###SCENARIOS
+## SCENARIOS
 
 def initial_vs_others(mortality = None, mu = None, uncalibrated_probabilities = None):
     """
@@ -1396,27 +1274,6 @@ def initial_vs_others(mortality = None, mu = None, uncalibrated_probabilities = 
     for initial_state, final_states in final_states_by_initial_state.items():
         if 4 not in final_states:
             continue
-        #
-  #       if initial_state == 4:
-  #           to_initial_transitions = (uncalibrated_probabilities
-   #              .reset_index()
-   #              .query('(initial_state == @initial_state) and (final_state == @initial_state) and (final_state != 5)')
-   #              .merge(
-   #                  mortality.reset_index()[
-   #                      ['period', 'sex', 'age', 'initial_state', 'periodized_calibrated_probability']
-   #                      ])
-    #             )
-    #         to_initial_transitions['periodized_calibrated_probability'] = (
-    #             1 - to_initial_transitions['periodized_calibrated_probability']
-    #             )
-    #         to_non_initial_transitions = None
-   #          other_transitions = pd.concat([
-   #              other_transitions,
-    #             to_initial_transitions[
-     #                ['period', 'sex', 'age', 'initial_state', 'final_state', 'periodized_calibrated_probability']
-     #                ],
-    #             ])
-        #
         else:
             delta_initial_transitions = mortality.reset_index()[
                 #['period', 'sex', 'age', 'initial_state', 'delta_initial','calibrated_probability']
@@ -1463,7 +1320,6 @@ def initial_vs_others(mortality = None, mu = None, uncalibrated_probabilities = 
                     ['period', 'sex', 'age', 'initial_state', 'final_state', 'periodized_calibrated_probability']
                     ],
                 ])
-
 
             assert not other_transitions[['period', 'sex', 'age', 'initial_state', 'final_state']].duplicated().any(), \
                 'Duplicated transitions for initial_state = {}: {}'.format(
