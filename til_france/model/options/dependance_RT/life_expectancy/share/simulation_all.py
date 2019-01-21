@@ -34,14 +34,11 @@ from til_france.model.options.dependance_RT.life_expectancy.share.paths_prog imp
 
 log = logging.getLogger(__name__)
 
+
 config = Config()
 figures_directory = config.get('dependance', 'figures_directory')
-
-
 eligible_survival_gain_casts = ['homogeneous', 'initial_vs_others', 'autonomy_vs_disability']
 
-
-# Fonctions principales
 
 def run(survival_gain_casts = None, mu = None, uncalibrated_transitions = None, vagues = [4, 5, 6], age_min = None,
         prevalence_survey = None, one_year_approximation = None, age_max_cale = None):
