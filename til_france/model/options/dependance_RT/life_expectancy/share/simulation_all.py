@@ -133,11 +133,11 @@ def project_disability(uncalibrated_transitions = None, initial_population = Non
         :param DataFrame initial_population: population at the initial period
         :param int initial_period: initial period of the simulation
         :param float mu: optional parameter for scenarios, should be in the [0, 1] interval.
-        :param str survival_gain_cast: scenario for survival gain casting in the following list ['homogeneous', '']
+        :param str survival_gain_cast: scenario for survival gain casting. Should be 'autonomy_vs_disability', 'homogeneous' or 'initial_vs_others'
         :param int age_min: minimal age for people to be disabled
-        :param str prevalence_survey: prevalence survey used to set initial disability levels to choose from 'autonomy_vs_disability', 'homogeneous' or 'initial_vs_others',
+        :param str prevalence_survey: survey used to compute initial prevalence, should be 'care', 'hsm' or 'hsm_hsi'
         :param one_year_approximation:
-        :param int age_max_cale: minimal age at which the disability level proportions are freezed equal to
+        :param int age_max_cale: minimal age at which the disability level transitions are freezed
     """
     assert prevalence_survey is not None
     assert age_max_cale is not None
@@ -210,27 +210,11 @@ def project_disability(uncalibrated_transitions = None, initial_population = Non
 
     return population, transitions_by_period
 
-# # Doc transition_matrices : fonctions get_transitions_from_formula, compute_prediction, build_estimation_sample, get_clean_share
-#
-# get_transitions_from_formula : permet d'obtenir transitions, qu'on fixe tel que uncalibrated_transitions = transitions en argument de la fonction run()
-
-###############################
-# # compute_prediction : Calcule les probabilités de transition en appliquant un logit pour une spécification donnée, qui correspond à l'objet formula
-
-
-# # get_clean_share : Get SHARE relevant data free of missing observations
-
-
-########## Prevalence initiales : initialise les prevalences initiales dans les états de la population, ajout des personnes aux âges bas
-
-# # create_initial_prevalence : renvoie la table pivot_table avec à chaque âge la répartition dans les états possibles
-# anciennement Create_dependance_initialisation_share
-
 
 def create_initial_prevalence(filename_prefix = None, smooth = False, window = 7, std = 2,
         prevalence_survey = None, age_min = None, scale = 4):
     """
-    Create dependance_niveau variable initialisation file for use in til-france model (option dependance_RT)
+        Create dependance_niveau variable initialisation file for use in til-france model (option dependance_RT)
     """
     assert scale in [4, 5], "scale should be equal to 4 or 5"
     assert age_min is not None
@@ -332,6 +316,15 @@ def get_care_prevalence_pivot_table(sexe = None, scale = None):
 ## get_initial_population : Fonction dont l'output est la table data (variables : periode  | age      | initial_state | population    | sex)
 
 def get_initial_population(age_min = None, period = None, rescale = True, prevalence_survey = None):
+    """
+        Produce intiial population with disabiliyt state
+
+        :param int age_min: minimal age to retain
+        :param bool rescale: rescale using INSEE population
+        :param str prevalence_survey: survey used to compute initial prevalence, should be 'care', 'hsm' or 'hsm_hsi'
+
+
+    """
     assert age_min is not None
     assert prevalence_survey is not None
     if rescale:
@@ -731,10 +724,10 @@ def impute_high_ages(data_to_complete = None, uncalibrated_transitions = None, p
     """
         Impute probability transition for high ages by forward filling values using a threshold age
 
-        :param DataFrame data_to_complete:
-        :param DataFrame uncalibratd_transitions:
-        :param int period:
-        :param int age_max_cale: threshold age for imputation
+        :param DataFrame data_to_complete: data to be complted by imputation
+        :param DataFrame uncalibratd_transitions: disability transitions table
+        :param int period: the period of the simulation
+        :param int age_max_cale: minimal age at which the disability level transitions are freezed
     """
 
     assert age_max_cale is not None
