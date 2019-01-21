@@ -26,7 +26,6 @@ from til_france.model.options.dependance_RT.life_expectancy.share.transition_mat
 
 from til_france.plot.population import get_insee_projection
 
-from til_france.tests.base import ipp_colors
 
 from til_france.model.options.dependance_RT.life_expectancy.share.paths_prog import (
     til_france_path,
@@ -34,16 +33,7 @@ from til_france.model.options.dependance_RT.life_expectancy.share.paths_prog imp
     )
 
 
-colors = [ipp_colors[cname] for cname in [
-    'ipp_very_dark_blue', 'ipp_dark_blue', 'ipp_medium_blue', 'ipp_light_blue']]
-
-
 log = logging.getLogger(__name__)
-
-life_table_path = os.path.join(
-    assets_path,
-    'lifetables_period.xlsx'
-    )
 
 config = Config()
 figures_directory = config.get('dependance', 'figures_directory')
@@ -133,81 +123,6 @@ def save_data_and_graph(uncalibrated_transitions, mu = None, survival_gain_cast 
     pct_pivot_table.to_csv(os.path.join(figures_directory, 'share_proj_pct_{}.csv'.format(
         suffix)))
     figure.savefig(os.path.join(figures_directory, 'share_proj_pct_{}.pdf'.format(suffix)), bbox_inches = 'tight')
-
-
-def run_scenario(uncalibrated_transitions = None, initial_population = None, initial_period = 2010,
-        survival_gain_cast = None, mu = None, age_min = None, prevalence_survey = None, one_year_approximation = None):
-    assert prevalence_survey is not None
-    initial_population['period'] = initial_period
-    population = initial_population.copy()
-
-    uncalibrated_transitions = (uncalibrated_transitions
-        .reset_index()
-        .assign(period = initial_period)
-        .set_index(['period', 'sex', 'age', 'initial_state', 'final_state'])
-        )
-
-    transitions = build_mortality_calibrated_target_from_transitions(
-        transitions = uncalibrated_transitions,
-        period = initial_period,
-        dependance_initialisation = population,
-        age_min = age_min,
-        one_year_approximation = one_year_approximation,
-        )
-
-    period = initial_period
-
-    transitions_by_period = dict()
-
-    while period < 2014:
-        print ('Running period {}'.format(period))
-        period = population['period'].max()
-        # plot_dependance_niveau_by_age(population, period)
-        if period > initial_period:
-            dependance_initialisation = population.query('period == @period').copy()
-            # Update the transitions matrix if necessary
-            if survival_gain_cast is None:
-                log.info("Calibrate transitions for period = {}".format(period))
-                delta = 1e-7
-                transitions = regularize2(
-                    transition_matrix_dataframe = transitions.rename(
-                        columns = {'calibrated_probability': 'probability'}),
-                    by = ['period', 'sex', 'age', 'initial_state'],
-                    probability = 'probability',
-                    delta = delta,
-                    )
-
-                transitions = build_mortality_calibrated_target_from_transitions(
-                    transitions = transitions,
-                    period = period,
-                    dependance_initialisation = dependance_initialisation,
-                    age_min = age_min,
-                    one_year_approximation = one_year_approximation
-                    )
-                transitions_by_period[period] = transitions
-
-            else:
-                log.info('Updating period = {} transitions for mu = {} and survival_gain_cast = {}'.format(
-                    period, mu, survival_gain_cast))
-                transitions = correct_transitions_for_mortality(
-                    transitions,
-                    dependance_initialisation = dependance_initialisation,
-                    mu = mu,
-                    survival_gain_cast = survival_gain_cast,
-                    period = period,
-                    )
-
-        # Iterate
-        iterated_population = apply_transition_matrix(
-            population = population.query('period == @period').copy(),
-            transition_matrix = transitions,
-            age_min = age_min,
-            )
-        check_67_and_over(iterated_population, age_min = age_min + 2)
-        iterated_population = add_lower_age_population(population = iterated_population, age_min = age_min, prevalence_survey = prevalence_survey)
-        population = pd.concat([population, iterated_population])
-
-    return population, transitions_by_period
 
 
 def project_disability(uncalibrated_transitions = None, initial_population = None, initial_period = 2010, mu = None,
@@ -699,7 +614,7 @@ def _get_calibrated_transitions(period = None, transitions = None, dependance_in
             .eval('calibrated_probability = probability * cale_other_transitions', inplace = False)
             )
 
-        print("Utilise les cales pour calibrated_probability")
+        log.debug("Utilise les cales pour calibrated_probability")
         assert other_transitions.calibrated_probability.notnull().all(), \
             other_transitions.loc[other_transitions.calibrated_probability.isnull()]
 
@@ -782,7 +697,7 @@ def _get_calibrated_transitions(period = None, transitions = None, dependance_in
         ).sort_index()
 
 
-    #Remplace les missings de calibrated proba par periodized calibrated proba si final_state=4 pour avoir une variable unique
+    # Remplace les missings de calibrated proba par periodized calibrated proba si final_state=4 pour avoir une variable unique
     if (calibrated_transitions['calibrated_probability']).isnull().any():
         calibrated_transitions['calibrated_probability'] = calibrated_transitions['calibrated_probability'].fillna(value=calibrated_transitions['periodized_calibrated_probability'])
 
@@ -1148,10 +1063,7 @@ def get_predicted_mortality_table(transitions = None, save = False, probability_
         mortality_table = (transitions
             .query('final_state == @death_state')
             .copy()
-            .eval('mortality = probability')
-            #else:
-            #.eval('mortality = probability')
-            #.assign(mortality = lambda x: x[probability_name])))
+            .assign(mortality = lambda x: x[probability_name])))
         )
     else:
         # one_year_approximation is true : transitions vers deces avec un pas de 1 an
@@ -1638,6 +1550,10 @@ def autonomy_vs_disability(mortality = None, mu = None, uncalibrated_probabiliti
         Gain in survival probability feeds by a proportion of mu the autonomy initial_state and
         1 - mu the transition to the disability states.
         Other transition share proportionnally the survival probability gain
+
+        :param DataFrame mortality: moratlity table
+        :param mu mortality: Share of survival gain casted to the autonomy state
+        :param DataFrame uncalibrated_probabilities: probability table to be updated
     """
     # Starting from autonomy
     # Staying autonomous
@@ -1660,6 +1576,7 @@ def autonomy_vs_disability(mortality = None, mu = None, uncalibrated_probabiliti
             )
         )
     assert (stay_autonomous.periodized_calibrated_probability <= 1).all()
+
     # From autonomy to disablement
     disabling_transitions_aggregate_probability = (uncalibrated_probabilities
         .reset_index()
@@ -1697,14 +1614,14 @@ def autonomy_vs_disability(mortality = None, mu = None, uncalibrated_probabiliti
             )
         )
 
-    other_transitions = pd.concat(
+    all_transitions = pd.concat(
         [stay_autonomous, become_disabled, other_transitions,],
         sort = True,
         )
 
-    other_transitions = (other_transitions
+    all_transitions = (all_transitions
         .reset_index()
         .set_index(['period', 'sex', 'age', 'initial_state', 'final_state'])
         )
 
-    return other_transitions
+    return all_transitions
