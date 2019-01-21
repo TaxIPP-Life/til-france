@@ -29,7 +29,6 @@ from til_france.plot.population import get_insee_projection
 
 from til_france.model.options.dependance_RT.life_expectancy.share.paths_prog import (
     til_france_path,
-    assets_path
     )
 
 

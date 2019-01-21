@@ -4,14 +4,17 @@
 from __future__ import division
 
 
-import logging
-import os
-import pandas as pd
-import patsy
-import pkg_resources
-import statsmodels.formula.api as smf
 import sys
 
+
+import logging
+import os
+import pkg_resources
+import statsmodels.formula.api as smf
+
+
+import pandas as pd
+import patsy
 
 from scipy import stats
 stats.chisqprob = lambda chisq, df: stats.chi2.sf(chisq, df)
@@ -92,9 +95,9 @@ def get_clean_share(extra_variables = None):
         }
     assert set(renaming.keys()) < set(df.columns)
     df = (df
-      .rename(columns = renaming)
-      .copy()
-      )
+        .rename(columns = renaming)
+        .copy()
+        )
     df['sexe'] = df.male + 2 * (df.male == 0)
     del df['male']
     variables = ['id', 'initial_state', 'sexe', 'year', 'age', 'vague']
@@ -131,19 +134,17 @@ def build_estimation_sample(initial_state, sex = None, variables = None, vagues 
     """
         Build estimation sample from share data
     """
-    assert estimation_survey is not None
     final_states = final_states_by_initial_state[initial_state]
     assert (sex in ['male', 'female']) or (sex is None)
     extra_variables = None
     if variables is not None:
         extra_variables = [variable for variable in variables if variable not in ['final_state']]
 
-
     clean_share = get_clean_share(extra_variables = extra_variables)
 
     assert clean_share.notnull().all().all()
-
     assert initial_state in final_states
+
     no_transition = (clean_share
         .groupby('id')['initial_state']
         .count() == 1
@@ -313,14 +314,13 @@ def direct_compute_predicition(initial_state, formula, formatted_params, sex = N
     return computed_prediction
 
 
-def compute_prediction(initial_state = None, formula = None, variables = ['age'], exog = None, sex = None, vagues = None, estimation_survey = None):
+def compute_prediction(initial_state = None, formula = None, variables = ['age'], exog = None, sex = None, vagues = None):
     """
-    Compute prediction on exogneous if given or on sample
+        Compute prediction on exogneous if given or on sample
     """
-    assert estimation_survey is not None
     assert initial_state is not None
     assert (sex in ['male', 'female']) or (sex is None)
-    sample = build_estimation_sample(initial_state, sex = sex, variables = variables, vagues = vagues, estimation_survey = estimation_survey)
+    sample = build_estimation_sample(initial_state, sex = sex, variables = variables, vagues = vagues)
     if exog is None:
         exog = sample[variables]
 
@@ -338,8 +338,7 @@ def compute_prediction(initial_state = None, formula = None, variables = ['age']
     return prediction.reset_index(drop = True)
 
 
-def get_transitions_from_formula(formula = None, age_min = 50, age_max = 120, vagues = None, estimation_survey = None):
-    assert estimation_survey is not None
+def get_transitions_from_formula(formula = None, age_min = 50, age_max = 120, vagues = None):
     transitions = None
     for sex in ['male', 'female']:
         assert formula is not None
@@ -349,7 +348,7 @@ def get_transitions_from_formula(formula = None, age_min = 50, age_max = 120, va
             proba_by_initial_state[initial_state] = pd.concat(
                 [
                     exog,
-                    compute_prediction(initial_state, formula, sex = sex, exog = exog, vagues = vagues, estimation_survey = estimation_survey)
+                    compute_prediction(initial_state, formula, sex = sex, exog = exog, vagues = vagues)
                     ],
                 axis = 1,
                 )
@@ -408,9 +407,7 @@ def get_transitions_from_file(alzheimer = None, memory = False):
 
     age_max = df.age[df.age.str.isnumeric()].unique().max()
     df.replace(
-        {'age':
-            {age_max + '+': int(age_max) + 1}
-            },
+        {'age': {age_max + '+': int(age_max) + 1}},
         inplace = True)
     df['age'] = df.age.astype(int)
     df = df.dropna()
@@ -437,6 +434,7 @@ def get_transitions_from_file(alzheimer = None, memory = False):
             ['sex', 'age', 'initial_state', 'final_state']
             )
     return df.set_index(['sex', 'age', 'initial_state', 'final_state'])
+
 
 if __name__ == '__main__':
 
