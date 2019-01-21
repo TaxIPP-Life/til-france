@@ -361,18 +361,6 @@ def get_transitions_from_formula(formula = None, age_min = 50, age_max = 120, va
     return transitions
 
 
-def test(formula = None, initial_state = None, sex = None):
-    assert formula is not None
-    assert initial_state is not None
-    assert (sex is None) or (sex in ['male', 'female'])
-    result, formatted_params = estimate_model(initial_state, formula, sex = sex)
-    computed_prediction = direct_compute_predicition(initial_state, formula, formatted_params, sex = sex)
-    prediction = compute_prediction(initial_state, formula, sex = sex)
-    diff = computed_prediction[prediction.columns] - prediction
-    log.debug("Max of absolute error = {}".format(diff.abs().max().max()))
-    assert (diff.abs().max() < 1e-5).all(), "error is too big: {} > 1e-5".format(diff.abs().max())
-
-
 def get_formatted_params_by_initial_state(formula = None, variables = None):
     formatted_params_by_initial_state = dict([
         (
@@ -434,32 +422,3 @@ def get_transitions_from_file(alzheimer = None, memory = False):
             ['sex', 'age', 'initial_state', 'final_state']
             )
     return df.set_index(['sex', 'age', 'initial_state', 'final_state'])
-
-
-if __name__ == '__main__':
-
-    logging.basicConfig(level = logging.DEBUG, stream = sys.stdout)
-
-    df = get_transitions_from_file(alzheimer = 0)
-
-
-    BIM
-
-    df = get_clean_share()
-    sex = 'male'
-    initial_state = 1
-    sample = build_estimation_sample(initial_state, sex = sex)
-    BIM
-
-    sex = None
-    formula = 'final_state ~ I((age - 80)) + I(((age - 80))**2) + I(((age - 80))**3)'
-    variables = ['age', 'final_state']
-
-    initial_state = 0
-    result, formatted_params = estimate_model(initial_state, formula, sex = sex, variables = variables)
-
-    prediction = compute_prediction(initial_state = initial_state, formula = formula, sex = sex, variables = variables)
-    #print prediction
-
-    for initial_state in range(1):
-        test(initial_state = initial_state, formula = formula, sex = sex)
