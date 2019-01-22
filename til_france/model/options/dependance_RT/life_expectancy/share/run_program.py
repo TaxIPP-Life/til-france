@@ -16,7 +16,6 @@ from til_france.model.options.dependance_RT.life_expectancy.share.simulation_all
 
 
 log = logging.getLogger(__name__)
-
 logging.basicConfig(level = logging.WARNING, stream = sys.stdout)
 
 
