@@ -26,6 +26,33 @@ from til_core.config import Config
 log = logging.getLogger(__name__)
 
 logging.basicConfig(level = logging.WARNING, stream = sys.stdout)
+logging.basicConfig(level = logging.DEBUG, stream = sys.stdout)
+
+# Paths
+
+til_france_path = os.path.join(
+    pkg_resources.get_distribution('Til-France').location,
+    'til_france',
+    )
+
+assets_path = os.path.join(
+    til_france_path,
+    'model',
+    'options',
+    'dependance_RT',
+    'assets',
+    )
+
+
+config = Config()
+data_path = os.path.join(
+    config.get('raw_data', 'share'),
+    #'share_data_for_microsimulation.csv', ##A modifier si on veut modifier la base transition
+    'share_data_for_microsimulation_newvar.csv',
+    )
+
+assert os.path.exists(data_path)
+
 
 
 from til_france.model.options.dependance_RT.life_expectancy.share.transition_matrices import (
@@ -34,7 +61,8 @@ from til_france.model.options.dependance_RT.life_expectancy.share.transition_mat
     get_transitions_from_file,
     compute_prediction, 
     build_estimation_sample, 
-    get_clean_share
+    get_clean_share, 
+    estimate_model
     )
 
 def estimate_model(initial_state, formula, sex = None, variables = ['age', 'final_state']):
@@ -113,256 +141,83 @@ def compute_prediction2(initial_state = 0, formula = formula, variables = ['age'
 
 resultat_pred = compute_prediction2(initial_state = 0, formula = formula, variables = ['age'], exog = None, sex = 'male', vagues = vagues, estimation_survey = 'share')
 
-def build_estimation_sample(initial_state, sex = None, variables = None, vagues = None):
-    """
-        Build estimation sample from share data
-    """
-    assert estimation_survey is not None
-    final_states = final_states_by_initial_state[initial_state]
-    assert (sex in ['male', 'female']) or (sex is None)
-    extra_variables = None
-    if variables is not None:
-        extra_variables = [variable for variable in variables if variable not in ['final_state']]
+####
 
 
-    clean_share = get_clean_share(extra_variables = extra_variables)
-
-    assert clean_share.notnull().all().all()
-
-    assert initial_state in final_states
-    no_transition = (clean_share
-        .groupby('id')['initial_state']
-        .count() == 1
-        )
-    no_transition_with_specific_initial_state = clean_share.loc[
-        clean_share.id.isin(no_transition.index[no_transition].tolist())
-        ].query('initial_state == {}'.format(initial_state))
-    log.info(
-        "There are {} individuals out of {} with only one observation (no transition) with intiial state = {}".format(
-            len(no_transition_with_specific_initial_state), no_transition.sum(), initial_state))
-
-    clean_share['final_state'] = clean_share.groupby('id')['initial_state'].shift(-1).copy()
-    log.info("There are {} individuals with intiial state = {} with no subsequent transition".format(
-        len(
-            clean_share.loc[clean_share.final_state.isnull()]
-            .query('(initial_state == {})'.format(initial_state))
-            ),
-        initial_state,
-        ))
-    log.debug("Transifions from initial_state = {}:\n {}".format(
-        initial_state,
-        (
-            clean_share
-            .query('(initial_state == {})'.format(initial_state))['final_state']
-            .value_counts(dropna = False)
-            .sort_index()
-            )
-        ))
-    wrong_transition = (clean_share.loc[clean_share.final_state.notnull()]
-        .query('(initial_state == {}) & (final_state not in {})'.format(
-            initial_state, final_states)
-            )
-        .groupby('final_state')['initial_state']
-        .count()
-        )
-    log.info("There are {} individuals with intiial state = {} transiting to forbidden states: \n {}".format(
-        wrong_transition.sum(), initial_state, wrong_transition[wrong_transition > 0]))
-
-    log.info("Final states:\n {}".format(clean_share.final_state.value_counts(dropna = False)))
-
-    if wrong_transition.sum() > 0:
-        if initial_state in replace_by_initial_state.keys():
-            log.info("Using the following replacement rule: {}".format(
-                replace_by_initial_state[initial_state]
-                ))
-            log.debug("Sample size before cleaning bad final_states:\n {}".format(
-                len(clean_share
-                    .query('(initial_state == {})'.format(
-                        initial_state,
-                        ))
-                    .dropna()
-                    )
-                ))
-            log.info(clean_share.query('(initial_state == {})'.format(
-                initial_state,
-                )).final_state.value_counts(dropna = False))
-            sample = (clean_share
-                .query('initial_state == {}'.format(initial_state))
-                .dropna()
-                .replace({
-                    'final_state': replace_by_initial_state[initial_state]
-                    })
-                .copy()
-                )
-            log.debug("Sample size after cleaning bad final_states:\n {}".format(len(sample)))
-            log.info(sample.final_state.value_counts())
-    else:
-        sample = (clean_share
-            .query('(initial_state == {})'.format(
-                initial_state,
-                ))
-            .dropna()
-            .copy()
-            )
-
-    log.debug("Sample size after eventually cleaning bad final_states {}".format(len(sample)))
-
-    if sex:
-        if sex == 'male':
-            sample = sample.query('sexe == 1').copy()
-        elif sex == 'female':
-            sample = sample.query('sexe == 2').copy()
-    sample["final_state"] = sample["final_state"].astype('int').astype('category')
-
-    if sex:
-        log.info("Keeping sample of size {} for sex = {}".format(len(sample), sex))
-    else:
-        log.info("Keeping sample of size {}".format(len(sample)))
-        del sample['sexe']
-
-    if vagues:
-        sample = sample.query('vague in @vagues').copy()
-
-    assert set(sample.final_state.value_counts().index.tolist()) == set(final_states), '{} differs from {}'.format(
-        set(sample.final_state.value_counts().index.tolist()), set(final_states)
-        )
-    return sample.reset_index(drop = True).copy()
-
-
-df = get_clean_share()
-    sex = 'male'
-    initial_state = 1
-    estimation_survey = 'share'
-    vagues = [4,5,6]
+df = get_clean_share(extra_variables = extra_variables)
+sex = 'male'
+initial_state = 1
+estimation_survey = 'share'
+vagues = [4,5,6]
 final_states_by_initial_state = {
   0: [0, 1, 4],
   1: [0, 1, 2, 4],
   2: [1, 2, 3, 4],
   3: [2, 3, 4],
   }
+variables = ['age', 'final_state', 'married_','children_0','children_1','children_2','children_3plus']
+extra_variables = ['age','married_','children_0','children_1','children_2','children_3plus']
 
 
-    sample = build_estimation_sample(initial_state, sex = sex, vagues = vagues)
+sample = build_estimation_sample(initial_state, sex = sex, variables = variables, vagues = vagues)
 
-    sex = None
-    formula = 'final_state ~ I((age - 80)) + I(((age - 80))**2) + I(((age - 80))**3)'
-    variables = ['age', 'final_state']
+formula = 'final_state ~ I((age - 80)) + I(((age - 80))**2) + I(((age - 80))**3)'
 
-    initial_state = 0
-    result, formatted_params = estimate_model(initial_state, formula, sex = sex, variables = variables)
+result, formatted_params = estimate_model(initial_state, formula, sex = sex, variables = variables)
 
-def build_estimation_sample(initial_state, sex = None, variables = None, vagues = None):
+####
+def get_clean_share(extra_variables = None):
     """
-        Build estimation sample from share data
+        Get SHARE relevant data free of missing observations
     """
-    #assert estimation_survey is not None
-    final_states = final_states_by_initial_state[initial_state]
-    assert (sex in ['male', 'female']) or (sex is None)
-    extra_variables = None
-    if variables is not None:
-        extra_variables = [variable for variable in variables if variable not in ['final_state']]
+    death_state = 4
+    if extra_variables is None:
+        extra_variables = list()
+    df = pd.read_csv(data_path)
 
+    log.debug("Share data contains the following variables: {}".format(df.columns))
 
-    clean_share = get_clean_share(extra_variables = extra_variables)
-
-    assert clean_share.notnull().all().all()
-
-    assert initial_state in final_states
-    no_transition = (clean_share
-        .groupby('id')['initial_state']
-        .count() == 1
+    renaming = {
+        'scale': 'initial_state',
+        'mergeid': 'id',
+        'year_int': 'year',
+        'age_int': 'age',
+        }
+    assert set(renaming.keys()) < set(df.columns)
+    df = (df
+        .rename(columns = renaming)
+        .copy()
         )
-    no_transition_with_specific_initial_state = clean_share.loc[
-        clean_share.id.isin(no_transition.index[no_transition].tolist())
-        ].query('initial_state == {}'.format(initial_state))
-    log.info(
-        "There are {} individuals out of {} with only one observation (no transition) with intiial state = {}".format(
-            len(no_transition_with_specific_initial_state), no_transition.sum(), initial_state))
+    df['sexe'] = df.male + 2 * (df.male == 0)
+    del df['male']
+    variables = ['id', 'initial_state', 'sexe', 'year', 'age', 'vague']
 
-    clean_share['final_state'] = clean_share.groupby('id')['initial_state'].shift(-1).copy()
-    log.info("There are {} individuals with intiial state = {} with no subsequent transition".format(
-        len(
-            clean_share.loc[clean_share.final_state.isnull()]
-            .query('(initial_state == {})'.format(initial_state))
-            ),
-        initial_state,
-        ))
-    log.debug("Transifions from initial_state = {}:\n {}".format(
-        initial_state,
-        (
-            clean_share
-            .query('(initial_state == {})'.format(initial_state))['final_state']
-            .value_counts(dropna = False)
-            .sort_index()
-            )
-        ))
-    wrong_transition = (clean_share.loc[clean_share.final_state.notnull()]
-        .query('(initial_state == {}) & (final_state not in {})'.format(
-            initial_state, final_states)
-            )
-        .groupby('final_state')['initial_state']
-        .count()
-        )
-    log.info("There are {} individuals with intiial state = {} transiting to forbidden states: \n {}".format(
-        wrong_transition.sum(), initial_state, wrong_transition[wrong_transition > 0]))
+    if extra_variables:
+        assert isinstance(extra_variables, list)
+        variables = list(set(['id', 'initial_state', 'sexe', 'year', 'age', 'vague']).union(set(extra_variables)))
+        
+    df = df.reset_index(drop = True)
+    #df = df.set_index(variables)
 
-    log.info("Final states:\n {}".format(clean_share.final_state.value_counts(dropna = False)))
+    df = df[variables].copy().dropna()  # TODO Remove the dropna
+    assert df.notnull().all().all(), \
+        "Some columns contains NaNs:\n {}".format(df.isnull().sum())
 
-    if wrong_transition.sum() > 0:
-        if initial_state in replace_by_initial_state.keys():
-            log.info("Using the following replacement rule: {}".format(
-                replace_by_initial_state[initial_state]
-                ))
-            log.debug("Sample size before cleaning bad final_states:\n {}".format(
-                len(clean_share
-                    .query('(initial_state == {})'.format(
-                        initial_state,
-                        ))
-                    .dropna()
-                    )
-                ))
-            log.info(clean_share.query('(initial_state == {})'.format(
-                initial_state,
-                )).final_state.value_counts(dropna = False))
-            sample = (clean_share
-                .query('initial_state == {}'.format(initial_state))
-                .dropna()
-                .replace({
-                    'final_state': replace_by_initial_state[initial_state]
-                    })
-                .copy()
-                )
-            log.debug("Sample size after cleaning bad final_states:\n {}".format(len(sample)))
-            log.info(sample.final_state.value_counts())
-    else:
-        sample = (clean_share
-            .query('(initial_state == {})'.format(
-                initial_state,
-                ))
-            .dropna()
-            .copy()
-            )
+    for extra_variable in extra_variables:
+        assert df[extra_variable].notnull().all(), "Variable {} contains null values. {}".format(
+            extra_variable, df[extra_variable].value_counts(dropna = False))
 
-    log.debug("Sample size after eventually cleaning bad final_states {}".format(len(sample)))
+    assert df.sexe.isin([1, 2]).all()
 
-    if sex:
-        if sex == 'male':
-            sample = sample.query('sexe == 1').copy()
-        elif sex == 'female':
-            sample = sample.query('sexe == 2').copy()
-    sample["final_state"] = sample["final_state"].astype('int').astype('category')
+    filtered = df.dropna()
+    log.debug("There are {} missing observation of initial_state out of {}".format(df.initial_state.isnull().sum(), len(df)))
 
-    if sex:
-        log.info("Keeping sample of size {} for sex = {}".format(len(sample), sex))
-    else:
-        log.info("Keeping sample of size {}".format(len(sample)))
-        del sample['sexe']
+    log.debug("There are {} valid observations out of {} for the following variables {}".format(
+        len(filtered), len(df), df.columns))
 
-    if vagues:
-        sample = sample.query('vague in @vagues').copy()
+    assert (filtered.isnull().sum() == 0).all()
 
-    assert set(sample.final_state.value_counts().index.tolist()) == set(final_states), '{} differs from {}'.format(
-        set(sample.final_state.value_counts().index.tolist()), set(final_states)
-        )
-    return sample.reset_index(drop = True).copy()
+    filtered["sexe"] = filtered["sexe"].astype('int').astype('category')
+    filtered["initial_state"] = filtered["initial_state"].astype('int').astype('category')
 
+    return filtered

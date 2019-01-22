@@ -44,7 +44,7 @@ assets_path = os.path.join(
 config = Config()
 data_path = os.path.join(
     config.get('raw_data', 'share'),
-    'share_data_for_microsimulation.csv', ##A modifier si on veut modifier la base transition
+    'share_data_for_microsimulation_newvar.csv', ##A modifier si on veut modifier la base transition
     )
 
 assert os.path.exists(data_path)
@@ -140,8 +140,9 @@ def build_estimation_sample(initial_state, sex = None, variables = None, vagues 
     if variables is not None:
         extra_variables = [variable for variable in variables if variable not in ['final_state']]
 
-    clean_share = get_clean_share(extra_variables = extra_variables)
-
+    clean_share = (get_clean_share(extra_variables = extra_variables)
+        .sort_values( by = ['id', 'vague'])
+        )
     assert clean_share.notnull().all().all()
     assert initial_state in final_states
 
@@ -238,7 +239,7 @@ def build_estimation_sample(initial_state, sex = None, variables = None, vagues 
     if vagues:
         sample = sample.query('vague in @vagues').copy()
 
-    assert set(sample.final_state.value_counts().index.tolist()) == set(final_states), '{} differs from {}'.format(
+    assert set(sample.final_state.value_counts().index.tolist()) == set(final_states), 'Final states in data are {} and differs from {}'.format(
         set(sample.final_state.value_counts().index.tolist()), set(final_states)
         )
     return sample.reset_index(drop = True).copy()
