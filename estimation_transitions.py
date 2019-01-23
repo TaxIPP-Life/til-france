@@ -1,25 +1,14 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Thu Jan 17 17:49:46 2019
 
-@author: a.rain
-"""
+
 from __future__ import division
 
 
 import logging
-import matplotlib.pyplot as plt
-import numpy as np
 import os
 import pandas as pd
-import seaborn as sns
-import slugify
 import sys
 import pkg_resources
-import ipdb
-import numpy
-import statsmodels.formula.api as smf
-import patsy
 
 from til_core.config import Config
 
@@ -46,17 +35,14 @@ assets_path = os.path.join(
 
 config = Config()
 
-assert os.path.exists(data_path)
-
-
 
 from til_france.model.options.dependance_RT.life_expectancy.share.transition_matrices import (
     assets_path,
     get_transitions_from_formula,
     get_transitions_from_file,
-    compute_prediction, 
-    build_estimation_sample, 
-    get_clean_share, 
+    compute_prediction,
+    build_estimation_sample,
+    get_clean_share,
     estimate_model
     )
 
@@ -73,9 +59,14 @@ final_states_by_initial_state = {
   2: [1, 2, 3, 4],
   3: [2, 3, 4],
   }
+
 variables = ['age', 'final_state', 'married_','children_0','children_1','children_2','children_3plus']
-#extra_variables = ['age','married_','children_0','children_1','children_2','children_3plus']
-#df = get_clean_share(extra_variables = extra_variables)
+
+extra_variables = ['age', 'married_', 'children_0','children_1', 'children_2', 'children_3plus']
+
+
+df = get_clean_share(extra_variables = extra_variables)
+
 #sample = build_estimation_sample(initial_state, sex = sex, variables = variables, vagues = vagues)
 
 formula = 'final_state ~ I((age - 80)) + I(((age - 80))**2) + I(((age - 80))**3)'
@@ -84,9 +75,13 @@ formula2 = 'final_state ~ I((age - 80)) + I(((age - 80))**2) + I(((age - 80))**3
 #Get estimation coefficients
 result, formatted_params = estimate_model(initial_state, formula2, sex = sex, variables = variables)
 
-#Get predictions
+print(result.summary())
+print(formatted_params) 
+# Get predictions
 age_min = 50
 age_max = 120
 exog = pd.DataFrame(dict(age = range(age_min, age_max + 1)))
 
 prediction = compute_prediction(initial_state = initial_state, formula = formula, variables = variables, exog = None, sex = sex, vagues = vagues)
+
+print(prediction)
