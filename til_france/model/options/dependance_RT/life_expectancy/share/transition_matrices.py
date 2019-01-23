@@ -80,7 +80,7 @@ def get_clean_share(extra_variables = None):
     """
         Get SHARE relevant data free of missing observations
     """
-    death_state = 4
+    death_state = 4  # noqa
     if extra_variables is None:
         extra_variables = list()
     df = pd.read_csv(data_path)
@@ -94,10 +94,7 @@ def get_clean_share(extra_variables = None):
         'age_int': 'age',
         }
     assert set(renaming.keys()) < set(df.columns)
-    df = (df
-        .rename(columns = renaming)
-        .copy()
-        )
+    df = df.rename(columns = renaming).copy()
     df['sexe'] = df.male + 2 * (df.male == 0)
     del df['male']
     variables = ['id', 'initial_state', 'sexe', 'year', 'age', 'vague']
@@ -431,6 +428,6 @@ def get_transitions_from_file(alzheimer = None, memory = False):
 
     df = pd.concat([df, large_age_extension])
     df = df[['sex', 'age', 'initial_state', 'final_state', 'probability']].sort_values(
-            ['sex', 'age', 'initial_state', 'final_state']
-            )
+        ['sex', 'age', 'initial_state', 'final_state']
+        )
     return df.set_index(['sex', 'age', 'initial_state', 'final_state'])
