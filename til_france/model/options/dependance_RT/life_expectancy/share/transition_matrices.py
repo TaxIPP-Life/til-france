@@ -145,7 +145,6 @@ def build_estimation_sample(initial_state, sex = None, variables = None, vagues 
         )
     assert clean_share.notnull().all().all()
     assert initial_state in final_states
-
     no_transition = (clean_share
         .groupby('id')['initial_state']
         .count() == 1
@@ -360,6 +359,18 @@ def get_transitions_from_formula(formula = None, age_min = 50, age_max = 120, va
 
     transitions.reset_index().set_index(['sex', 'age', 'initial_state', 'final_state'])
     return transitions
+
+
+def test(formula = None, initial_state = None, sex = None):
+    assert formula is not None
+    assert initial_state is not None
+    assert (sex is None) or (sex in ['male', 'female'])
+    result, formatted_params = estimate_model(initial_state, formula, sex = sex)
+    computed_prediction = direct_compute_predicition(initial_state, formula, formatted_params, sex = sex)
+    prediction = compute_prediction(initial_state, formula, sex = sex)
+    diff = computed_prediction[prediction.columns] - prediction
+    log.debug("Max of absolute error = {}".format(diff.abs().max().max()))
+    assert (diff.abs().max() < 1e-5).all(), "error is too big: {} > 1e-5".format(diff.abs().max())
 
 
 def get_formatted_params_by_initial_state(formula = None, variables = None):
