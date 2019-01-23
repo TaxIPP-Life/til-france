@@ -26,7 +26,7 @@ def build_prevalence_2010(input_dir = None, uniform_weight = None):
         config = Config()
         input_dir = config.get('til', 'input_dir')
 
-    df = pd.read_excel(drees_excel_file_path, sheetname ='Tab2', header = 3, parse_cols = 'B:O', skip_footer = 4)
+    df = pd.read_excel(drees_excel_file_path, sheet_name ='Tab2', header = 3, parse_cols = 'B:O', skip_footer = 4)
     for column in df.columns:
         if column.startswith('Unnamed') or column.startswith('Ensemble'):
             del df[column]
@@ -47,7 +47,7 @@ def build_prevalence_all_years(globals_node = None, input_dir = None, to_csv = N
             config = Config()
             input_dir = config.get('til', 'input_dir')
 
-    df = pd.read_excel(drees_excel_file_path, sheetname ='Tab6A', header = 3, parse_cols = 'B:E', skip_footer = 3)
+    df = pd.read_excel(drees_excel_file_path, sheet_name ='Tab6A', header = 3, parse_cols = 'B:E', skip_footer = 3)
     # "Au 1er janvier"
     df.columns = ['year', 'dependants_optimiste', 'DEPENDANTS', 'dependants_pessimiste']
     df.set_index('year', inplace = True)

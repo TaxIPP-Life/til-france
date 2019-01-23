@@ -85,7 +85,9 @@ entities:
       - dependance_transition_femme_4_4: array(dependance_transition_femme[period_index, 0:121, 4, 4])
       - dependance_transition_homme_4_5: array(dependance_transition_homme[period_index, 0:121, 4, 5])
       - dependance_transition_femme_4_5: array(dependance_transition_femme[period_index, 0:121, 4, 5])
+
       mise_a_jour:
       - education()
       - mortality_rates_update()
+      - dependance_initialisation()  # Pour initialiser les niveaux de dependance à 65 ans
       - dependance_transition_mise_a_jour()

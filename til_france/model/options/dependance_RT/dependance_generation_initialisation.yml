@@ -24,7 +24,6 @@ entities:
         - dependance_niveau_femme_2: array(dependance_niveau_initialisation_femme[0:121, 2])
         - dependance_niveau_femme_3: array(dependance_niveau_initialisation_femme[0:121, 3])
         - dependance_niveau_femme_4: array(dependance_niveau_initialisation_femme[0:121, 4])
-        - show('dependance_niveau_homme_0', dependance_niveau_homme_0)
 
       options_initialisation:
         - mortality_rates_initialisation()

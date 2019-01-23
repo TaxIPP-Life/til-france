@@ -25,17 +25,17 @@ error_margin = .01
 
 # Data from INSEE projections
 data_path = os.path.join(path_model, 'param', 'demo', 'projpop0760_FECcentESPcentMIGcent.xls')
-sheetname_by_gender = dict(zip(
+sheet_name_by_gender = dict(zip(
     ['total', 'male', 'female'],
     ['populationTot', 'populationH', 'populationF']
     ))
 population_insee_by_gender = dict(
     (
         gender,
-        pandas.read_excel(data_path, sheetname = sheetname, skiprows = 2, header = 2)[:109].set_index(
+        pandas.read_excel(data_path, sheet_name = sheet_name, skiprows = 2, header = 2)[:109].set_index(
             u'Âge au 1er janvier')
         )
-    for gender, sheetname in sheetname_by_gender.iteritems()
+    for gender, sheet_name in sheet_name_by_gender.iteritems()
     )
 populationF = population_insee_by_gender['female'][year]
 populationH = population_insee_by_gender['male'][year]

@@ -101,8 +101,10 @@ def get_clean_paquid(extra_variables = None):
         .dropna()
         .rename(columns = {'scale5': 'initial_state'})
         )
-    log.info("There are {} valid observations out of {}".format(
-        len(filtered), len(df)))
+    log.debug("There are {} missing observation of scale5 out of {}".format(df.scale5.isnull().sum(), len(df)))
+
+    log.debug("There are {} valid observations out of {} for the following variables {}".format(
+        len(filtered), len(df), df.columns))
 
     assert (filtered.isnull().sum() == 0).all()
 
@@ -120,7 +122,9 @@ def build_estimation_sample(initial_state, sex = None, variables = None):
     """
     final_states = final_states_by_initial_state[initial_state]
     assert (sex in ['male', 'female']) or (sex is None)
-    extra_variables = [variable for variable in variables if variable not in ['final_state']]
+    extra_variables = None
+    if variables is not None:
+        extra_variables = [variable for variable in variables if variable not in ['final_state']]
     clean_paquid = get_clean_paquid(extra_variables = extra_variables)
     assert clean_paquid.notnull().all().all()
     assert initial_state in final_states
@@ -133,7 +137,8 @@ def build_estimation_sample(initial_state, sex = None, variables = None):
         ].query('initial_state == {}'.format(initial_state))
     log.info(
         "There are {} individuals out of {} with only one observation (no transition) with intiial state = {}".format(
-            len(no_transition_with_specific_initial_state), initial_state, no_transition.sum()))
+            len(no_transition_with_specific_initial_state), no_transition.sum(), initial_state))
+
     clean_paquid['final_state'] = clean_paquid.groupby('numero')['initial_state'].shift(-1).copy()
     log.info("There are {} individuals with intiial state = {} with no subsequent transition".format(
         len(
@@ -160,26 +165,41 @@ def build_estimation_sample(initial_state, sex = None, variables = None):
     log.info("There are {} individuals with intiial state = {} transiting to forbidden states: \n {}".format(
         wrong_transition.sum(), initial_state, wrong_transition[wrong_transition > 0]))
 
-    log.info("Using the following replacement rule: {}".format(
-        replace_by_initial_state[initial_state]
-        ))
-    log.debug("Sample size before cleaning bad final_states {}".format(
-        len(clean_paquid
+    log.info(clean_paquid.final_state.value_counts(dropna = False))
+    if initial_state in replace_by_initial_state.keys():
+        log.info("Using the following replacement rule: {}".format(
+            replace_by_initial_state[initial_state]
+            ))
+        log.debug("Sample size before cleaning bad final_states {}".format(
+            len(clean_paquid
+                .query('(initial_state == {})'.format(
+                    initial_state,
+                    ))
+                .dropna()
+                )
+            ))
+        log.info(clean_paquid.query('(initial_state == {})'.format(
+                    initial_state,
+                    )).final_state.value_counts(dropna = False))
+        sample = (clean_paquid
+            .query('initial_state == {}'.format(initial_state))
+            .dropna()
+            .replace({
+                'final_state': replace_by_initial_state[initial_state]
+                })
+            .copy()
+            )
+        log.debug("Sample size after cleaning bad final_states {}".format(len(sample)))
+        log.info(sample.final_state.value_counts())
+    else:
+        sample = (clean_paquid
             .query('(initial_state == {})'.format(
                 initial_state,
-                final_states,
                 ))
             .dropna()
+            .copy()
             )
-        ))
-    sample = (clean_paquid
-        .query('initial_state == {}'.format(initial_state))
-        .replace({
-            'final_state': replace_by_initial_state[initial_state]
-            })
-        .dropna()
-        .copy()
-        )
+
     log.debug("Sample size after cleaning bad final_states {}".format(len(sample)))
 
     if sex:
@@ -194,7 +214,11 @@ def build_estimation_sample(initial_state, sex = None, variables = None):
     else:
         log.info("Keeping sample of size {}".format(len(sample)))
         del sample['sexe']
-    assert set(sample.final_state.value_counts().index.tolist()) == set(final_states)
+
+
+    assert set(sample.final_state.value_counts().index.tolist()) == set(final_states), '{} differs from {}'.format(
+        set(sample.final_state.value_counts().index.tolist()), set(final_states)
+        )
     return sample.reset_index(drop = True).copy()
 
 
@@ -344,11 +368,11 @@ if __name__ == '__main__':
     formula = 'final_state ~ I((age - 80)) + I(((age - 80))**2) + I(((age - 80))**3) + femme + seul + educ_2 + educ_3'
     variables = ['age', 'final_state', 'femme', 'seul', 'educ_2', 'educ_3']
 
-
+    initial_state = 0
     result, formatted_params = estimate_model(initial_state, formula, sex = sex, variables = variables)
 
     prediction = compute_prediction(initial_state = initial_state, formula = formula, sex = sex, variables = variables)
     print prediction
-    BIM
+
     for initial_state in range(1):
         test(initial_state = initial_state, formula = formula, sex = sex)

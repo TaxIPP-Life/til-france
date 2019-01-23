@@ -1,0 +1,25 @@
+# Using PAQUID cohort matrix
+
+import:
+   # dependance
+   - ./dependance_RT/dependance_RT_common_console.yml
+   - ./dependance_RT/dependance_scaled_paquid_transition_functions.yml
+
+globals:
+  dependance_transition_homme:
+    path: dependance_transition_mu_0.5_variant_1_male.csv
+    type: float
+
+  dependance_transition_femme:
+    path: dependance_transition_mu_0.5_variant_1_female.csv
+    type: float
+
+
+entities:
+  individus:
+    macros:
+      MU: 1
+
+simulation:
+  periods: 40
+  random_seed: 12345

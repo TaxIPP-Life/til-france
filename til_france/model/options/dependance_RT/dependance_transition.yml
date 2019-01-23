@@ -11,15 +11,6 @@ globals:
     path: dependance_initialisation_femme.csv
     type: float
 
-  dependance_transition_homme:
-    path: dependance_transition_mu_0.5_variant_1_male.csv
-    type: float
-
-  dependance_transition_femme:
-    path: dependance_transition_mu_0.5_variant_1_female.csv
-    type: float
-
-
 
 entities:
   individus:
@@ -35,8 +26,8 @@ entities:
 
     processes:
       dependance_initialisation:
+        - show('dependance_initialisation', individu2generation.dependance_niveau_homme_0)
         - dependance_niveau: 0
-        - show('individu2generation.dependance_niveau_homme_0', individu2generation.dependance_niveau_homme_0)
         - dependance_niveau: if(
             age >= 65,
             if(
@@ -74,6 +65,42 @@ entities:
         # TODO parameters/dependance/dependance_prevalence_2010.csv depends on weight
 
       dependance:
+        # Nouveaux dépendans qui aurons 65 ans la période suivante:
+        - show(
+          'Nouveaux dépendants:',
+          dependance_niveau_initialisation_homme[65, 0],
+          individu2generation.dependance_niveau_homme_1[65],
+          individu2generation.dependance_niveau_homme_2[65],
+          individu2generation.dependance_niveau_homme_3[65],
+          individu2generation.dependance_niveau_homme_4[65]
+          )
+        - dependance_niveau: if(
+            age == 64,
+            if(
+              ISMALE,
+              choice(
+                [0, 1, 2, 3, 4],
+                [
+                  dependance_niveau_initialisation_homme[65, 0],
+                  dependance_niveau_initialisation_homme[65, 1],
+                  dependance_niveau_initialisation_homme[65, 2],
+                  dependance_niveau_initialisation_homme[65, 3],
+                  dependance_niveau_initialisation_homme[65, 4]
+                  ]
+                ),
+              choice(
+                [0, 1, 2, 3, 4],
+                [
+                  dependance_niveau_initialisation_femme[65, 0],
+                  dependance_niveau_initialisation_femme[65, 1],
+                  dependance_niveau_initialisation_femme[65, 2],
+                  dependance_niveau_initialisation_femme[65, 3],
+                  dependance_niveau_initialisation_femme[65, 4]
+                  ]
+                )
+              ),
+            dependance_niveau
+            )
         # Transitions depuis les états initiaux suivants
         - dependance_niveau: if(
             dependance_niveau < 0,
@@ -107,4 +134,4 @@ entities:
                 ),
             dependance_niveau
             )
-        - dependance_anciennete: if(dependance_niveau >= 1, dependance_anciennete + 1, -1)
+        - dependance_anciennete: if((dependance_niveau >= 1) and (age >= 65), dependance_anciennete + 1, -1)

@@ -4,6 +4,7 @@
 from __future__ import division
 
 
+import os
 import pandas as pd
 
 
@@ -21,6 +22,9 @@ from til_france.model.options.dependance_RT.life_expectancy.calibration import (
 
 
 from til_france.targets.population import build_mortality_rates
+
+
+figures_directory = '/home/benjello/figures'
 
 
 def extract_historical_mortality(year = None):
@@ -45,7 +49,6 @@ def get_calibrated_mortality_after_imputation(transitions, period):
         )
 
     calibrated_mortality_after_imputation = get_mortality_after_imputation(
-        period = period,
         mortality_table = calibrated_mortality_table,
         )
 
@@ -107,21 +110,28 @@ def plot_paquid_comparison(formula = None, age_max = 120, paquid_years = None):
         )
 
     period = 2010
-    mortality_after_imputation = get_mortality_after_imputation(period = period, mortality_table = mortality_table)
+    mortality_after_imputation = get_mortality_after_imputation(mortality_table = mortality_table)
     calibrated_mortality_after_imputation = get_calibrated_mortality_after_imputation(
         transitions = transitions, period = period)
 
-    paquid_mortality_name = 'mortality_from_paquid_{}'.format(
-        ('_').join([str(year) for year in paquid_years]))
+    paquid_mortality_name = 'PAQUID'
 
+#    .format(
+#        ('_').join([str(year) for year in paquid_years]))
+
+    print mortality_after_imputation
+    print mortalite_1988
+
+    mortality_after_imputation.name = u"HSM-HSI + transitions PAQUID"
     plot_data = (pd.concat(
         [
             mortality_from_paquid.rename(
                 columns = dict(mortality = paquid_mortality_name)),
-            mortalite_insee_2007,
-            mortalite_1988,
+            # mortalite_insee_2007,
             mortality_after_imputation,
-            calibrated_mortality_after_imputation,
+            mortalite_1988.rename(
+                columns = dict(mortalite_1988 = u"INSEE")),
+            # calibrated_mortality_after_imputation,
             ],
         axis = 1,
         )
@@ -130,8 +140,14 @@ def plot_paquid_comparison(formula = None, age_max = 120, paquid_years = None):
         )
     axes = plot_data.groupby('sex').plot(x = 'age')
     for index in axes.index:
-        axes[index].set_title("{} mortality".format(index))
+        # axes[index].set_title(u"Mortalité {}".format("Homme" if index == 'male' else 'Femme'))
         axes[index].get_figure().savefig('mortalite_{}.png'.format(index))
+        axes[index].set_xlabel(u"Âge")
+        axes[index].set_ylabel(u"Taux de mortalité")
+        figure = axes[index].get_figure()
+        figure_path_name = os.path.join(figures_directory, 'mortality_alignment_{}'.format(index))
+        figure.savefig(figure_path_name, bbox_inches = 'tight', format = 'png')
+        figure.savefig(figure_path_name + ".pdf", bbox_inches = 'tight', format = 'pdf')
 
     plot_data['ratio'] = plot_data[paquid_mortality_name] / plot_data.mortalite_insee_2007
     axes2 = plot_data.groupby('sex').plot(x = 'age', y = 'ratio')
